@@ -1,8 +1,9 @@
 <?php
 
-use Manix\Brat\Helpers\URL;
-
 namespace Manix\Brat\Helpers;
+
+use function html;
+use function url;
 
 class HTMLGenerator {
 

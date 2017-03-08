@@ -10,7 +10,7 @@ $_ENV = array_merge($_ENV, require(PROJECT_PATH . '/.env.php'));
 
 define('DEBUG_MODE', $_ENV['env'] === 'debug');
 
-$loader = require(PROJECT_PATH . '/vendor/autoload.php');
+$loader = require(PROJECT_PATH . '/../vendor/autoload.php');
 
 function loader() {
     global $loader;
