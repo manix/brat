@@ -4,6 +4,7 @@ namespace Manix\Brat\Components\Filesystem;
 
 use Exception;
 use FilesystemIterator;
+use Generator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
@@ -21,6 +22,10 @@ class Directory extends Inode {
         $this->path = $path;
     }
 
+    /**
+     * Copy a directory recursively.
+     * @param string $destination
+     */
     public function copy($destination) {
         $dir = opendir($this->path);
 
@@ -32,24 +37,31 @@ class Directory extends Inode {
         closedir($dir);
     }
 
-    public function contents($stopafter = null) {
-        $results = array();
-        $count = 1;
+    /**
+     * Get the contents of this directory.
+     * @param bool $skipdots Whether to skip hidden files (starting with a dot).
+     * @return Generator
+     */
+    public function contents($skipdots = true) {
         $factory = new Factory();
         if (is_dir($this->path)) {
             $handler = opendir($this->path);
 
-            while (($file = readdir($handler)) && ($stopafter === null || $count < $stopafter)) {
-                if ($file != '.' && $file != '..') {
-                    $results[] = $factory->get($this->path . '/' . $file);
-                    $count++;
+            while (($file = readdir($handler))) {
+                if ($file[0] === '.' && $skipdots) {
+                    continue;
                 }
+
+                yield $factory->get($this->path . '/' . $file);
             }
             closedir($handler);
         }
-        return $results;
     }
 
+    /**
+     * Delete a directory recursively.
+     * @param bool $contentsOnly If set to true then only the contents of this directory will be deleted, but the directory itself will remain.
+     */
     public function delete($contentsOnly = false) {
         foreach ($this->contents() as $inode) {
             $inode->delete(false);
@@ -58,10 +70,13 @@ class Directory extends Inode {
         if ($contentsOnly === false) {
             rmdir($this->path);
         }
-
-        return true;
     }
 
+    /**
+     * Move the directory.
+     * @param string $destination
+     * @return $this
+     */
     public function move($destination) {
         if (rename($this->path, $destination)) {
             $this->path = $destination;
@@ -83,32 +98,26 @@ class Directory extends Inode {
         return iterator_count(new FilesystemIterator($this->path, FilesystemIterator::SKIP_DOTS));
     }
 
-    public function map() {
-        $map = $this->contents();
-
-        foreach ($map as $elem) {
+    public function map($skipdots = true) {
+        foreach ($this->contents($skipdots) as $elem) {
             if ($elem instanceof self) {
                 $elem->nodes = $elem->map();
             }
-        }
 
-        return $map;
+            yield $this;
+        }
     }
 
-    public function files() {
-        $map = [];
-
-        foreach ($this->contents() as $node) {
+    public function files($skipdots = true) {
+        foreach ($this->contents($skipdots) as $node) {
             if ($node instanceof self) {
-                foreach ($node->files() as $path) {
-                    $map[] = $path;
+                foreach ($node->files($skipdots) as $path) {
+                    yield $path;
                 }
             } else {
-                $map[] = $node;
+                yield $node;
             }
         }
-
-        return $map;
     }
 
 }

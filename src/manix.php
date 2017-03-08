@@ -1,8 +1,5 @@
 <?php
 
-use Manix\Brat\Components\Translator;
-use Manix\Brat\Components\Views\HTML\Provider;
-use Manix\Brat\Components\Views\HTML\View;
 use Manix\Brat\Program;
 
 define('MANIX', 'MANIX');
@@ -94,36 +91,17 @@ define('LANG', $_SESSION[MANIX]['lang']);
 
 $manix = new class {
 
-    use Translator;
-
     /**
-     * Run the Manix project.
-     * 
-     * @param callable $error A function to pass to set_exception_handler
-     * @param callable $respond A callable for the response generation.
-     * @throws Exception
+     * Run a Manix program.
+     * @param Program $program Your program.
      */
     function run(Program $program) {
         set_exception_handler([$program, 'error']);
 
-        $route = trim($_GET['route'] ?? null);
+        $route = $program->fetchRoute();
+        $controller = $program->createController($route);
+        $data = $controller->{strtolower($_POST['manix-method'] ?? $_SERVER['REQUEST_METHOD'])}();
 
-        if (!$route) {
-            $route = 'index';
-        }
-
-        define('ROUTE', $route);
-
-        $class = config('routes')[$route] ?? ($_ENV['projectNS'] . 'Controllers\\' . join('\\', array_map('ucfirst', explode('/', $route))));
-
-        if (!loader()->loadClass($class)) {
-            throw new Exception($this->t8('common', 'ctrlnotfound'), 404);
-        }
-
-        $controller = new $class();
-        // TODO think about request-method
-        $data = $controller->{strtolower($_POST['request-method'] ?? $_SERVER['REQUEST_METHOD'])}();
-
-        $program->respond($data, $controller);
+        exit($program->respond($data, $controller));
     }
 };

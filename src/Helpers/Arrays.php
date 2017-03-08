@@ -1,6 +1,6 @@
 <?php
 
-namespace Manix\Helpers;
+namespace Manix\Brat\Helpers;
 
 class Arrays {
 

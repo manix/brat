@@ -16,7 +16,17 @@ abstract class View {
     public function __construct($data) {
         $this->data = $data;
     }
-    
+
+    /**
+     * Set data to the view.
+     * @param mixed $data The new data.
+     * @return $this
+     */
+    public function data($data) {
+        $this->data = $data;
+        return $this;
+    }
+
     abstract protected function render();
 
     public function __toString() {
