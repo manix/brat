@@ -2,16 +2,7 @@
 
 namespace Manix\Brat\Components\Views\HTML;
 
-use Manix\Brat\Components\Views\View as BaseView;
-use Manix\Brat\Helpers\HTMLGenerator;
-
-abstract class View extends BaseView {
-
-    /**
-     * An HTML Generator helper.
-     * @var HTMLGenerator The helper.
-     */
-    protected $html;
+abstract class HTMLDocument extends HTMLElement {
 
     /**
      * @var string The title of this resource.
@@ -42,11 +33,7 @@ abstract class View extends BaseView {
      * @param array $attributes Attributes of the element.
      */
     public function addStyle($href, array $attributes = []) {
-        $attributes['href'] = $href;
-        $attributes['type'] = 'text/css';
-        $attributes['rel'] = 'stylesheet';
-
-        $this->head[] = $this->html->link($attributes);
+        $this->head[] = $this->html->css($href, $attributes);
     }
 
     /**
@@ -63,27 +50,26 @@ abstract class View extends BaseView {
      * 
      * @return string HTML containing string.
      */
-    public function getHead() {
+    public function head() {
         return
         $this->html->title($this->title) .
         implode('', $this->head);
     }
 
-    public function getPath() {
-        return $this->path;
+    abstract public function body();
+
+    public function html() {
+        ?>
+        <!doctype html>
+        <html>
+            <head>
+                <?= $this->head() ?>
+            </head>
+            <body>
+                <?= $this->body() ?>
+            </body>
+        </html>
+        <?php
     }
 
-    public function __construct($data, HTMLGenerator $html) {
-        parent::__construct($data);
-
-        $this->html = $html;
-    }
-
-    final protected function render() {
-        ob_start();
-        $this->html();
-        return ob_get_clean();
-    }
-
-    abstract public function html();
 }

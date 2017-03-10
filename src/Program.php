@@ -83,9 +83,7 @@ abstract class Program {
                 case 'text/*':
                 case 'text/html':
                     header('Content-Type: text/html');
-                    $generator = new HTMLGenerator();
-                    $page = new $controller->page($data, $generator);
-                    return new $controller->layout($data, $generator, $page);
+                    return new $controller->page($data, new HTMLGenerator());
             }
         }
 

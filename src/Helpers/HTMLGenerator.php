@@ -7,15 +7,31 @@ use function url;
 
 class HTMLGenerator {
 
+    /**
+     * Generate an HTML element.
+     * @param string $name Element name
+     * @param array $arguments Array of parameters in order: <ul><li>string $content the inner html of the element</li><li>array $attributes associative array of attributes for the element</li><li>bool $ecode whether to encode $content as html or not</li></ul>
+     * @return type
+     */
     public function __call($name, $arguments) {
         $name = html($name);
-        $content = isset($arguments[0]) ? html($arguments[0]) : null;
-        $attributes = isset($arguments[1]) ? $arguments[1] : array();
+        $content = $arguments[0] ?? null;
+        $attributes = $arguments[1] ?? [];
+        if (!empty($arguments[2])) {
+            $content = html($content);
+        }
 
         return '<' . $name . $this->parseAttributes($attributes) . '>' . $content . '</' . $name . '>';
     }
 
-    public function meta($name, $content, array $attributes = array()) {
+    /**
+     * Generate a meta tag.
+     * @param string $name Value for attribute "name"
+     * @param string $content value for attribute "content"
+     * @param array $attributes
+     * @return string The meta tag.
+     */
+    public function meta(string $name, string $content, array $attributes = array()): string {
         if ($name === null) {
             unset($attributes['name']);
         } else {
@@ -26,7 +42,14 @@ class HTMLGenerator {
         return '<meta' . $this->parseAttributes($attributes) . '/>';
     }
 
-    public function script($src, array $attributes = array(), $defer = true) {
+    /**
+     * Generate a script tag.
+     * @param string $src value for the "src" attribute.
+     * @param array $attributes
+     * @param bool $defer Whether to include the "defer" attribute
+     * @return string The script tag.
+     */
+    public function script(string $src, array $attributes = array(), bool $defer = true): string {
         $attributes['type'] = 'text/javascript';
         $attributes['src'] = $this->parseURL($src);
         if ($defer) {
@@ -36,15 +59,29 @@ class HTMLGenerator {
         return '<script' . $this->parseAttributes($attributes) . '></script>';
     }
 
-    public function stylesheet($src, array $attributes = array()) {
+    /**
+     * Generate a link tag for a css stylesheet.
+     * @param string $href value for the "href" attribute
+     * @param array $attributes
+     * @return string The link tag.
+     */
+    public function css(string $href, array $attributes = array()): string {
         $attributes['type'] = 'text/css';
-        $attributes['href'] = $this->parseURL($src);
+        $attributes['href'] = $this->parseURL($href);
         $attributes['rel'] = 'stylesheet';
 
         return '<link' . $this->parseAttributes($attributes) . '/>';
     }
 
-    public function a($url, $text = null, $target = null, array $attributes = array()) {
+    /**
+     * Generate an anchor tag.
+     * @param string $url value for the "href" attribute.
+     * @param string $text inner html for the element.
+     * @param string $target value for the "target" attribute.
+     * @param array $attributes
+     * @return string The generated anchor tag.
+     */
+    public function a($url, $text = null, $target = null, array $attributes = array()): string {
 
         $attributes['href'] = $url;
 
@@ -59,18 +96,38 @@ class HTMLGenerator {
         return '<a' . $this->parseAttributes($attributes) . '>' . html($text) . '</a>';
     }
 
-    public function img($src, $alt, array $attributes = array()) {
+    /**
+     * Generate an img tag.
+     * @param string $src
+     * @param string $alt
+     * @param array $attributes
+     * @return string The img tag.
+     */
+    public function img(string $src, string $alt, array $attributes = array()): string {
         $attributes['src'] = $this->parseURL($src);
         $attributes['alt'] = $alt;
 
         return '<img' . $this->parseAttributes($attributes) . '/>';
     }
 
-    public function formOpen(array $attributes = array()) {
+    /**
+     * Generate an opening form tag.
+     * @param array $attributes
+     * @return string The opening form tag.
+     */
+    public function formOpen(array $attributes = array()): string {
         return '<form' . $this->parseAttributes($attributes) . '>';
     }
 
-    public function input($name, $type = 'text', $value = null, array $attributes = array()) {
+    /**
+     * Generate an input element.
+     * @param string $name
+     * @param string $type
+     * @param string $value
+     * @param array $attributes
+     * @return string Generated input element.
+     */
+    public function input(string $name, string $type = 'text', string $value = '', array $attributes = array()) {
         if ($name) {
             $attributes['name'] = $name;
         }
@@ -86,33 +143,69 @@ class HTMLGenerator {
         return '<input' . $this->parseAttributes($attributes) . '/>';
     }
 
-    public function select($options, array $attributes = array(), $selected = null) {
+    /**
+     * Generate a "select" tag.
+     * @param array $options Each element of this array will generate an "option" tag.
+     * @param array $attributes
+     * @param string $selected The key in $options to mark as selected.
+     * @param array $optionAttributes Attributes for each option tag.
+     * @return string The generated tag.
+     */
+    public function select(array $options, array $attributes = array(), string $selected = null, array $optionAttributes = []): string {
         $html = '';
 
         foreach ($options as $key => $value) {
-            $html .= '<option value="' . html($key) . '"';
+            $optionAttributes['value'] = html($key);
 
             if ($key == $selected) {
-                $html .= ' selected="selected"';
+                $optionAttributes['selected'] = 'selected';
             }
 
-            $html .= '>' . html($value) . '</option>';
+            $html .= '<option' . $this->parseAttributes($optionAttributes) . '>' . html($value) . '</option>';
         }
 
         return '<select' . $this->parseAttributes($attributes) . '>' . $html . '</select>';
     }
 
-    public function ul(array $items, array $attributes = array()) {
-
-        return '<ul' . $this->parseAttributes($attributes) . '><li>' . join('</li><li>', array_map('html', $items)) . '</li></ul>';
+    /**
+     * Generate a "ul" tag.
+     * @param array $items Each element becomes a "li" tag.
+     * @param array $attributes
+     * @param array $liattributes Attributes for each li tag.
+     * @return string The generated tag.
+     */
+    public function ul(array $items, array $attributes = array(), array $liattributes = []): string {
+        return $this->l('ul', $items, $attributes, $liattributes);
     }
 
-    public function ol(array $items, array $attributes = array()) {
-
-        return '<ol' . $this->parseAttributes($attributes) . '><li>' . join('</li><li>', array_map('html', $items)) . '</li></ol>';
+    /**
+     * Generate a "оl" tag.
+     * @param array $items Each element becomes a "li" tag.
+     * @param array $attributes
+     * @param array $liattributes Attributes for each li tag.
+     * @return string The generated tag.
+     */
+    public function оl(array $items, array $attributes = array(), array $liattributes = []): string {
+        return $this->l('оl', $items, $attributes, $liattributes);
     }
 
-    private function parseAttributes($attributes) {
+    protected function l(string $type, array $items, array $attributes = [], array $liattributes = []): string {
+        $liattr = $this->parseAttributes($liattributes);
+        $html = '<' . $type . $this->parseAttributes($attributes) . '>';
+
+        foreach ($items as $li) {
+            $html .= '<li' . $liattr . '>' . html($li) . '</li>';
+        }
+
+        return $html . '</' . $type . '>';
+    }
+
+    /**
+     * Parse an associative array into an html tag attributes string, encoding both key and value of the array as html strings.
+     * @param array $attributes
+     * @return string The parsed attributes string.
+     */
+    private function parseAttributes(array $attributes): string {
         $string = '';
 
         foreach ($attributes as $attribute => $value) {
@@ -122,11 +215,22 @@ class HTMLGenerator {
         return $string;
     }
 
-    private function parseURL($url) {
-        return (new URL($url))->absolute();
+    /**
+     * Convert an URI to URL.
+     * @param string $uri
+     * @return string The URL.
+     */
+    private function parseURL(string $uri): string {
+        return (new URL($uri))->absolute();
     }
 
-    public function minify($html) {
+    /**
+     * Turn an HTML string into one line. Preserves "pre" tags.
+     * WARNING: This is experimental and should be used with caution.
+     * @param string $html
+     * @return string
+     */
+    public function minify(string $html): string {
         $pres = null;
 
         $html = preg_replace('/[\r\n]\<\/code\>/', '</code>', $html);
@@ -169,11 +273,12 @@ class HTMLGenerator {
     }
 
     /**
-     * Sets OG, Twitter and ordinary meta tags for bots and crawlers.
+     * Generates OG, Twitter and other meta tags.
      * 
      * @param array $data Available keys: title, author, keywords, description, image, robots
+     * @return string The generated HTML string of meta tags.
      */
-    public function SEO(array $data) {
+    public function SEO(array $data): string {
         $output = '';
 
         if (isset($data['title'])) {
@@ -221,7 +326,7 @@ class HTMLGenerator {
      * "YYYY-mm-dd H:i:s" or just "YYYY-mm-dd"
      * @param string $separator A string that will be used to separate the date and time values.
      * @param string $date_separator A string that will be used to separate components of the date.
-     * @return string
+     * @return string The generated HTML string.
      */
     public function datetime($string, $separator = ' ', $date_separator = null) {
         $date = substr($string, 0, 10);
@@ -243,22 +348,12 @@ class HTMLGenerator {
     /**
      * Generate breadcrumbs.
      * 
-     * Both parameters represent routes and thus MUST NOT start or end 
-     * with a forward slash "/".
-     * 
-     * @param string $base The base which should be ignored when constructing the breadcrumbs.
-     * @param string $route The route which should be used to construct the breadcrumbs.
+     * @param string $base The base URL to use for the anchor tags.
+     * @param string $route The route which should be used to construct the breadcrumbs. MUST NOT start or end with a forward slash (/)!
+     * @param array $attributes Attributes for each breadcrumb anchor tag.
      * @return string HTML output.
      */
-    public function breadcrumbs($base = '', $route = null) {
-        if ($route === null) {
-            $route = ROUTE;
-        }
-
-        if ($base && strpos($route, $base) === 0) {
-            $route = substr($route, strlen($base));
-        }
-
+    public function breadcrumbs($base, $route, array $attributes = []) {
         $route = '/' . $route . '/';
 
         $crumbs = '';
@@ -274,13 +369,13 @@ class HTMLGenerator {
                 $current = substr($route, $last + 1, $i - $last - 1);
                 $link .= '/' . $current;
 
-                $crumbs .= $this->a($link, str_replace($search, $replace, $current)) . ' / ';
+                $crumbs .= $this->a($link, str_replace($search, $replace, $current), null, $attributes);
 
                 $last = $i;
             }
         }
 
-        return '<div class="breadcrumbs">' . substr($crumbs, 0, -3) . '</div>';
+        return $crumbs;
     }
 
 }
