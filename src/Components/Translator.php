@@ -58,10 +58,8 @@ trait Translator {
          * every time this function gets called, this way it only gets called 
          * if $translatorStrings is empty.
          */
-        if (!isset(self::$translatorStrings[$path]) && is_file($this->constructAbsoluteLangFilePath($path))) {
-            self::$translatorStrings[$path] = require $this->constructAbsoluteLangFilePath($path);
-        } else {
-            return null;
+        if (!isset(self::$translatorStrings[$path])) {
+            self::$translatorStrings[$path] = is_file($this->constructAbsoluteLangFilePath($path)) ? require $this->constructAbsoluteLangFilePath($path) : [];
         }
 
         return self::$translatorStrings[$path];
