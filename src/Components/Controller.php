@@ -2,6 +2,8 @@
 
 namespace Manix\Brat\Components;
 
+use Exception;
+
 abstract class Controller {
 
     use Translator;
@@ -12,8 +14,18 @@ abstract class Controller {
     public $page;
 
     /**
-     * @var string Name of the layout that this controller will render.
+     * @var array An array of common data to return to each request.
      */
-    public $layout;
+    protected $data = [];
+
+    public function data() {
+        return $this->data;
+    }
+
+    public function __call($name, $arguments) {
+        if (isset($name) && isset($arguments)) {
+            throw new Exception('Method not found.', 404);
+        }
+    }
 
 }

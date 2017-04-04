@@ -36,7 +36,7 @@ class FilesystemCache extends CacheGateway {
 
             if ($due < $_SERVER['REQUEST_TIME']) {
                 $this->wipe($key);
-                return false;
+                return null;
             } else {
                 return unserialize(substr($contents, 10));
             }
@@ -44,7 +44,7 @@ class FilesystemCache extends CacheGateway {
             if (DEBUG_MODE) {
                 throw $ex;
             } else {
-                return false;
+                return null;
             }
         }
     }

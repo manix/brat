@@ -143,7 +143,7 @@ class Collection implements JsonSerializable, Iterator {
      * 
      * WARNING: This method modifies the internal array pointer.
      * 
-     * @return object
+     * @return Object An instance of $this->interface.
      */
     public function first() {
         return reset($this->list);
@@ -154,7 +154,7 @@ class Collection implements JsonSerializable, Iterator {
      * 
      * WARNING: This method modifies the internal array pointer.
      * 
-     * @return object
+     * @return Object An instance of $this->interface.
      */
     public function last() {
         return end($this->list);

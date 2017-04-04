@@ -31,13 +31,16 @@ abstract class FilesystemGateway extends Gateway {
 
     public function find(...$pk): Collection {
         $set = [];
+        $path = $this->dir . '/' . join(self::PK_CONCAT, $pk);
 
         if (count($pk) < count($this->pk)) {
-            foreach (glob($this->dir . '/' . join(self::PK_CONCAT, $pk) . self::PK_CONCAT . '*') as $path) {
+            foreach (glob($path . self::PK_CONCAT . '*') as $path) {
                 $set[] = $this->performJoins($this->read($path));
             }
         } else {
-            $set[] = $this->performJoins($this->read($this->dir . '/' . join(self::PK_CONCAT, $pk)));
+            if (is_file($path)) {
+                $set[] = $this->performJoins($this->read($path));
+            }
         }
 
         return $this->instantiate($set);

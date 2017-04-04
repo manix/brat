@@ -58,13 +58,13 @@ abstract class CacheGateway {
     }
 
     public function has($key) {
-        return $this->retrieve($key) !== false;
+        return $this->retrieve($key) !== null;
     }
 
     public function magic($key, $ttl, callable $callback) {
         $value = $this->retrieve($key);
 
-        if ($value === false) {
+        if ($value === null) {
             $value = $callback();
             $this->persist($key, $value, $ttl);
         }

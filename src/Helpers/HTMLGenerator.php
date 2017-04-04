@@ -128,17 +128,9 @@ class HTMLGenerator {
      * @return string Generated input element.
      */
     public function input(string $name, string $type = 'text', string $value = '', array $attributes = array()) {
-        if ($name) {
-            $attributes['name'] = $name;
-        }
-
-        if ($type) {
-            $attributes['type'] = $type;
-        }
-
-        if ($value) {
-            $attributes['value'] = $value;
-        }
+        $attributes['name'] = $name;
+        $attributes['type'] = $type;
+        $attributes['value'] = $value;
 
         return '<input' . $this->parseAttributes($attributes) . '/>';
     }
