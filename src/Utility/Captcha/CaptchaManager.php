@@ -27,9 +27,9 @@ class CaptchaManager {
    * @return resource
    */
   public function generateImage(int $len) {
-    $code = $_SESSION[MANIX]['captcha'] ?? null;
+    $code = $this->retrieveCode();
 
-    if ($code === null) {
+    if ($code === null || strlen($code) !== $len) {
       $code = $this->generateCode($len);
       $this->persistCode($code);
     }
@@ -62,6 +62,14 @@ class CaptchaManager {
   }
 
   /**
+   * Retrieve the persisted code.
+   * @return string The code.
+   */
+  protected function retrieveCode() {
+    return $_SESSION[MANIX]['captcha'] ?? null;
+  }
+
+  /**
    * Persist the code somewhere.
    * @param string $code
    */
@@ -76,6 +84,12 @@ class CaptchaManager {
     unset($_SESSION[MANIX]['captcha']);
   }
 
+  /**
+   * Create an <img/> tag. The src will be the captcha controller url.
+   * @param HTMLGenerator $html
+   * @param array $attributes
+   * @return string The generated img tag.
+   */
   public function generateImageTag(HTMLGenerator $html, array $attributes = []) {
     $url = route(CaptchaController::class);
 
@@ -86,8 +100,13 @@ class CaptchaManager {
     return $html->img($url, 'Captcha', $attributes);
   }
 
+  /**
+   * Check whether $code is matching the persisted code.
+   * @param string $code
+   * @return mixed NULL if code is matching or an error message if not.
+   */
   public function validate($code) {
-    if (($_SESSION[MANIX]['captcha'] ?? null) === strtoupper($code)) {
+    if ($this->retrieveCode() === strtoupper($code)) {
       return null;
     }
 

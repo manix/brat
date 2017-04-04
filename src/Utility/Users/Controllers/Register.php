@@ -3,7 +3,6 @@
 namespace Manix\Brat\Utility\Users\Controllers;
 
 use Manix\Brat\Components\Controller;
-use Manix\Brat\Components\Filesystem\Directory;
 use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Model;
 use Manix\Brat\Components\Validation\Ruleset;
@@ -13,7 +12,7 @@ use Manix\Brat\Utility\Users\Models\UserEmailGateway;
 use Manix\Brat\Utility\Users\Models\UserGateway;
 use Manix\Brat\Utility\Users\Views\RegisterSuccessView;
 use Manix\Brat\Utility\Users\Views\RegisterView;
-use const PROJECT_PATH;
+use Project\Models\GatewayFactory;
 
 class Register extends Controller {
 
@@ -85,9 +84,8 @@ class Register extends Controller {
     $v = new Validator();
 
     if ($v->validate($_POST, $rules)) {
-      $dir = new Directory(PROJECT_PATH . '/files/data');
-
-      $egate = new UserEmailGateway($dir);
+      $gf = new GatewayFactory();
+      $egate = $gf->get(UserEmailGateway::class);
 
       $existing = $egate->find($_POST['email']);
 
@@ -95,7 +93,7 @@ class Register extends Controller {
         $v->setError('email', $this->t8('manix/util/users/common', 'emailTaken'));
       } else {
 
-        $ugate = new UserGateway($dir);
+        $ugate = $gf->get(UserGateway::class);
         $user = new Model($_POST);
         $user->password = password_hash($_POST['password'], PASSWORD_BCRYPT);
 

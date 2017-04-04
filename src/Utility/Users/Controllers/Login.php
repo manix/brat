@@ -11,6 +11,7 @@ use Manix\Brat\Utility\Users\Models\UserEmailGateway;
 use Manix\Brat\Utility\Users\Models\UserGateway;
 use Manix\Brat\Utility\Users\Views\LoginSuccessView;
 use Manix\Brat\Utility\Users\Views\LoginView;
+use Project\Models\GatewayFactory;
 use function cache;
 use function route;
 
@@ -99,13 +100,14 @@ class Login extends Controller {
     $v = new Validator();
 
     if ($v->validate($_POST, $rules)) {
-      $egate = new UserEmailGateway;
+      $gf = new GatewayFactory();
+      $egate = $gf->get(UserEmailGateway::class);
 
       $existing = $egate->find($_POST['email'])->first();
 
       if ($existing) {
 
-        $ugate = new UserGateway;
+        $ugate = $gf->get(UserGateway::class);
         $user = $ugate->find($existing->user_id)->first();
 
         $key = 'loginblock/' . md5($existing->email . $_SERVER['REMOTE_ADDR']);

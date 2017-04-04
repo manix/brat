@@ -9,6 +9,7 @@ use Manix\Brat\Components\Validation\Validator;
 use Manix\Brat\Utility\Captcha\CaptchaManager;
 use Manix\Brat\Utility\Users\Models\UserEmailGateway;
 use Manix\Brat\Utility\Users\Views\ForgotView;
+use Project\Models\GatewayFactory;
 
 class Forgot extends Controller {
 
@@ -60,7 +61,8 @@ class Forgot extends Controller {
     $v = new Validator();
 
     if ($v->validate($_POST, $rules)) {
-      $egate = new UserEmailGateway;
+      $gf = new GatewayFactory();
+      $egate = $gf->get(UserEmailGateway::class);
       $existing = $egate->find($_POST['email'])->first();
       
       if ($existing) {
