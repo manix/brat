@@ -6,6 +6,8 @@ use Project\Models\DefaultGateway;
 
 class UserEmailGateway extends DefaultGateway {
   
+    const MODEL = UserEmail::class;
+  
     protected $table = 'manix_users_emails';
     protected $fields = [
         'user_id', 'email', 'verified'

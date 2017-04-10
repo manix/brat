@@ -27,7 +27,7 @@ class SQLGatewayCriteriaInterpreter extends CriteriaInterpreter {
                 $query->whereGroupEnd();
             } else {
                 foreach ($rule as $key => $data) {
-                    $query->$method($data[0], $this->$key(), $data[1]);
+                    $query->$method($data[0], $this->$key(...$data), $data[1]);
                 }
             }
         }

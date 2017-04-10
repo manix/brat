@@ -44,11 +44,19 @@ function url() {
 /**
  * Generate a URL from a namespace or controller class.
  * @param string $to Namespace or controller class name.
+ * @param array $query Associative array containing query parameters.
  * @return string URL
  */
-function route($to) {
+function route($to, array $query = []) {
   global $manix;
-  return $manix->program()->findURLTo($to);
+
+  $url = $manix->program()->findURLTo($to);
+
+  if (!empty($query)) {
+    $url .= '?' . http_build_query($query);
+  }
+
+  return $url;
 }
 
 function html($string, $flag = ENT_QUOTES, $encoding = 'UTF-8') {
@@ -105,6 +113,22 @@ function config($file) {
   }
 
   return $settings[$file];
+}
+
+/**
+ * Send mail using SMTP. This method is chosen by default because it is believed to be 
+ * the most utilised and the most secure one.
+ * @param mixed $to Can be just a string representing the address or an array with 2 elements - [address, name]
+ * @param string $subject
+ * @param string $message
+ * @param callable $callable A callable that receives the mailer instance
+ * before sending, so any custom modifications can be made there.
+ * @return bool Whether message has been sent successfully or not.
+ */
+function email($to, $subject, $message, callable $callable = null) {
+  global $manix;
+
+  return $manix->program()->sendMail($to, $subject, $message, $callable);
 }
 
 $manix = new class {

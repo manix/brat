@@ -32,7 +32,7 @@ class SQLGateway extends Gateway {
 
     public function findBy(Criteria $criteria): Collection {
         $query = new SelectQuery($this->table);
-
+        
         $fields = [];
         foreach ($this->fields as $field) {
             $fields[] = $query->alias . '.' . $field;

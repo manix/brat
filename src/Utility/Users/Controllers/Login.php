@@ -2,23 +2,20 @@
 
 namespace Manix\Brat\Utility\Users\Controllers;
 
-use Manix\Brat\Components\Controller;
 use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Validation\Ruleset;
-use Manix\Brat\Components\Validation\Validator;
+use Manix\Brat\Helpers\FormController;
 use Manix\Brat\Utility\Users\Models\Auth;
-use Manix\Brat\Utility\Users\Models\UserEmailGateway;
-use Manix\Brat\Utility\Users\Models\UserGateway;
 use Manix\Brat\Utility\Users\Views\LoginSuccessView;
 use Manix\Brat\Utility\Users\Views\LoginView;
-use Project\Models\GatewayFactory;
 use function cache;
 use function route;
 
-class Login extends Controller {
+class Login extends FormController {
+
+  use GatewayFactory;
 
   public $page = LoginView::class;
-  protected $form;
   protected $backto;
 
   public function __construct($backto = null) {
@@ -27,14 +24,7 @@ class Login extends Controller {
     }
 
     $this->backto = $backto;
-  }
-
-  protected final function getForm() {
-    if ($this->form === null) {
-      $this->form = $this->constructForm();
-    }
-
-    return $this->form;
+    $this->cacheT8('manix/util/users/common');
   }
 
   /**
@@ -63,30 +53,15 @@ class Login extends Controller {
     return 600;
   }
 
-  /**
-   * Constructs the login form.
-   * @return Form
-   */
-  protected function constructForm() {
-    $form = new Form();
-    $form->setAction(route(Login::class) . '?b=' . urlencode($this->backto));
+  protected function constructForm(Form $form): Form {
+    $form->setAction(route(Login::class, $this->backto ? [
+        'b' => $this->backto
+    ] : []));
     $form->add('email', 'email');
     $form->add('password', 'password');
-    $form->add('login', 'submit', $this->t8('manix/util/users/common', 'login'));
+    $form->add('login', 'submit', $this->t8('login'));
 
     return $form;
-  }
-
-  /**
-   * Constructs the rules for the login form.
-   * @return Ruleset
-   */
-  protected function getRules() {
-    $rules = new Ruleset();
-    $rules->add('email')->required()->email();
-    $rules->add('password')->required();
-
-    return $rules;
   }
 
   public function get() {
@@ -95,28 +70,25 @@ class Login extends Controller {
 
   public function post() {
 
-    $rules = $this->getRules();
+    return $this->validate($_POST, function($data, $v) {
+      $egate = $this->getEmailGateway();
 
-    $v = new Validator();
+      $email = $egate->find($data['email'])->first();
 
-    if ($v->validate($_POST, $rules)) {
-      $gf = new GatewayFactory();
-      $egate = $gf->get(UserEmailGateway::class);
+      if ($email) {
 
-      $existing = $egate->find($_POST['email'])->first();
+        $ugate = $this->getUserGateway();
+        $user = $ugate->find($email->user_id)->first();
 
-      if ($existing) {
-
-        $ugate = $gf->get(UserGateway::class);
-        $user = $ugate->find($existing->user_id)->first();
-
-        $key = 'loginblock/' . md5($existing->email . $_SERVER['REMOTE_ADDR']);
+        $key = 'users/loginblock/' . md5($email->email . $_SERVER['REMOTE_ADDR']);
         $attempts = cache($key);
 
         if ($attempts >= $this->allowedAttempts()) {
-          $v->setError('email', $this->t8('manix/util/users/common', 'loginBlocked'));
+          $v->setError('email', $this->t8('loginBlocked'));
+        } else if (!$email->isVerified()) {
+          $v->setError('email', $this->t8('emailNotVerified'));
         } else {
-          if ($user && password_verify($_POST['password'], $user->password)) {
+          if ($user && password_verify($data['password'], $user->password)) {
             Auth::register($user);
 
             $this->page = $this->getSuccessView();
@@ -130,17 +102,22 @@ class Login extends Controller {
           } else {
             cache($key, $attempts + 1, $this->blockFor());
 
-            $v->setError('password', $this->t8('manix/util/users/common', 'wrongPass'));
+            $v->setError('password', $this->t8('wrongPass'));
           }
         }
       } else {
-        $v->setError('email', $this->t8('manix/util/users/common', 'userNotFound'));
+        $v->setError('email', $this->t8('userNotFound'));
       }
-    }
 
-    $this->getForm()->fill($_POST)->errors = $v->getErrors();
+      return $this->defaultFailAction($data, $v);
+    });
+  }
 
-    return $this->get();
+  protected function constructRules(Ruleset $rules): Ruleset {
+    $rules->add('email')->required()->email();
+    $rules->add('password')->required();
+
+    return $rules;
   }
 
 }

@@ -2,42 +2,33 @@
 
 namespace Manix\Brat\Utility\Users\Controllers;
 
-use Manix\Brat\Components\Controller;
+use Exception;
 use Manix\Brat\Components\Forms\Form;
-use Manix\Brat\Components\Model;
 use Manix\Brat\Components\Validation\Ruleset;
-use Manix\Brat\Components\Validation\Validator;
+use Manix\Brat\Helpers\FormController;
 use Manix\Brat\Utility\Captcha\CaptchaManager;
-use Manix\Brat\Utility\Users\Models\UserEmailGateway;
-use Manix\Brat\Utility\Users\Models\UserGateway;
+use Manix\Brat\Utility\Users\Models\User;
+use Manix\Brat\Utility\Users\Models\UserEmail;
 use Manix\Brat\Utility\Users\Views\RegisterSuccessView;
 use Manix\Brat\Utility\Users\Views\RegisterView;
-use Project\Models\GatewayFactory;
 
-class Register extends Controller {
+class Register extends FormController {
+
+  use GatewayFactory,
+      Mailer;
 
   public $page = RegisterView::class;
-  protected $form;
   protected $captcha;
 
   public function __construct() {
     $this->captcha = new CaptchaManager();
   }
 
-  protected final function getForm() {
-    if ($this->form === null) {
-      $this->form = $this->constructForm();
-    }
-
-    return $this->form;
-  }
-
   /**
    * Construct the register form.
    * @return Form
    */
-  protected function constructForm() {
-    $form = new Form();
+  protected function constructForm(Form $form): Form {
     $form->add('email', 'email');
     $form->add('password', 'password');
     $form->add('name', 'text');
@@ -60,8 +51,7 @@ class Register extends Controller {
    * Define the rules for registration.
    * @return Ruleset
    */
-  protected function getRules() {
-    $rules = new Ruleset();
+  protected function constructRules(Ruleset $rules): Ruleset {
     $rules->add('email')->required()->email();
     $rules->add('password')->required()->length(8, 255);
     $rules->add('name')->required()->alphabeticX('\' -');
@@ -79,41 +69,40 @@ class Register extends Controller {
 
   public function post() {
 
-    $rules = $this->getRules();
+    return $this->validate($_POST, function($data, $v) {
+      $egate = $this->getEmailGateway();
 
-    $v = new Validator();
-
-    if ($v->validate($_POST, $rules)) {
-      $gf = new GatewayFactory();
-      $egate = $gf->get(UserEmailGateway::class);
-
-      $existing = $egate->find($_POST['email']);
+      $existing = $egate->find($data['email']);
 
       if ($existing->count()) {
         $v->setError('email', $this->t8('manix/util/users/common', 'emailTaken'));
       } else {
 
-        $ugate = $gf->get(UserGateway::class);
-        $user = new Model($_POST);
-        $user->password = password_hash($_POST['password'], PASSWORD_BCRYPT);
+        $ugate = $this->getUserGateway();
+        $user = new User($data);
+        $user->setPassword($data['password']);
 
-        $ugate->persist($user);
+        if (!$ugate->persist($user)) {
+          throw new Exception('Unexpected', 500);
+        }
 
-        $egate->persist(new Model([
+        $email = new UserEmail([
             'user_id' => $user->id,
-            'email' => $_POST['email']
-        ]));
+            'email' => $data['email']
+        ]);
+        $email->unvalidate();
 
-        $this->page = $this->getSuccessView();
         $this->captcha->expire();
 
-        return true;
+        if ($egate->persist($email) && $this->sendActivationMail($email)) {
+          $this->page = $this->getSuccessView();
+
+          return true;
+        }
       }
-    }
 
-    $this->getForm()->fill($_POST)->errors = $v->getErrors();
-
-    return $this->get();
+      return $this->defaultFailAction($data, $v);
+    });
   }
 
 }

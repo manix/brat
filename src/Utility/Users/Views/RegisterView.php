@@ -3,33 +3,19 @@
 namespace Manix\Brat\Utility\Users\Views;
 
 use Manix\Brat\Components\Forms\Form;
-use Manix\Brat\Components\Forms\Views\DefaultFormView;
-use Manix\Brat\Utility\BootstrapLayout;
+use Manix\Brat\Helpers\FormViews\DefaultFormView;
 use Manix\Brat\Utility\Users\Controllers\Login;
 use function route;
 
-class RegisterView extends BootstrapLayout {
-
-  public function body() {
-    $this->cacheT8('manix/util/users/common');
-    ?>
-
-    <div class="jumbotron text-center">
-      <h2><?= $this->t8('register') ?></h2>
-      <a href="<?= route(Login::class) ?>">
-        <?= $this->t8('login') ?>
-      </a>
-    </div>
-
-    <div class="container" style="max-width: 480px">
-      <?= $this->getFormView($this->data['form']) ?>
-    </div>
-
-    <?php
-  }
+class RegisterView extends GuestFrame {
 
   protected function getFormView(Form $form) {
     $view = new DefaultFormView($form, $this->html);
+    $view->labels = [
+        'email' => $this->t8('email'),
+        'password' => $this->t8('password'),
+        'name' => $this->t8('name'),
+    ];
 
     $view->setCustomRenderer('captcha', function($input) use($form) {
       $error = $form->errors[$input->name] ?? null;
@@ -59,6 +45,19 @@ class RegisterView extends BootstrapLayout {
     });
 
     return $view;
+  }
+
+  public function frame() {
+    echo $this->getFormView($this->data['form']);
+  }
+
+  public function heading() {
+    ?>
+    <h2><?= $this->t8('register') ?></h2>
+    <a href="<?= route(Login::class) ?>">
+      <?= $this->t8('login') ?>
+    </a>
+    <?php
   }
 
 }

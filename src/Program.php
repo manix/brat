@@ -11,10 +11,12 @@ use Manix\Brat\Components\Translator;
 use Manix\Brat\Components\Views\JSONView;
 use Manix\Brat\Components\Views\PlainTextView;
 use Manix\Brat\Helpers\HTMLGenerator;
+use PHPMailer\PHPMailer\PHPMailer;
 use Throwable;
 use const DEBUG_MODE;
 use const PROJECT_PATH;
 use const SITE_DOMAIN;
+use const SITE_URL;
 use function config;
 use function loader;
 
@@ -31,7 +33,6 @@ abstract class Program {
   protected $requested = [];
 
   public function __construct() {
-
 
     foreach (explode(',', $_SERVER['HTTP_ACCEPT'] ?? null) as $mediaRange) {
 
@@ -179,9 +180,9 @@ abstract class Program {
   }
 
   /**
-   * Find the URL corresponding to a given route.
+   * Find the URL corresponding to a given controller.
    * @param string $class Can be a FQCN or namespace.
-   * @return string The URL at which $route can be accessed.
+   * @return string The URL at which the class can be accessed.
    */
   public function findURLTo($class) {
     /*
@@ -194,6 +195,10 @@ abstract class Program {
 
     $rc = $this->_rtc581928;
 
+    /*
+     * If this class has already been resolved then create a fake array of 
+     * routes containing only the resolved one which will be returned below.
+     */
     if (isset($rc[$class])) {
       $routes = [$rc[$class] => config('routes')[$rc[$class]]];
     } else {
@@ -231,6 +236,63 @@ abstract class Program {
 
       return SITE_URL . '/' . $uri;
     }
+  }
+
+  /**
+   * Send mail using SMTP. This method is chosen by default because it is believed to be 
+   * the most utilised and the most secure one.
+   * @param mixed $to Can be just a string representing the address or an array with 2 elements - [address, name]
+   * @param string $subject
+   * @param string $message A view that represents the message to be sent.
+   * @param callable $callable A callable that receives the mailer instance
+   * before sending, so any custom modifications can be made there.
+   * @return bool Whether message has been sent successfully or not.
+   */
+  public function sendMail($to, $subject, $message, callable $callable = null) {
+    $mail = new PHPMailer(true);
+    $settings = $_ENV['mail'];
+
+    try {
+      //Server settings
+      // $mail->SMTPDebug = 2;                                 // Enable verbose debug output
+      $mail->CharSet = 'UTF-8';
+      $mail->isSMTP();                                      // Set mailer to use SMTP
+      $mail->Host = $settings['host'];  // Specify main and backup SMTP servers
+      $mail->SMTPAuth = true;                               // Enable SMTP authentication
+      $mail->Username = $settings['user'];                 // SMTP username
+      $mail->Password = $settings['pass'];                           // SMTP password
+      $mail->SMTPSecure = $settings['encryption'];                            // Enable TLS encryption, `ssl` also accepted
+
+      if (DEBUG_MODE) {
+        $mail->SMTPOptions = array(
+            'ssl' => array(
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            )
+        );
+      }
+
+      $mail->Port = $settings['port'];                                    // TCP port to connect to
+      //Recipients
+      $mail->setFrom($settings['user'], config('project')['name'] ?? null);
+      $mail->addAddress(...(is_array($to) ? $to : [$to]));     // Add a recipient
+      //Content
+      $mail->isHTML(true);                                  // Set email format to HTML
+      $mail->Subject = $subject;
+      $mail->Body = $message;
+      $mail->AltBody = 'HTML mail not supported.';
+
+      if ($callable !== null) {
+        $callable($mail);
+      }
+
+      return $mail->send();
+    } catch (Exception $e) {
+      
+    }
+
+    return false;
   }
 
 }

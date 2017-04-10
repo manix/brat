@@ -6,6 +6,8 @@ use Project\Models\DefaultGateway;
 
 class UserGateway extends DefaultGateway {
   
+    const MODEL = User::class;
+  
     protected $table = 'manix_users';
     protected $fields = [
         'id', 'password', 'name'

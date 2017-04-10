@@ -2,28 +2,22 @@
 
 namespace Manix\Brat\Utility\Users\Views;
 
-use Manix\Brat\Utility\BootstrapLayout;
+class RegisterSuccessView extends GuestFrame {
 
-class RegisterSuccessView extends BootstrapLayout {
-
-  public function body() {
+  public function frame() {
     ?>
-
-    <div class="jumbotron text-center">
-      <h2><?= $this->t8('manix/util/users/common', 'register') ?></h2>
+    <div class="alert alert-success">
+      <?= $this->t8('registerSuccess') ?>
     </div>
+    <?php
+  }
 
-    <div class="container" style="max-width: 480px">
-      <div class="alert alert-success">
-        <?= $this->t8('manix/util/users/common', 'registerSuccess') ?>
-        <div class="text-center">
-          <a href="login" class="btn btn-success">
-            <?= $this->t8('manix/util/users/common', 'login') ?>
-          </a>
-        </div>
-      </div>
-    </div>
-
+  public function heading() {
+    ?>
+    <h2><?= $this->t8('register') ?></h2>
+    <a href="<?= route(Login::class) ?>">
+      <?= $this->t8('login') ?>
+    </a>
     <?php
   }
 

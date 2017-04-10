@@ -36,6 +36,16 @@ class Form {
     return $input;
   }
 
+  public function addCollection($key, callable $callable) {
+    $form = $callable(new self);
+
+    foreach ($form->inputs as $name => $input) {
+      $this->add($key . '[' . $name . ']', $input->type, $input->value);
+    }
+
+    return $this;
+  }
+
   /**
    * Remove an input element from this form.
    * @param string $name

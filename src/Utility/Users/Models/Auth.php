@@ -25,11 +25,11 @@ class Auth {
       $id = ($_SESSION[MANIX]['auth'] ?? 0);
 
       if ($id) {
-        self::$user = cache('auth_' . $id);
+        self::$user = cache('users/auth/' . $id);
 
         // Extend the ttl for the cached user if it's about to expire soon.
         if (self::$user === null) {
-          self::register((new UserGateway())->find($id));
+          self::register((new UserGateway())->find($id)->first());
         }
       } else {
         // Not logged in
@@ -46,8 +46,16 @@ class Auth {
    */
   public static function register(Model $user) {
     $_SESSION[MANIX]['auth'] = $user->id;
-    cache('auth_' . $user->id, $user, 1800);
+    cache('users/auth/' . $user->id, $user, 1800);
     self::$user = $user;
+  }
+  
+  /**
+   * Log the user out.
+   */
+  public static function destroy() {
+    unset($_SESSION[MANIX]['auth']);
+    self::$user = null;
   }
 
   /**

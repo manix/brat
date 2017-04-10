@@ -62,13 +62,13 @@ class Directory extends Inode {
      * Delete a directory recursively.
      * @param bool $contentsOnly If set to true then only the contents of this directory will be deleted, but the directory itself will remain.
      */
-    public function delete($contentsOnly = false) {
+    public function delete($contentsOnly = false): bool {
         foreach ($this->contents() as $inode) {
-            $inode->delete(false);
+            return $inode->delete(false);
         }
 
         if ($contentsOnly === false) {
-            rmdir($this->path);
+            return rmdir($this->path);
         }
     }
 

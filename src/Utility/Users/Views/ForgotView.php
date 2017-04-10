@@ -3,30 +3,9 @@
 namespace Manix\Brat\Utility\Users\Views;
 
 use Manix\Brat\Components\Forms\Form;
-use Manix\Brat\Components\Forms\Views\DefaultFormView;
-use Manix\Brat\Utility\BootstrapLayout;
+use Manix\Brat\Helpers\FormViews\DefaultFormView;
 
-class ForgotView extends BootstrapLayout {
-
-  public function body() {
-    $this->cacheT8('manix/util/users/common');
-    ?>
-    <div class="jumbotron text-center">
-      <h2><?= $this->t8('forgotPass') ?></h2>
-    </div>
-
-
-    <div class="container" style="max-width: 480px">
-      <?php
-      if ($this->data === true) {
-        $this->onSuccess();
-      } else {
-        $this->onRequest();
-      }
-      ?>
-    </div>
-    <?php
-  }
+class ForgotView extends GuestFrame {
 
   protected function onSuccess() {
     ?>
@@ -46,6 +25,9 @@ class ForgotView extends BootstrapLayout {
 
   protected function getFormView(Form $form) {
     $view = new DefaultFormView($form, $this->html);
+    $view->labels = [
+        'email' => $this->t8('email'),
+    ];
 
     $view->setCustomRenderer('captcha', function($input) use($form) {
       $error = $form->errors[$input->name] ?? null;
@@ -75,6 +57,20 @@ class ForgotView extends BootstrapLayout {
     });
 
     return $view;
+  }
+
+  public function frame() {
+    if ($this->data === true) {
+      $this->onSuccess();
+    } else {
+      $this->onRequest();
+    }
+  }
+
+  public function heading() {
+    ?>
+    <h2><?= $this->t8('forgotPass') ?></h2>
+    <?php
   }
 
 }

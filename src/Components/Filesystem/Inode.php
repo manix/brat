@@ -10,7 +10,7 @@ abstract class Inode {
 
     abstract public function copy($destination);
 
-    abstract public function delete();
+    abstract public function delete(): bool;
 
     public function __construct($path) {
         if (!$this->validatePath($path)) {
