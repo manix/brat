@@ -214,12 +214,12 @@ $manix = new class {
 
     define('LANG', $_SESSION[MANIX]['lang']);
 
-    $controller = $program->createController($program->fetchRoute());
+    $controller = $program->createController($program->determineRoute());
 
     /*
      * Determine the method that must be called on the controller
      */
-    $method = strtolower($_POST['manix-method'] ?? $_SERVER['REQUEST_METHOD']);
+    $method = $program->determineMethod($controller);
 
     exit($program->respond($controller->execute($method)));
   }

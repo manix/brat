@@ -35,7 +35,7 @@ abstract class Program {
   protected $requested = [];
 
   public function __construct() {
-
+    
     foreach (explode(',', $_SERVER['HTTP_ACCEPT'] ?? null) as $mediaRange) {
 
       $type = null;
@@ -164,12 +164,21 @@ abstract class Program {
    * Determine the route of the request.
    * @return string The route.
    */
-  public function fetchRoute(): string {
+  public function determineRoute(): string {
     return trim($_GET['route'] ?? null);
+  }
+  
+  /**
+   * Determine the method that must be called on the controller.
+   * @param Controller $controller
+   * @return string
+   */
+  public function determineMethod(): string {
+    return strtolower($_POST['manix-method'] ?? $_SERVER['REQUEST_METHOD'] ?? 'get');
   }
 
   /**
-   * This function is used to define the default caching gateway for the application.
+   * Defines the default caching gateway for the application.
    * 
    * @return CacheGateway
    */

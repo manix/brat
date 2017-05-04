@@ -146,7 +146,7 @@ class DebugErrorView extends BootstrapLayout {
         507 => 'Insufficient Storage',
         509 => 'Bandwidth Limit Exceeded',
         510 => 'Not Extended'
-    )[$code] ?? '?';
+    )[$code] ?? 'Internal Server Error';
   }
 
 }
