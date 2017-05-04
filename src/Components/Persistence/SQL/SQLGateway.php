@@ -60,7 +60,7 @@ class SQLGateway extends Gateway {
             $query->addColumn($field);
             $data[$field] = $model->$field ?? null;
         }
-
+        
         $stmt = $this->pdo->prepare($query->replace(true)->insert($data)->build());
         $stmt->execute($query->data());
 

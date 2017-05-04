@@ -46,10 +46,18 @@ class Auth {
    */
   public static function register(Model $user) {
     $_SESSION[MANIX]['auth'] = $user->id;
-    cache('users/auth/' . $user->id, $user, 1800);
+    self::updateCache($user);
     self::$user = $user;
   }
-  
+
+  public static function updateCache(User $user) {
+    cache('users/auth/' . $user->id, $user, 1800);
+  }
+
+  public static function getCached($id) {
+    return cache('users/auth/' . $id);
+  }
+
   /**
    * Log the user out.
    */
@@ -69,7 +77,7 @@ class Auth {
       $controller = new Login(url());
 
       http_response_code(403);
-      exit($manix->program()->respond($controller->get(), $controller));
+      exit($manix->program()->respond($controller->execute('get')));
     }
   }
 

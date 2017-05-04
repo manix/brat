@@ -40,7 +40,15 @@ class Form {
     $form = $callable(new self);
 
     foreach ($form->inputs as $name => $input) {
-      $this->add($key . '[' . $name . ']', $input->type, $input->value);
+      $real = $this->add($key . '[' . $name . ']');
+      
+      foreach ($input->getAttributes() as $property => $value) {
+        if ($property === 'name') {
+          continue;
+        }
+
+        $real->setAttribute($property, $value);
+      }
     }
 
     return $this;

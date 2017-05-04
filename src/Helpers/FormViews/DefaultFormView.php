@@ -30,7 +30,12 @@ class DefaultFormView extends FormView {
         $class = 'd-flex justify-content-end';
         $input->setAttribute('class', $input->getAttribute('class') ?? 'btn btn-secondary');
         break;
-
+      
+      
+      case 'password':
+        $input->setAttribute('value', '');
+        // break intentionally ommited, must add form-control class
+        
       default:
         $input->setAttribute('class', $input->getAttribute('class') ?? 'form-control');
         break;

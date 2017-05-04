@@ -94,7 +94,7 @@ class Login extends FormController {
             $this->page = $this->getSuccessView();
 
             cache()->wipe($key);
-
+            
             return [
                 'success' => true,
                 'backto' => $_GET['b'] ?? null

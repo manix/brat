@@ -11,6 +11,7 @@ use Manix\Brat\Components\Translator;
 use Manix\Brat\Components\Views\JSONView;
 use Manix\Brat\Components\Views\PlainTextView;
 use Manix\Brat\Helpers\HTMLGenerator;
+use Manix\Brat\Utility\Errors\ErrorController;
 use PHPMailer\PHPMailer\PHPMailer;
 use Throwable;
 use const DEBUG_MODE;
@@ -19,6 +20,7 @@ use const SITE_DOMAIN;
 use const SITE_URL;
 use function config;
 use function loader;
+use function registry;
 
 /**
  * The main class that defines the behaviour of your program.
@@ -81,10 +83,10 @@ abstract class Program {
   /**
    * This function defines how to respond to requests.
    * @param mixed $data The data returned by the controller.
-   * @param Controller $controller The called controller.
    */
-  public function respond($data, $controller) {
-
+  public function respond($data) {
+    $page = registry('page');
+    
     foreach ($this->requested as $type) {
       switch ($type) {
         case 'application/*':
@@ -100,7 +102,7 @@ abstract class Program {
         case 'text/*':
         case 'text/html':
           header('Content-Type: text/html');
-          return new $controller->page($data, new HTMLGenerator());
+          return new $page($data, new HTMLGenerator());
       }
     }
 
@@ -113,11 +115,7 @@ abstract class Program {
    * @param Throwable $t
    */
   public function error(Throwable $t) {
-    if (DEBUG_MODE) {
-      echo "Error {$t->getCode()}: {$t->getMessage()}";
-    } else {
-      echo "An error occured.";
-    }
+    echo $this->respond((new ErrorController($t))->execute('display'));
   }
 
   /**

@@ -7,23 +7,23 @@ use Manix\Brat\Helpers\HTMLGenerator;
 
 abstract class HTMLElement extends View {
 
-    /**
-     * An HTML Generator helper.
-     * @var HTMLGenerator The helper.
-     */
-    protected $html;
+  /**
+   * An HTML Generator helper.
+   * @var HTMLGenerator The helper.
+   */
+  protected $html;
 
-    public function __construct($data, HTMLGenerator $html) {
-        parent::__construct($data);
+  public function __construct($data, HTMLGenerator $html) {
+    parent::__construct($data);
 
-        $this->html = $html;
-    }
+    $this->html = $html;
+  }
 
-    final protected function render() {
-        ob_start();
-        $this->html();
-        return ob_get_clean();
-    }
+  final protected function render() {
+    ob_start();
+    $this->html();
+    return ob_get_clean();
+  }
 
-    abstract public function html();
+  abstract public function html();
 }

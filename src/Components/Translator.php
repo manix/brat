@@ -7,17 +7,12 @@ trait Translator {
     protected static $translatorStrings = [];
 
     /**
-     * @var String a cached path, so it does not have to be entered in t8 every time.
-     */
-    protected $translatorCachedPath;
-
-    /**
      * Caches a path so it does not have to be provided to t8 every time.
      * 
      * @param string $path Relative path to a lang file.
      */
     public function cacheT8($path) {
-        $this->translatorCachedPath = $path;
+        $this->__t8path = $path;
     }
 
     /**
@@ -33,7 +28,7 @@ trait Translator {
          */
         if ($string === null) {
             $string = $path;
-            $path = $this->translatorCachedPath;
+            $path = $this->__t8path ?? null;
         }
 
         if ($data === null) {

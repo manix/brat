@@ -52,7 +52,7 @@ class Emails extends SettingsController {
             'user_id' => Auth::id(),
             'email' => $data['email']
         ]);
-        $email->unvalidate();
+        $email->invalidate();
 
         if ($egate->persist($email)) {
           $this->sendActivationMail($email);

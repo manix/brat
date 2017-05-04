@@ -95,7 +95,10 @@ abstract class AbstractPlugin {
       $project = $this->getProjectRoot();
 
       foreach ($instance->files() as $file) {
-        unlink(str_replace($local, $project, $file));
+        $path = str_replace($local, $project, $file);
+        if (is_file($path)) {
+          unlink($path);
+        }
       }
     }
 

@@ -8,8 +8,6 @@ class FormInput {
 
     use FormElement;
 
-    protected $formClass;
-
     public function __construct($name = null, $type = null, $value = null) {
         $this->attributes = [
             'name' => $name,

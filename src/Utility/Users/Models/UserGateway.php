@@ -15,6 +15,6 @@ class UserGateway extends DefaultGateway {
     protected $ai = 'id';
     protected $pk = ['id'];
     protected $rel = [
-        'user' => [UserEmailGateway::class, 'id', 'user_id']
+        'emails' => [UserEmailGateway::class, 'id', 'user_id']
     ];
 }

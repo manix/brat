@@ -90,7 +90,7 @@ class Register extends FormController {
             'user_id' => $user->id,
             'email' => $data['email']
         ]);
-        $email->unvalidate();
+        $email->invalidate();
 
         $this->captcha->expire();
 

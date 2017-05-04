@@ -18,12 +18,16 @@ class UserEmail extends Model {
     $this->verified = 'Y';
   }
 
-  public function unvalidate() {
+  public function invalidate() {
     $this->verified = md5(str_shuffle(mt_rand(PHP_INT_MIN, PHP_INT_MAX) . config('project')['name']));
   }
 
   public function getCode() {
     return $this->isVerified() ? false : $this->verified;
+  }
+
+  public function __toString() {
+    return $this->email;
   }
 
 }

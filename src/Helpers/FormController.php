@@ -12,6 +12,10 @@ abstract class FormController extends Controller {
   protected $form;
   protected $rules;
 
+  /**
+   * Get the controller's form.
+   * @return Form
+   */
   protected final function getForm(): Form {
     if ($this->form === null) {
       $this->form = $this->constructForm(new Form);
@@ -20,12 +24,32 @@ abstract class FormController extends Controller {
     return $this->form;
   }
 
+  /**
+   * Overwrite the controller's form.
+   * @param Form $form
+   */
+  protected function setForm(Form $form) {
+    $this->form = $form;
+  }
+
+  /**
+   * Get the controller's rule set.
+   * @return Ruleset
+   */
   protected final function getRules(): Ruleset {
     if ($this->rules === null) {
       $this->rules = $this->constructRules(new Ruleset);
     }
 
     return $this->rules;
+  }
+  
+  /**
+   * Overwrite the controller's rule set.
+   * @param Ruleset $rules
+   */
+  protected function setRules(Ruleset $rules) {
+    $this->rules = $rules;
   }
 
   /**
@@ -37,7 +61,7 @@ abstract class FormController extends Controller {
    * @param \callable $onFail
    * @return mixed The return value of $onPass or $onFail.
    */
-  protected function validate($dataset, callable $onPass = null, callable $onFail = null, ...$data) {
+  protected function validate($dataset, callable $onPass, callable $onFail = null, ...$data) {
     $validator = new Validator();
     $rules = $this->getRules();
 
@@ -55,7 +79,7 @@ abstract class FormController extends Controller {
   protected function defaultFailAction($data, $validator) {
     $this->getForm()->fill($data)->errors = $validator->getErrors();
 
-    return $this->get();
+    return $this->execute('get');
   }
 
   abstract protected function constructForm(Form $form): Form;

@@ -1,5 +1,6 @@
 <?php
 
+use Manix\Brat\Utility\Errors\ErrorController;
 use Manix\Brat\Program;
 
 //register_shutdown_function(function($time){
@@ -131,6 +132,24 @@ function email($to, $subject, $message, callable $callable = null) {
   return $manix->program()->sendMail($to, $subject, $message, $callable);
 }
 
+$registry = [];
+
+/**
+ * Get/set a value from/in the program's global registry.
+ * @param string $key
+ * @param mixed $value
+ * @return mixed The previously stored value under $key or null if missing.
+ */
+function registry($key, $value = null) {
+  global $registry;
+
+  if ($value === null) {
+    return $registry[$key] ?? null;
+  } else {
+    $registry[$key] = $value;
+  }
+}
+
 $manix = new class {
 
   /**
@@ -153,7 +172,16 @@ $manix = new class {
   function run(Program $program) {
     $this->program = $program;
 
-    set_exception_handler([$program, 'error']);
+    set_exception_handler(function($throwable) {
+      if (DEBUG_MODE) {
+        $ec = new ErrorController($throwable);
+        
+        echo $this->program->respond($ec->execute('display'));
+      } else {
+        $this->program->error($throwable);
+      }
+    });
+
     $program->startSession();
 
     if (!isset($_SESSION[MANIX]['lang'])) {
@@ -188,12 +216,11 @@ $manix = new class {
 
     $controller = $program->createController($program->fetchRoute());
 
-    $data = $controller->{strtolower($_POST['manix-method'] ?? $_SERVER['REQUEST_METHOD'])}();
+    /*
+     * Determine the method that must be called on the controller
+     */
+    $method = strtolower($_POST['manix-method'] ?? $_SERVER['REQUEST_METHOD']);
 
-    if (is_array($data)) {
-      $data = array_merge($controller->data(), $data);
-    }
-
-    exit($program->respond($data, $controller));
+    exit($program->respond($controller->execute($method)));
   }
 };
