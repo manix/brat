@@ -1,7 +1,7 @@
 <?php
 
+use Manix\Brat\Components\Program;
 use Manix\Brat\Utility\Errors\ErrorController;
-use Manix\Brat\Program;
 
 //register_shutdown_function(function($time){
 //    echo microtime(true) - $time;
@@ -51,7 +51,7 @@ function url() {
 function route($to, array $query = []) {
   global $manix;
 
-  $url = $manix->program()->findURLTo($to);
+  $url = $manix->program()->findRouteTo($to);
 
   if (!empty($query)) {
     $url .= '?' . http_build_query($query);
@@ -181,38 +181,6 @@ $manix = new class {
         $this->program->error($throwable);
       }
     });
-
-    $program->startSession();
-
-    if (!isset($_SESSION[MANIX]['lang'])) {
-      $lc = config('lang');
-
-      if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-        $langs = $lc['languages'];
-
-        $q = 0;
-        foreach (explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']) as $part) {
-          list($code, $priority) = explode(';q=', $part . ';q=');
-
-          if (isset($langs[$code])) {
-            if (!isset($priority)) {
-              $priority = 1;
-            }
-
-            if ($priority > $q) {
-              $lang = $code;
-              $q = $priority;
-            }
-          }
-        }
-
-        $_SESSION[MANIX]['lang'] = $lang;
-      } else {
-        $_SESSION[MANIX]['lang'] = $lc['default'];
-      }
-    }
-
-    define('LANG', $_SESSION[MANIX]['lang']);
 
     $controller = $program->createController($program->determineRoute());
 
