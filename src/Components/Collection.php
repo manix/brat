@@ -195,4 +195,35 @@ class Collection implements JsonSerializable, Iterator {
         return null;
     }
 
+    /**
+     * Returns an array with returned values from $func for each element.
+     * @param Callable $func
+     * @return array
+     */
+    public function map(Callable $func) {
+      $result = [];
+      
+      foreach ($this->list as $item) {
+        $result[] = $func($item);
+      }
+      
+      return $result;
+    }
+    
+    /**
+     * Returns a new identical collection with filtered items.
+     * @param Callable $func
+     * @return \self
+     */
+    public function filter(Callable $func) {
+      $new = new self($this->interface);
+      
+      foreach ($this->list as $item) {
+        if ($func($item)) {
+          $new->push($item);
+        }
+      }
+      
+      return $new;
+    }
 }
