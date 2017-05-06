@@ -10,7 +10,7 @@ class PluginManager {
     $vendorDir = $event->getComposer()->getConfig()->get('vendor-dir');
 
     if (!is_file($vendorDir . '/autoload.php')) {
-      return;
+      return new NullPlugin();
     }
 
     require $vendorDir . '/autoload.php';
@@ -24,16 +24,11 @@ class PluginManager {
       $installerInstance = require $pluginInstaller;
 
       if (!($installerInstance instanceof AbstractPlugin)) {
-        $installerInstance = new NullPlugin();
+        return new NullPlugin();
       }
     } else {
-      $installerInstance = new NullPlugin();
+      return new NullPlugin();
     }
-
-
-    $installerInstance->vendorDir = $vendorDir;
-
-    return $installerInstance;
   }
 
   public static function install(PackageEvent $event) {
