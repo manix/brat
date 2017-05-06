@@ -1,26 +1,8 @@
 <?php
 
-namespace Manix\Brat\Components\Plugins;
+namespace Manix\Brat\Components;
 
-abstract class AbstractPlugin {
-
-  protected $vendorDir = null;
-  
-  public function __construct($vendorDir) {
-    $this->vendorDir = $vendorDir;
-  }
-
-  public function getProjectRoot() {
-    return realpath($this->vendorDir . '/..');
-  }
-
-  public function getProjectPath() {
-    return $this->getProjectRoot() . '/project';
-  }
-
-  public function getPublicPath() {
-    return $this->getProjectRoot() . '/public';
-  }
+abstract class Plugin {
 
   /**
    * Defines the admin panel features featured in the plugin.
@@ -39,7 +21,7 @@ abstract class AbstractPlugin {
   }
 
   /**
-   * Specifies the directory which holds necessary files that need to be merged 
+   * Specifies the directory which holds necessary files that need to be merged
    * with the project on install.
    * @return mixed NULL or Manix\Brat\Components\Filesystem\Directory instance.
    */
@@ -48,19 +30,19 @@ abstract class AbstractPlugin {
   }
 
   public function onbeforeInstall() {
-    
+
   }
 
   public function onbeforeUninstall() {
-    
+
   }
 
   public function onafterInstall() {
-    
+
   }
 
   public function onafterUninstall() {
-    
+
   }
 
   public final function install() {
@@ -69,18 +51,18 @@ abstract class AbstractPlugin {
     $instance = $this->instance();
 
     if ($instance !== null) {
-      $instance->copy($this->getProjectRoot());
+      var_dump($instance->copy(PROJECT_PATH . '/..'));
     }
 
     $routes = $this->routes();
 
     if (!empty($routes)) {
-      $defined = $this->getConfig('routes');
+      $defined = config('routes');
 
       $this->saveConfigFile('routes', array_merge($defined, $routes));
     }
 
-    $plugins = $this->getConfig('plugins');
+    $plugins = config('plugins');
 
     $plugins[] = get_class($this);
 
@@ -96,7 +78,7 @@ abstract class AbstractPlugin {
 
     if ($instance !== null) {
       $local = $instance->getPath();
-      $project = $this->getProjectRoot();
+      $project = PROJECT_PATH . '/..';
 
       foreach ($instance->files() as $file) {
         $path = str_replace($local, $project, $file);
@@ -109,7 +91,7 @@ abstract class AbstractPlugin {
     $routes = $this->routes();
 
     if (!empty($routes)) {
-      $defined = $this->getConfig('routes');
+      $defined = config('routes');
 
       foreach (array_keys($this->routes()) as $route) {
         unset($defined[$route]);
@@ -118,7 +100,7 @@ abstract class AbstractPlugin {
       $this->saveConfigFile('routes', $defined);
     }
 
-    $plugins = $this->getConfig('plugins');
+    $plugins = config('plugins');
 
     foreach (array_keys($plugins, get_class($this), true) as $key) {
       unset($plugins[$key]);
@@ -129,12 +111,8 @@ abstract class AbstractPlugin {
     $this->onafterUninstall();
   }
 
-  protected function getConfig($file) {
-    return require($this->getProjectPath() . '/config/' . $file . '.php');
-  }
-
   protected function saveConfigFile($file, array $data) {
-    file_put_contents($this->getProjectPath() . '/config/' . $file . '.php', '<?php return ' . var_export($data, true) . ';');
+    file_put_contents(PROJECT_PATH . '/config/' . $file . '.php', '<?php return ' . var_export($data, true) . ';');
   }
 
 }

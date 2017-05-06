@@ -12,7 +12,7 @@ class Directory extends Inode {
 
   public function __construct($path, $recursive = true) {
     parent::__construct($path);
-    
+
     if (!is_dir($path)) {
       if (!mkdir($path, 0711, (bool)$recursive)) {
         throw new Exception('Can not create directory');
@@ -35,7 +35,7 @@ class Directory extends Inode {
          * Create directory if doesn't exist
          */
         new Directory($destination);
-        
+
         $factory->get($this->path . '/' . $inode)->copy($destination . '/' . $inode);
       }
     }
