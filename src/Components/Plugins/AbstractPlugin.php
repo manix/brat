@@ -4,7 +4,11 @@ namespace Manix\Brat\Components\Plugins;
 
 abstract class AbstractPlugin {
 
-  public $vendorDir = null;
+  protected $vendorDir = null;
+  
+  public function __construct($vendorDir) {
+    $this->vendorDir = $vendorDir;
+  }
 
   public function getProjectRoot() {
     return realpath($this->vendorDir . '/..');
