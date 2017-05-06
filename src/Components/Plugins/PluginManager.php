@@ -10,7 +10,7 @@ class PluginManager {
     $vendorDir = $event->getComposer()->getConfig()->get('vendor-dir');
 
     if (!is_file($vendorDir . '/autoload.php')) {
-      exit;
+      return;
     }
 
     require $vendorDir . '/autoload.php';
