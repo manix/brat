@@ -3,10 +3,16 @@
 namespace Manix\Brat\Components;
 
 use Exception;
+use Manix\Brat\Components\Events\EventEmitter;
+use Manix\Brat\Components\Events\EventEmitterInterface;
+use Manix\Brat\Utility\Events\Controllers\AfterExecute;
+use Manix\Brat\Utility\Events\Controllers\BeforeExecute;
+use function registry;
 
-abstract class Controller {
+abstract class Controller implements EventEmitterInterface {
 
-  use Translator;
+  use Translator,
+      EventEmitter;
 
   /**
    * @var string Name of the page that this controller will render.
@@ -17,8 +23,7 @@ abstract class Controller {
    * @var array An array of common data to return to each request.
    */
   protected $data = [];
-  protected $listeners = [];
-
+  
   /**
    * Gets called before the program executes a method on the controller.
    * @param string $method The method that is about to get executed.
@@ -39,7 +44,7 @@ abstract class Controller {
     }
 
     registry('page', $this->page);
-    
+
     return $data;
   }
 
@@ -54,6 +59,12 @@ abstract class Controller {
   }
 
   public final function execute($method) {
-    return $this->after($this->{$this->before($method)}());
+    $method = $this->before($method);
+    $this->emit(new BeforeExecute($this, $method));
+    $data = $this->after($this->$method());
+    $this->emit(new AfterExecute($this, $data));
+
+    return $data;
   }
+
 }

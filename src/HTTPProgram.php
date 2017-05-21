@@ -9,7 +9,10 @@ use Manix\Brat\Components\Views\JSONView;
 use Manix\Brat\Components\Views\PlainTextView;
 use Manix\Brat\Helpers\HTMLGenerator;
 use Manix\Brat\Utility\Errors\ErrorController;
+use Manix\Brat\Utility\Events\Controllers\BeforeExecute;
 use PHPMailer\PHPMailer\Exception;
+use SessionHandler;
+use SessionHandlerInterface;
 use Throwable;
 use const MANIX;
 use const SITE_DOMAIN;
@@ -103,7 +106,7 @@ class HTTPProgram extends Program {
         $_SESSION[MANIX]['lang'] = $lc['default'];
       }
     }
-    
+
     if (!defined('LANG')) {
       define('LANG', $_SESSION[MANIX]['lang']);
     }
@@ -115,8 +118,12 @@ class HTTPProgram extends Program {
   public function startSession() {
     session_name('manix-sess');
     session_set_cookie_params(0, '/', SITE_DOMAIN, false, true);
-    // session_set_save_handler(new class, true);
+    session_set_save_handler($this->createSessionHandler(), true);
     session_start();
+  }
+
+  protected function createSessionHandler(): SessionHandlerInterface {
+    return new SessionHandler();
   }
 
   /**
@@ -196,7 +203,35 @@ class HTTPProgram extends Program {
       throw new Exception($this->t8('common', 'ctrlnotfound'), 404);
     }
 
-    return new $class;
+    $controller = new $class;
+    
+    $controller->on(BeforeExecute::class, function($event) {
+      $this->validateSession();
+      
+      switch ($event->getMethod()) {
+        case 'put':
+        case 'post':
+        case 'delete':
+          $this->validateCSRF();
+          break;
+      }
+    });
+
+    return $controller;
+  }
+
+  protected function validateSession() {
+    $fingerprint = md5($_SERVER['HTTP_USER_AGENT']);
+
+    if (empty($_SESSION[MANIX]['fp'])) {
+      $_SESSION[MANIX]['fp'] = $fingerprint;
+    } else if ($fingerprint !== $_SESSION[MANIX]['fp']) {
+      throw new Exception('Invalid session fingerprint.', 400);
+    }
+  }
+
+  protected function validateCSRF() {
+    var_dump('validate csrf');
   }
 
   /**

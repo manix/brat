@@ -15,6 +15,8 @@ class ErrorController extends Controller {
   }
 
   public function display() {
+    http_response_code($this->throwable->getCode());
+    
     return $this->throwable;
   }
 
