@@ -51,6 +51,14 @@ abstract class Controller implements EventEmitterInterface {
   public function data() {
     return $this->data;
   }
+  
+  /**
+   * Fetch the method names that must be protected against CSRF attacks.
+   * @return array List of method names.
+   */
+  public function csrf() {
+    return ['post', 'put', 'delete'];
+  }
 
   public function __call($name, $arguments) {
     if (isset($name) && isset($arguments)) {

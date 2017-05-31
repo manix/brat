@@ -43,10 +43,13 @@ trait EventEmitter {
   }
 
   public function emit(Event $event) {
-    $name = get_class($event);
-    
-    foreach ($this->listeners($name) as $listener) {
+
+    foreach ($this->listeners(get_class($event)) as $listener) {
       $listener($event);
+
+      if (!$event->propagates()) {
+        break;
+      }
     }
   }
 

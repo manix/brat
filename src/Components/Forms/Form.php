@@ -41,7 +41,7 @@ class Form {
 
     foreach ($form->inputs as $name => $input) {
       $real = $this->add($key . '[' . $name . ']');
-      
+
       foreach ($input->getAttributes() as $property => $value) {
         if ($property === 'name') {
           continue;
@@ -130,7 +130,7 @@ class Form {
    * @return string The generated HTML string.
    */
   public function open(HTMLGenerator $html) {
-    $output = null;
+    $output = (new FormInput('manix-csrf', 'hidden', CSRF_TOKEN))->toHTML($html);
 
     if (!isset($this->attributes['method'])) {
       $this->attributes['method'] = 'POST';

@@ -35,7 +35,7 @@ class HTTPProgram extends Program {
 
   public function __construct() {
 
-    foreach (explode(',', $_SERVER['HTTP_ACCEPT'] ?? null) as $mediaRange) {
+    foreach (explode(',', $_SERVER['HTTP_ACCEPT'] ?? '*/*') as $mediaRange) {
 
       /*
        * Determine the requested response type.
@@ -77,6 +77,17 @@ class HTTPProgram extends Program {
     $this->startSession();
 
     /*
+     * Generate a CSRF token
+     */
+    if (!isset($_SESSION[MANIX]['csrf'])) {
+      $_SESSION[MANIX]['csrf'] = $this->generateCSRFToken(32);
+    }
+
+    if (!defined('CSRF_TOKEN')) {
+      define('CSRF_TOKEN', $_SESSION[MANIX]['csrf']);
+    }
+
+    /*
      * Determine language and store in session.
      */
     if (!isset($_SESSION[MANIX]['lang'])) {
@@ -94,14 +105,14 @@ class HTTPProgram extends Program {
               $priority = 1;
             }
 
-            if ($priority > $q) {
+            if ($priority >= $q) {
               $lang = $code;
               $q = $priority;
             }
           }
         }
 
-        $_SESSION[MANIX]['lang'] = $lang;
+        $_SESSION[MANIX]['lang'] = $lang ?? $lc['default'];
       } else {
         $_SESSION[MANIX]['lang'] = $lc['default'];
       }
@@ -122,8 +133,27 @@ class HTTPProgram extends Program {
     session_start();
   }
 
+  /**
+   * Instantiate a session handler.
+   * @return SessionHandlerInterface
+   */
   protected function createSessionHandler(): SessionHandlerInterface {
     return new SessionHandler();
+  }
+
+  /**
+   * Generates a random token.
+   * @param int $length Length of the generated token.
+   * @return string The token.
+   */
+  protected function generateCSRFToken($length) {
+    $token = '';
+
+    for ($i = 0; $i < $length; $i++) {
+      $token .= mt_rand(0, 9);
+    };
+
+    return $token;
   }
 
   /**
@@ -204,16 +234,12 @@ class HTTPProgram extends Program {
     }
 
     $controller = new $class;
-    
+
     $controller->on(BeforeExecute::class, function($event) {
       $this->validateSession();
-      
-      switch ($event->getMethod()) {
-        case 'put':
-        case 'post':
-        case 'delete':
-          $this->validateCSRF();
-          break;
+
+      if (in_array($event->getMethod(), $event->getController()->csrf())) {
+        $this->validateCSRF();
       }
     });
 
@@ -231,7 +257,11 @@ class HTTPProgram extends Program {
   }
 
   protected function validateCSRF() {
-    var_dump('validate csrf');
+    $token = $_POST['manix-csrf'] ?? $_SERVER['HTTP_CSRF_TOKEN'] ?? null;
+
+    if (CSRF_TOKEN !== $token) {
+      throw new \Exception('CSRF token mismatch.', 400);
+    }
   }
 
   /**

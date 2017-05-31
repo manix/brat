@@ -6,10 +6,12 @@ use Manix\Brat\Helpers\HTMLGenerator;
 use Manix\Brat\Utility\Users\Controllers\Settings\Emails;
 use Manix\Brat\Utility\Users\Controllers\Settings\Name;
 use Manix\Brat\Utility\Users\Controllers\Settings\Password;
+use Manix\Brat\Utility\Users\Controllers\Settings\Photo;
 use Manix\Brat\Utility\Users\Models\Auth;
 use Project\Views\Layouts\DefaultLayout;
 use function html;
 use function route;
+use function url;
 
 abstract class DefaultSettingsLayout extends DefaultLayout {
 
@@ -38,6 +40,7 @@ abstract class DefaultSettingsLayout extends DefaultLayout {
             </div>
             <div class="list-group">
               <?= $this->menuItem(Name::class, $this->t8('name')) ?>
+              <?= $this->menuItem(Photo::class, $this->t8('photo')) ?>
             </div>
             <div class="card-header">
               <?= $this->t8('loginInfo') ?>

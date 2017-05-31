@@ -26,7 +26,7 @@ class Login extends FormController {
     $this->backto = $backto;
     $this->cacheT8('manix/util/users/common');
   }
-
+  
   /**
    * Must return the FQCN for the view to display on successful login.
    * @return string FQCN
