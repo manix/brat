@@ -3,10 +3,6 @@
 namespace Manix\Brat\Utility\Users\Models;
 
 use Manix\Brat\Components\Model;
-use Manix\Brat\Utility\Users\Controllers\Login;
-use const MANIX;
-use function cache;
-use function url;
 
 class Auth {
 
@@ -14,56 +10,48 @@ class Auth {
     
   }
 
-  protected static $user;
+  /**
+   * @var AuthManager
+   */
+  protected static $manager;
+
+  public static function registerManager(AuthManager $manager) {
+    self::$manager = $manager;
+  }
 
   /**
    * Retrieve the cached user associated with the current session.
    * @return Model The user.
    */
   public static function user() {
-    if (self::$user === null) {
-      $id = ($_SESSION[MANIX]['auth'] ?? 0);
-
-      if ($id) {
-        self::$user = cache('users/auth/' . $id);
-
-        // Extend the ttl for the cached user if it's about to expire soon.
-        if (self::$user === null) {
-          self::register((new UserGateway())->find($id)->first());
-        }
-      } else {
-        // Not logged in
-        self::$user = false;
-      }
-    }
-
-    return self::$user;
+    return self::$manager->user();
   }
 
   /**
    * Register the current session to a user.
-   * @param Model $user
+   * @param User $user
    */
-  public static function register(Model $user) {
-    $_SESSION[MANIX]['auth'] = $user->id;
-    self::updateCache($user);
-    self::$user = $user;
+  public static function register(User $user) {
+    return self::$manager->register($user);
   }
 
+  /**
+   * Update the cached user object.
+   * @param User $user
+   */
   public static function updateCache(User $user) {
-    cache('users/auth/' . $user->id, $user, 1800);
+    return self::$manager->updateCache($user);
   }
 
   public static function getCached($id) {
-    return cache('users/auth/' . $id);
+    return self::$manager->getCached($id);
   }
 
   /**
    * Log the user out.
    */
   public static function destroy() {
-    unset($_SESSION[MANIX]['auth']);
-    self::$user = null;
+    return self::$manager->destroy();
   }
 
   /**
@@ -71,14 +59,7 @@ class Auth {
    * @param string $backto Address to go back to after successful login.
    */
   public static function required() {
-    if (self::user() === false) {
-      global $manix;
-
-      $controller = new Login(url());
-
-      http_response_code(403);
-      exit($manix->program()->respond($controller->execute('get')));
-    }
+    return self::$manager->required();
   }
 
   /**
@@ -88,8 +69,13 @@ class Auth {
    * @return mixed The value.
    */
   public static function __callStatic($name, $arguments) {
+    return self::$manager->user()->$name;
+  }
 
-    return self::user()->$name;
+  public static function issueRememberToken() {
+    return self::$manager->issueRememberToken();
   }
 
 }
+
+Auth::registerManager(new AuthManager());

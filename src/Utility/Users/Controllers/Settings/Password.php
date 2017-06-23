@@ -3,10 +3,13 @@
 namespace Manix\Brat\Utility\Users\Controllers\Settings;
 
 use Exception;
+use Manix\Brat\Components\Criteria;
 use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Validation\Ruleset;
 use Manix\Brat\Utility\Users\Models\Auth;
 use Manix\Brat\Utility\Users\Models\UserGateway;
+use Manix\Brat\Utility\Users\Models\UserTokenGateway;
+use Project\Utility\Users\Controllers\SettingsController;
 
 class Password extends SettingsController {
 
@@ -37,6 +40,11 @@ class Password extends SettingsController {
       }
 
       Auth::register($user);
+      
+      $tokenGate = new UserTokenGateway();
+      $criteria = new Criteria;
+      $criteria->equals('user_id', $user->id);
+      $tokenGate->wipeBy($criteria);
 
       return ['success' => true];
     });

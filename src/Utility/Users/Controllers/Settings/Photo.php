@@ -2,15 +2,21 @@
 
 namespace Manix\Brat\Utility\Users\Controllers\Settings;
 
-use Exception;
 use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Validation\Ruleset;
+use Manix\Brat\Helpers\Image;
 use Manix\Brat\Utility\Users\Controllers\GatewayFactory;
 use Manix\Brat\Utility\Users\Models\Auth;
+use Manix\Brat\Utility\Users\Models\UserGateway;
+use Manix\Brat\Utility\Users\Views\Settings\PhotoView;
+use Project\Utility\Users\Controllers\SettingsController;
+use const PUBLIC_PATH;
 
 class Photo extends SettingsController {
 
   use GatewayFactory;
+
+  public $page = PhotoView::class;
 
   public function __construct() {
     parent::__construct();
@@ -20,22 +26,32 @@ class Photo extends SettingsController {
 
   public function post() {
 
-    return $this->validate($_POST, function($data) {
+    return $this->validate($_FILES, function($data) {
+      // TODO manage paths better, possibly centralize
+
       $user = Auth::user();
 
-      $user->name = $data['name'];
+      $img = Image::fromFile($data['photo']['tmp_name']);
+      $img->setType(IMAGETYPE_PNG);
+      $img->setFile(PUBLIC_PATH . '/assets/images/users/hd/' . $user->id);
+      $img->save();
 
-      if ($this->getUserGateway()->persist($user)) {
-        Auth::register($user);
+      $thumb = clone $img;
+      $thumb->setFile(PUBLIC_PATH . '/assets/images/users/thumb/' . $user->id);
+      $thumb->save();
 
-        return ['success' => true];
-      }
+      $user->photo_rev++;
 
-      throw new Exception('Unexpected', 500);
+      $gate = new UserGateway;
+      $gate->persist($user);
+      Auth::updateCache($user);
+
+      return ['success' => true];
     });
   }
 
   protected function constructForm(Form $form): Form {
+    $form->setEnctype();
     $form->add('photo', 'file');
 
     return $form;

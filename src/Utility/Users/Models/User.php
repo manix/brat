@@ -15,7 +15,7 @@ class User extends Model {
       $this->$name = $value;
     }
   }
-  
+
   public function __get($name) {
     if ($name === 'password') {
       return $this->password;
@@ -30,4 +30,11 @@ class User extends Model {
     return password_verify($password, $this->password);
   }
 
+  public function getPhotoURL() {
+    return SITE_URL . '/assets/images/users/hd/' . $this->id . '?v=' . $this->photo_rev;
+  }
+
+  public function getThumbURL() {
+    return SITE_URL . '/assets/images/users/thumb/' . $this->id . '?v=' . $this->photo_rev;
+  }
 }

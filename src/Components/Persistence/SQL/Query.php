@@ -74,7 +74,7 @@ abstract class Query {
     abstract public function build();
 
     protected function buildWhereSQL($column, $operand = null, $data = null) {
-
+        
         $sql = $column;
 
         if ($operand === null) {

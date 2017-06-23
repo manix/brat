@@ -17,6 +17,17 @@ class LoginView extends GuestFrame {
         'password' => $this->t8('password'),
     ];
 
+    $view->setCustomRenderer('remember', function($input) {
+      ?>
+      <div class="form-group" data-toggle="buttons">
+        <label class="btn btn-outline-primary btn-block">
+          <?= $input->toHTML($this->html) ?>
+          <span class="mx-2"><?= $this->t8('rememberMe') ?></span>
+        </label>
+      </div>
+      <?php
+    });
+
     $view->setCustomRenderer('login', function($input) {
       ?>
       <div class="form-group d-flex justify-content-between">

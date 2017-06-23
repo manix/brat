@@ -2,6 +2,8 @@
 
 namespace Manix\Brat\Utility\Users\Views\Settings;
 
+use Project\Utility\Users\Views\DefaultSettingsLayout;
+
 class IndexView extends DefaultSettingsLayout {
 
   public function card() {

@@ -23,6 +23,29 @@ abstract class DefaultSettingsLayout extends DefaultLayout {
     $this->cacheT8('manix/util/users/settings');
   }
 
+  /**
+   * Define an array that represents the settings menu. Format:
+   * [
+   *  String $groupLabel => [
+   *    String $controller => String $settingLabel,
+   *    ...
+   *  ],
+   *  ...
+   * ]
+   */
+  protected function getMenuItems() {
+    return [
+        $this->t8('profileInfo') => [
+            Name::class => $this->t8('name'),
+            Photo::class => $this->t8('photo')
+        ],
+        $this->t8('loginInfo') => [
+            Emails::class => $this->t8('emails'),
+            Password::class => $this->t8('password')
+        ]
+    ];
+  }
+
   public function body() {
     ?>
 
@@ -35,51 +58,63 @@ abstract class DefaultSettingsLayout extends DefaultLayout {
       <div class="row">
         <div class="col-sm-3">
           <div class="card">
-            <div class="card-header">
-              <?= $this->t8('profileInfo') ?>
-            </div>
-            <div class="list-group">
-              <?= $this->menuItem(Name::class, $this->t8('name')) ?>
-              <?= $this->menuItem(Photo::class, $this->t8('photo')) ?>
-            </div>
-            <div class="card-header">
-              <?= $this->t8('loginInfo') ?>
-            </div>
-            <div class="list-group">
-              <?= $this->menuItem(Emails::class, $this->t8('emails')) ?>
-              <?= $this->menuItem(Password::class, $this->t8('password')) ?>
-            </div>
+            <?php foreach ($this->getMenuItems() as $groupLabel => $settings): ?>
+              <div class="card-header">
+                <?= $groupLabel ?>
+              </div>
+              <div class="list-group">
+                <?php
+                foreach ($settings as $class => $settingLabel) {
+                  $this->menuItem($class, $settingLabel);
+                }
+                ?>
+              </div>
+            <?php endforeach; ?>
           </div>
         </div>
         <div class="col-sm-9">
-          <?php if (isset($this->data['success'])): ?>
-            <div class="card card-inverse card-success">
-              <div class="card-block">
-                <p class="mb-3">
-                  <?= $this->data['success'] === true ? $this->t8('changesSaved') : $this->data['success'] ?>
-                </p>
-
-                <a href="<?= url() ?>" class="btn btn-success pull-right">
-                  <?= $this->t8('manix/util/users/common', 'continue') ?>
-                </a>
-              </div>
-            </div>
-          <?php elseif (isset($this->data['error'])): ?>
-            <div class="card card-inverse card-danger">
-              <div class="card-block">
-                <p class="mb-3"><?= $this->data['error'] ?></p>
-
-                <a href="<?= url() ?>" class="btn btn-danger pull-right">
-                  <?= $this->t8('manix/util/users/common', 'continue') ?>
-                </a>
-              </div>
-            </div>
-          <?php else: ?>
+          <?php
+          if (isset($this->data['success'])) {
+            echo $this->getSuccessCard($this->data['success']);
+          } elseif (isset($this->data['error'])) {
+            echo $this->getErrorCard($this->data['error']);
+          } else {
+            ?>
             <div class="card">
               <?= $this->card() ?>
             </div>
-          <?php endif; ?>
+          <?php } ?>
         </div>
+      </div>
+    </div>
+    <?php
+  }
+
+  protected function getSuccessCard($success) {
+    ?>
+    <div class="card card-inverse card-success">
+      <div class="card-block">
+        <p class="mb-3">
+          <?= $success === true ? $this->t8('changesSaved') : $success ?>
+        </p>
+
+        <a href="<?= url() ?>" class="btn btn-success pull-right">
+          <?= $this->t8('manix/util/users/common', 'continue') ?>
+        </a>
+      </div>
+    </div>
+    <?php
+  }
+
+  protected function getErrorCard($error) {
+    ?>
+    <div class="card card-inverse card-danger">
+      <div class="card-block">
+        <p class="mb-3"><?= $error ?></p>
+
+        <a href="<?= url() ?>" class="btn btn-danger pull-right">
+          <?= $this->t8('manix/util/users/common', 'continue') ?>
+        </a>
       </div>
     </div>
     <?php

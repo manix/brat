@@ -3,6 +3,7 @@
 namespace Manix\Brat\Utility\Users\Models;
 
 use Project\Models\DefaultGateway;
+use Project\Utility\Users\Models\User;
 
 class UserGateway extends DefaultGateway {
   
@@ -10,7 +11,7 @@ class UserGateway extends DefaultGateway {
   
     protected $table = 'manix_users';
     protected $fields = [
-        'id', 'password', 'name'
+        'id', 'password', 'name', 'photo_rev'
     ];
     protected $ai = 'id';
     protected $pk = ['id'];

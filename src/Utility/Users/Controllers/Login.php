@@ -59,6 +59,7 @@ class Login extends FormController {
     ] : []));
     $form->add('email', 'email');
     $form->add('password', 'password');
+    $form->add('remember', 'checkbox', 1);
     $form->add('login', 'submit', $this->t8('login'));
 
     return $form;
@@ -95,6 +96,10 @@ class Login extends FormController {
 
             cache()->wipe($key);
             
+            if (!empty($_POST['remember'])) {
+              Auth::issueRememberToken();
+            }
+            
             return [
                 'success' => true,
                 'backto' => $_GET['b'] ?? null
@@ -112,6 +117,7 @@ class Login extends FormController {
       return $this->defaultFailAction($data, $v);
     });
   }
+ 
 
   protected function constructRules(Ruleset $rules): Ruleset {
     $rules->add('email')->required()->email();

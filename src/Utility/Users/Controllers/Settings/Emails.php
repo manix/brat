@@ -11,6 +11,7 @@ use Manix\Brat\Utility\Users\Controllers\Mailer;
 use Manix\Brat\Utility\Users\Models\Auth;
 use Manix\Brat\Utility\Users\Models\UserEmail;
 use Manix\Brat\Utility\Users\Views\Settings\EmailsView;
+use Project\Utility\Users\Controllers\SettingsController;
 
 class Emails extends SettingsController {
 
@@ -22,7 +23,7 @@ class Emails extends SettingsController {
   public function __construct() {
     parent::__construct();
 
-//    $this->requireCurrentPassword();
+    $this->requireCurrentPassword();
   }
 
   public function get() {

@@ -2,11 +2,11 @@
 
 namespace Manix\Brat\Utility\Users\Controllers\Settings;
 
-use Exception;
 use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Validation\Ruleset;
 use Manix\Brat\Utility\Users\Controllers\GatewayFactory;
 use Manix\Brat\Utility\Users\Models\Auth;
+use Project\Utility\Users\Controllers\SettingsController;
 
 class Name extends SettingsController {
 
@@ -25,13 +25,10 @@ class Name extends SettingsController {
 
       $user->name = $data['name'];
 
-      if ($this->getUserGateway()->persist($user)) {
-        Auth::register($user);
+      $this->getUserGateway()->persist($user);
+      Auth::register($user);
 
-        return ['success' => true];
-      }
-
-      throw new Exception('Unexpected', 500);
+      return ['success' => true];
     });
   }
 

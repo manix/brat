@@ -32,6 +32,10 @@ class HTTPProgram extends Program {
    * @var array The sorted list of preferred response types.
    */
   protected $requested = [];
+  /**
+   * @var array Stores the resolved class-to-url results.
+   */
+  protected $resolvedURLs = [];
 
   public function __construct() {
 
@@ -151,7 +155,7 @@ class HTTPProgram extends Program {
 
     for ($i = 0; $i < $length; $i++) {
       $token .= mt_rand(0, 9);
-    };
+    }
 
     return $token;
   }
@@ -232,7 +236,7 @@ class HTTPProgram extends Program {
     if (!loader()->loadClass($class)) {
       throw new Exception($this->t8('common', 'ctrlnotfound'), 404);
     }
-
+    
     $controller = new $class;
 
     $controller->on(BeforeExecute::class, function($event) {
@@ -247,7 +251,7 @@ class HTTPProgram extends Program {
   }
 
   protected function validateSession() {
-    $fingerprint = md5($_SERVER['HTTP_USER_AGENT']);
+    $fingerprint = md5($_SERVER['HTTP_USER_AGENT'] ?? null);
 
     if (empty($_SESSION[MANIX]['fp'])) {
       $_SESSION[MANIX]['fp'] = $fingerprint;
@@ -287,15 +291,7 @@ class HTTPProgram extends Program {
    * @return string The URL at which the class can be accessed.
    */
   public function findRouteTo($class) {
-    /*
-     * Store already requested destinations in an oddly named property 
-     * so that they will not have to be resolved again in further calls.
-     */
-    if (!isset($this->_rtc581928)) {
-      $this->_rtc581928 = [];
-    }
-
-    $rc = $this->_rtc581928;
+    $rc = $this->resolvedURLs;
 
     /*
      * If this class has already been resolved then create a fake array of 

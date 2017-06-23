@@ -131,7 +131,7 @@ abstract class CRUDController extends FormController {
       foreach ($data as $key => $value) {
         $model->$key = $value;
       }
-
+      
       // just in case
       unset($data[$gate->getAI()]);
 
@@ -147,6 +147,7 @@ abstract class CRUDController extends FormController {
 
       return [
           'success' => true,
+          'model' => $model,
           'goto' => route(static::class, $pk)
       ];
     });

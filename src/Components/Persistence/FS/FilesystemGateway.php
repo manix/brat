@@ -57,6 +57,8 @@ abstract class FilesystemGateway extends Gateway {
                 $set[] = $this->performJoins($data);
             }
         }
+        
+        // TOOD implement sorter
 
         return $this->instantiate($set);
     }

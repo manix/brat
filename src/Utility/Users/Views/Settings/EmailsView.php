@@ -2,8 +2,12 @@
 
 namespace Manix\Brat\Utility\Users\Views\Settings;
 
+use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Forms\FormInput;
 use Manix\Brat\Helpers\FormViews\DefaultFormView;
+use Manix\Brat\Helpers\HTMLGenerator;
+use Project\Utility\Users\Views\DefaultSettingsLayout;
+use function html;
 
 class EmailsView extends DefaultSettingsLayout {
 
@@ -61,17 +65,27 @@ class EmailsView extends DefaultSettingsLayout {
 
 class AddEmailFormView extends DefaultFormView {
 
+  public function __construct(Form $data, HTMLGenerator $html, array $labels = array()) {
+    $labels['currentPassword'] = $this->t8('manix/util/users/settings', 'currPass');
+
+    parent::__construct($data, $html, $labels);
+  }
+
   public function renderInputGroup(FormInput $input) {
-    ?>
-    <div class="input-group">
-      <?= $input->toHTML($this->html) ?>
-      <div class="input-group-btn">
-        <button type="submit" class="btn btn-success">
-          <i class="fa fa-plus"></i>
-        </button>
+    if ($input->name === 'email') {
+      ?>
+      <div class="input-group">
+        <?= $input->setAttribute('class', 'form-control')->toHTML($this->html) ?>
+        <div class="input-group-btn">
+          <button type="submit" class="btn btn-success">
+            <i class="fa fa-plus"></i>
+          </button>
+        </div>
       </div>
-    </div>
-    <?php
+      <?php
+    } else {
+      parent::renderInputGroup($input);
+    }
   }
 
 }

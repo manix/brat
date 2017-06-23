@@ -64,7 +64,7 @@ abstract class FormController extends Controller {
   protected function validate($dataset, callable $onPass, callable $onFail = null, ...$data) {
     $validator = new Validator();
     $rules = $this->getRules();
-
+    
     if ($validator->validate($dataset, $rules)) {
       return $onPass($dataset, $validator, $rules, ...$data);
     } else {

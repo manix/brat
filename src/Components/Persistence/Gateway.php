@@ -5,6 +5,7 @@ namespace Manix\Brat\Components\Persistence;
 use Manix\Brat\Components\Collection;
 use Manix\Brat\Components\Criteria;
 use Manix\Brat\Components\Model;
+use Manix\Brat\Components\Sorter;
 
 /**
  * The base gateway interface.
@@ -47,6 +48,23 @@ abstract class Gateway {
   protected $joins = [];
 
   /**
+   * @var Sorter
+   */
+  protected $sorter;
+  
+  /**
+   * Number of records to skip from result set.
+   * @var int
+   */
+  public $cutoff = 0;
+  
+  /**
+   * Number of records to retrieve after cutoff.
+   * @var int
+   */
+  public $limit = 1000;
+
+  /**
    * Get the key names that form the model's primary key.
    * @return array
    */
@@ -68,6 +86,16 @@ abstract class Gateway {
    */
   public function getFields() {
     return $this->fields;
+  }
+  
+  /**
+   * Set the key names that this gateway cares about.
+   * @param array $fields
+   * @return $this
+   */
+  public function setFields(array $fields) {
+    $this->fields = $fields;
+    return $this;
   }
 
   public function addField($field) {
@@ -140,12 +168,23 @@ abstract class Gateway {
   /**
    * Joins a predefined related gateway.
    * @param string $rel The key for the relation.
+   * @param mixed $gate A gateway instance or array of fields to select.
    * @return $gate
    */
-  public function join($rel, Gateway $gate): Gateway {
-    if (isset($this->rel[$rel]) && $gate instanceof $this->rel[$rel][0]) {
-      $this->joins[$rel] = $gate;
-      return $gate;
+  public function join($rel, $gate = null): Gateway {
+    if (isset($this->rel[$rel])) {
+      $class = $this->rel[$rel][0];
+
+      if (is_array($gate)) {
+        $gate = (new $class)->setFields($gate);
+      } elseif ($gate === null) {
+        $gate = new $class;
+      }
+
+      if ($gate instanceof $class) {
+        $this->joins[$rel] = $gate;
+        return $gate;
+      }
     }
   }
 
@@ -155,6 +194,12 @@ abstract class Gateway {
    */
   public function unjoin($rel) {
     unset($this->joins[$rel]);
+  }
+
+  public function sort(Sorter $sorter) {
+    $this->sorter = $sorter;
+
+    return $this;
   }
 
 }
