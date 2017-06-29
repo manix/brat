@@ -58,7 +58,7 @@ class Forgot extends FormController {
           $this->captcha->expire();
 
           $code = cache('users/resetpass/' . $email->user_id, function() {
-            return md5(mt_rand(PHP_INT_MIN, PHP_INT_MAX));
+            return md5(random_bytes(10));
           }, 3600);
 
           return $this->sendForgottenPassMail($email, $code);

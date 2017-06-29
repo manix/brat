@@ -28,8 +28,8 @@ class AuthManager {
           $this->register((new UserGateway())->find($id)->first());
         }
       } else {
-        $this->user = $user = $this->fetchUserFromPersistentLogin($_COOKIE[$this->rememberMeCookieParams(null)[0]] ?? null);
-
+        $this->user = $this->fetchUserFromPersistentLogin($_COOKIE[$this->rememberMeCookieParams(null)[0]] ?? null);
+        
         if ($this->user) {
           $this->register($this->user);
         } else {
@@ -48,11 +48,11 @@ class AuthManager {
    */
   protected function fetchUserFromPersistentLogin($token) {
     $record = $this->fetchPersistentLoginTokenFromString($token);
-
+    
     if (!$this->validatePersistentLoginToken($record, $token, $_SERVER['HTTP_USER_AGENT'] ?? null)) {
       return false;
     }
-
+    
     return $record->user->first() ?? false;
   }
 

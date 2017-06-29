@@ -21,7 +21,7 @@ class Reset extends Controller {
     $id = $_POST['id'] ?? null;
     $gate = $this->getUserGateway();
     $user = $gate->find($id)->first();
-
+    
     if (!$user) {
       return false;
     }

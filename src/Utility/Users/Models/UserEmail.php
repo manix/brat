@@ -19,7 +19,7 @@ class UserEmail extends Model {
   }
 
   public function invalidate() {
-    $this->verified = md5(str_shuffle(mt_rand(PHP_INT_MIN, PHP_INT_MAX) . config('project')['name']));
+    $this->verified = md5(random_bytes(10));
   }
 
   public function getCode() {
