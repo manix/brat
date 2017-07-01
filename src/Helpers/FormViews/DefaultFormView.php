@@ -48,7 +48,7 @@ class DefaultFormView extends FormView {
     <div class="form-group <?= $class ?? null, $error ? 'has-danger' : null ?>">
       <?php if ($name): ?>
         <?php if ($this->labels[$name] ?? null): ?>
-          <label><?= $this->labels[$name] ?></label>
+          <label class="form-control-label"><?= $this->labels[$name] ?></label>
         <?php endif; ?>
 
         <?php if ($error): ?>

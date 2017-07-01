@@ -20,7 +20,7 @@ class Form {
    * Keys correspond to input names and values represent error messages.
    */
   public $errors = [];
-
+  
   /**
    * Add an input element to the form.
    * @param string $name The name attribute of the input element
@@ -60,6 +60,7 @@ class Form {
    */
   public function remove(string $name) {
     unset($this->inputs[$name]);
+    return $this;
   }
 
   /**
@@ -130,22 +131,17 @@ class Form {
    * @return string The generated HTML string.
    */
   public function open(HTMLGenerator $html) {
-    $output = (new FormInput('manix-csrf', 'hidden', CSRF_TOKEN))->toHTML($html);
+    $method = $this->attributes['method'] ?? 'POST';
+    $output = $method === 'GET' ? null : (new FormInput('manix-csrf', 'hidden', CSRF_TOKEN))->toHTML($html);
 
-    if (!isset($this->attributes['method'])) {
-      $this->attributes['method'] = 'POST';
-    } elseif (in_array($this->attributes['method'], ['GET', 'POST']) === false) {
+    if (in_array($method, ['GET', 'POST']) === false) {
       $output .= $html->input('manix-method', 'hidden', $this->attributes['method']);
-      $this->attributes['method'] = 'POST';
+      $method = 'POST';
     }
 
-    $output = $html->formOpen($this->attributes) . $output;
-
-    /*
-     * TODO implement spam and csrf security options
-     */
-
-    return $output;
+    $this->attributes['method'] = $method;
+    
+    return $html->formOpen($this->attributes) . $output;
   }
 
   /**

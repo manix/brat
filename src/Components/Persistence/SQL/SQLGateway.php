@@ -9,7 +9,6 @@ use Manix\Brat\Components\Persistence\Gateway;
 use Manix\Brat\Components\Persistence\SQL\Queries\DeleteQuery;
 use Manix\Brat\Components\Persistence\SQL\Queries\InsertQuery;
 use Manix\Brat\Components\Persistence\SQL\Queries\SelectQuery;
-use Manix\Brat\Components\Persistence\SQL\Queries\UpdateQuery;
 use Manix\Brat\Components\Sorter;
 use Manix\Brat\Helpers\Arrays;
 use PDO;
@@ -51,7 +50,7 @@ class SQLGateway extends Gateway {
     }
     
     $query->limit($this->cutoff, $this->limit);
-
+    
     $stmt = $this->pdo->prepare($query->build());
     $stmt->execute($query->data());
 
@@ -73,7 +72,7 @@ class SQLGateway extends Gateway {
 
     $stmt = $this->pdo->prepare($query->insert($data)->onDuplicateKey(true)->build());
     $stmt->execute($query->data());
-
+    
     $status = (bool)$stmt->rowCount();
 
     if ($status && $this->ai !== null && empty($model->{$this->ai})) {
