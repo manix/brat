@@ -2,12 +2,9 @@
 
 namespace Manix\Brat\Utility\Users\Models;
 
-use Manix\Brat\Helpers\Time;
 use Project\Models\DefaultGateway;
 
 class UserLoginGateway extends DefaultGateway {
-
-  const MODEL = UserEmail::class;
 
   protected $table = 'manix_users_logins';
   protected $fields = [

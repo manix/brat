@@ -48,9 +48,9 @@ class SQLGateway extends Gateway {
         return $def[0] . ' ' . ($def[1] === Sorter::ASC ? 'ASC' : 'DESC');
       }, $this->sorter->definitions()));
     }
-    
+
     $query->limit($this->cutoff, $this->limit);
-    
+
     $stmt = $this->pdo->prepare($query->build());
     $stmt->execute($query->data());
 
@@ -64,15 +64,15 @@ class SQLGateway extends Gateway {
     if ($fields === null) {
       $fields = $this->getFields();
     }
-    
+
     foreach ($fields as $field) {
       $query->addColumn($field);
       $data[$field] = $model->$field ?? null;
     }
-    
+
     $stmt = $this->pdo->prepare($query->insert($this->pack($data))->onDuplicateKey(true)->build());
     $stmt->execute($query->data());
-    
+
     $status = (bool)$stmt->rowCount();
 
     if ($status && $this->ai !== null && empty($model->{$this->ai})) {
@@ -106,13 +106,13 @@ class SQLGateway extends Gateway {
   protected function addJoins(SelectQuery $query, $base = null): SelectQuery {
     if (!empty($this->joins)) {
       foreach ($this->joins as $key => $gate) {
-        $alias = Query::getAlias();
-        $colAlias = $base . '$' . $alias . '$_';
-        $gate->tmpJoinAlias = $alias;
-        $gate->addJoins($query->join('LEFT', $gate->table . ' ' . $alias, ($this->tmpJoinAlias ?? $query->alias) . '.' . $this->rel[$key][1] . ' = ' . $alias . '.' . $this->rel[$key][2]), $colAlias);
+        $tblAlias = Query::getAlias();
+        $colAlias = $base . '$' . $tblAlias . '$_';
+        $gate->tmpJoinAlias = $tblAlias;
+        $gate->addJoins($query->join('LEFT', $gate->table . ' ' . $tblAlias, ($this->tmpJoinAlias ?? $query->alias) . '.' . $this->getLocalRelationKey($key) . ' = ' . $tblAlias . '.' . $this->getRemoteRelationKey($key, $gate)), $colAlias);
 
         foreach ($gate->fields as $field) {
-          $query->addColumn($alias . '.' . $field . ' AS ' . $colAlias . $field);
+          $query->addColumn($tblAlias . '.' . $field . ' AS ' . $colAlias . $field);
         }
       }
     }

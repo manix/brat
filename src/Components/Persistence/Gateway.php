@@ -2,6 +2,7 @@
 
 namespace Manix\Brat\Components\Persistence;
 
+use Exception;
 use Manix\Brat\Components\Collection;
 use Manix\Brat\Components\Criteria;
 use Manix\Brat\Components\Model;
@@ -201,6 +202,10 @@ abstract class Gateway {
         $this->joins[$rel] = $gate;
         return $gate;
       }
+      
+      throw new Exception('Trying to join a wrong gateway.', 500);
+    } else {
+      throw new Exception('Trying to join an undefined relation.', 500);
     }
   }
 
@@ -243,6 +248,25 @@ abstract class Gateway {
     }
 
     return $row;
+  }
+
+  /**
+   * Retrieve the local field name for a relation.
+   * @param string $relation Relation name
+   * @return string The field name.
+   */
+  public function getLocalRelationKey($relation) {
+    return $this->rel[$relation][1] ?? $relation;
+  }
+
+  /**
+   * Retrieve the remote field name for a relation.
+   * @param string $relation Relation name
+   * @param Gateway $remoteGateway
+   * @return mixed The field name or false if it can not be determined.
+   */
+  public function getRemoteRelationKey($relation, Gateway $remoteGateway) {
+    return $this->rel[$relation][2] ?? $remoteGateway->getPK()[0] ?? false;
   }
 
 }

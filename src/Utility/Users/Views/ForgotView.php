@@ -4,6 +4,7 @@ namespace Manix\Brat\Utility\Users\Views;
 
 use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Helpers\FormViews\DefaultFormView;
+use Project\Views\Users\GuestFrame;
 
 class ForgotView extends GuestFrame {
 
