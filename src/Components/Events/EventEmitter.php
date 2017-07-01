@@ -14,9 +14,9 @@ trait EventEmitter {
   }
 
   public function once($event, callable $listener) {
-    $onceListener = function () use (&$onceListener, $event, $listener) {
+    $onceListener = function (...$args) use (&$onceListener, $event, $listener) {
       $this->removeListener($event, $onceListener);
-      call_user_func_array($listener, func_get_args());
+      $listener(...$args);
     };
     $this->on($event, $onceListener);
   }
@@ -42,8 +42,13 @@ trait EventEmitter {
     return isset($this->listeners[$event]) ? $this->listeners[$event] : [];
   }
 
+  /**
+   * Emit an event.
+   * @param Event $event
+   * @return Event The event after listeners execution.
+   */
   public function emit(Event $event) {
-
+    
     foreach ($this->listeners(get_class($event)) as $listener) {
       $listener($event);
 
@@ -51,6 +56,8 @@ trait EventEmitter {
         break;
       }
     }
+    
+    return $event;
   }
 
 }

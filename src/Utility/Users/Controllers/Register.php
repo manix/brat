@@ -14,7 +14,7 @@ use Manix\Brat\Utility\Users\Views\RegisterView;
 
 class Register extends FormController {
 
-  use GatewayFactory,
+  use UserGatewayFactory,
       Mailer;
 
   public $page = RegisterView::class;
@@ -97,12 +97,26 @@ class Register extends FormController {
         if ($egate->persist($email) && $this->sendActivationMail($email)) {
           $this->page = $this->getSuccessView();
 
+          $this->onUserRegistered($user, $email);
+
           return true;
         }
       }
 
       return $this->defaultFailAction($data, $v);
     });
+  }
+
+  /**
+   * Gets called when a user is registered successfully.
+   * @param User $user
+   * @param UserEmail $email
+   */
+  public function onUserRegistered(User $user, UserEmail $email) {
+    # Dummy code to keep IDE happy.
+    if ($user && $email) {
+      return;
+    }
   }
 
 }

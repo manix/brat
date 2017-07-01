@@ -2,6 +2,7 @@
 
 namespace Manix\Brat\Utility\Users\Views;
 
+use Project\Views\Users\GuestFrame;
 use const SITE_URL;
 
 class LoginSuccessView extends GuestFrame {

@@ -3,9 +3,13 @@
 namespace Manix\Brat\Utility\Users\Controllers;
 
 use Manix\Brat\Components\Forms\Form;
+use Manix\Brat\Components\Model;
 use Manix\Brat\Components\Validation\Ruleset;
+use Manix\Brat\Components\Validation\Validator;
 use Manix\Brat\Helpers\FormController;
+use Manix\Brat\Helpers\Time;
 use Manix\Brat\Utility\Users\Models\Auth;
+use Manix\Brat\Utility\Users\Models\User;
 use Manix\Brat\Utility\Users\Views\LoginSuccessView;
 use Manix\Brat\Utility\Users\Views\LoginView;
 use function cache;
@@ -13,7 +17,7 @@ use function route;
 
 class Login extends FormController {
 
-  use GatewayFactory;
+  use UserGatewayFactory;
 
   public $page = LoginView::class;
   protected $backto;
@@ -26,7 +30,7 @@ class Login extends FormController {
     $this->backto = $backto;
     $this->cacheT8('manix/util/users/common');
   }
-  
+
   /**
    * Must return the FQCN for the view to display on successful login.
    * @return string FQCN
@@ -51,6 +55,20 @@ class Login extends FormController {
    */
   protected function blockFor(): int {
     return 600;
+  }
+
+  /**
+   * Gets called when a login attempt is made.
+   * @param User $user
+   * @param Validator $validator
+   */
+  protected function onLoginAttemptResolved(User $user, Validator $validator) {
+    $this->getLoginGateway()->persist(new Model([
+        'user_id' => $user->id,
+        'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
+        'ua' => $_SERVER['HTTP_USER_AGENT'] ?? '-',
+        'detail' => array_values($validator->getErrors())
+    ]));
   }
 
   protected function constructForm(Form $form): Form {
@@ -95,11 +113,13 @@ class Login extends FormController {
             $this->page = $this->getSuccessView();
 
             cache()->wipe($key);
-            
+
             if (!empty($_POST['remember'])) {
               Auth::issueRememberToken();
             }
-            
+
+            $this->onLoginAttemptResolved($user, $v);
+
             return [
                 'success' => true,
                 'backto' => $_GET['b'] ?? null
@@ -114,10 +134,11 @@ class Login extends FormController {
         $v->setError('email', $this->t8('userNotFound'));
       }
 
+      $this->onLoginAttemptResolved($user, $v);
+
       return $this->defaultFailAction($data, $v);
     });
   }
- 
 
   protected function constructRules(Ruleset $rules): Ruleset {
     $rules->add('email')->required()->email();

@@ -35,7 +35,7 @@ class SQLGateway extends Gateway {
     $query = new SelectQuery($this->table);
 
     $fields = [];
-    foreach ($this->fields as $field) {
+    foreach ($this->getFields() as $field) {
       $fields[] = $query->alias . '.' . $field;
     }
     $this->addJoins($query->columns(...$fields));
@@ -62,15 +62,15 @@ class SQLGateway extends Gateway {
     $data = [];
 
     if ($fields === null) {
-      $fields = $this->fields;
+      $fields = $this->getFields();
     }
-
+    
     foreach ($fields as $field) {
       $query->addColumn($field);
       $data[$field] = $model->$field ?? null;
     }
-
-    $stmt = $this->pdo->prepare($query->insert($data)->onDuplicateKey(true)->build());
+    
+    $stmt = $this->pdo->prepare($query->insert($this->pack($data))->onDuplicateKey(true)->build());
     $stmt->execute($query->data());
     
     $status = (bool)$stmt->rowCount();

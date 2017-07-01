@@ -6,6 +6,7 @@ use Manix\Brat\Components\Collection;
 use Manix\Brat\Components\Criteria;
 use Manix\Brat\Components\Model;
 use Manix\Brat\Components\Sorter;
+use Manix\Brat\Helpers\Time;
 
 /**
  * The base gateway interface.
@@ -16,6 +17,8 @@ abstract class Gateway {
    * The model interface.
    */
   const MODEL = Model::class;
+  const TIMESTAMP_CREATED = 'created';
+  const TIMESTAMP_UPDATED = 'updated';
 
   /**
    * @var string The table/namespace for this persistence element.
@@ -51,18 +54,24 @@ abstract class Gateway {
    * @var Sorter
    */
   protected $sorter;
-  
+
   /**
    * Number of records to skip from result set.
    * @var int
    */
   public $cutoff = 0;
-  
+
   /**
    * Number of records to retrieve after cutoff.
    * @var int
    */
   public $limit = 1000;
+
+  /**
+   * Whether this gateway has timestamps or not.
+   * @var bool
+   */
+  protected $timestamps;
 
   /**
    * Get the key names that form the model's primary key.
@@ -85,9 +94,16 @@ abstract class Gateway {
    * @return array
    */
   public function getFields() {
-    return $this->fields;
+    $fields = $this->fields;
+
+    if ($this->timestamps) {
+      $fields[] = self::TIMESTAMP_CREATED;
+      $fields[] = self::TIMESTAMP_UPDATED;
+    }
+
+    return $fields;
   }
-  
+
   /**
    * Set the key names that this gateway cares about.
    * @param array $fields
@@ -159,7 +175,7 @@ abstract class Gateway {
     $collection = new Collection($interface);
 
     foreach ($set as $row) {
-      $collection->push(new $interface($row));
+      $collection->push(new $interface($this->unpack($row)));
     }
 
     return $collection;
@@ -200,6 +216,33 @@ abstract class Gateway {
     $this->sorter = $sorter;
 
     return $this;
+  }
+
+  /**
+   * Prepare model data for persistence.
+   * @param array $row The model data.
+   * @return array The modified, if necessary, data.
+   */
+  public function pack($row) {
+    if ($this->timestamps) {
+      $row[($row[self::TIMESTAMP_CREATED] ?? null) ? self::TIMESTAMP_UPDATED : self::TIMESTAMP_CREATED] = new Time();
+    }
+
+    return $row;
+  }
+
+  /**
+   * Prepare a persisted row for injection in Model.
+   * @param array $row
+   * @return array The modified, if necessary, data.
+   */
+  public function unpack($row) {
+    if ($this->timestamps) {
+      $row[self::TIMESTAMP_CREATED] = new Time($row[self::TIMESTAMP_CREATED]);
+      $row[self::TIMESTAMP_UPDATED] = new Time($row[self::TIMESTAMP_UPDATED] ?? '0000');
+    }
+
+    return $row;
   }
 
 }

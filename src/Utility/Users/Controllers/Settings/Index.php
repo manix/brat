@@ -5,7 +5,6 @@ namespace Manix\Brat\Utility\Users\Controllers\Settings;
 use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Validation\Ruleset;
 use Manix\Brat\Utility\Users\Views\Settings\IndexView;
-use Project\Utility\Users\Controllers\SettingsController;
 
 class Index extends SettingsController {
 

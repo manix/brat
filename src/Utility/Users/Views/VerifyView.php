@@ -7,6 +7,7 @@ use Manix\Brat\Helpers\FormViews\DefaultFormView;
 use Manix\Brat\Helpers\HTMLGenerator;
 use Manix\Brat\Utility\Users\Controllers\Login;
 use Manix\Brat\Utility\Users\Controllers\Verify;
+use Project\Views\Users\GuestFrame;
 use function route;
 
 class VerifyView extends GuestFrame {

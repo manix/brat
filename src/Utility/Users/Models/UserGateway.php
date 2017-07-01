@@ -3,7 +3,6 @@
 namespace Manix\Brat\Utility\Users\Models;
 
 use Project\Models\DefaultGateway;
-use Project\Utility\Users\Models\User;
 
 class UserGateway extends DefaultGateway {
   

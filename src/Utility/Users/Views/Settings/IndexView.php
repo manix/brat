@@ -2,7 +2,7 @@
 
 namespace Manix\Brat\Utility\Users\Views\Settings;
 
-use Project\Utility\Users\Views\DefaultSettingsLayout;
+use Project\Views\Users\DefaultSettingsLayout;
 
 class IndexView extends DefaultSettingsLayout {
 

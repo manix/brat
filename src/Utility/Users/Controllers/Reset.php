@@ -8,7 +8,7 @@ use function cache;
 
 class Reset extends Controller {
 
-  use GatewayFactory;
+  use UserGatewayFactory;
 
   public $page = ResetView::class;
 

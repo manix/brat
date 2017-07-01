@@ -6,7 +6,7 @@ use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Forms\FormInput;
 use Manix\Brat\Helpers\FormViews\DefaultFormView;
 use Manix\Brat\Helpers\HTMLGenerator;
-use Project\Utility\Users\Views\DefaultSettingsLayout;
+use Project\Views\Users\DefaultSettingsLayout;
 use function html;
 
 class EmailsView extends DefaultSettingsLayout {

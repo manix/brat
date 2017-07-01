@@ -3,7 +3,7 @@
 namespace Manix\Brat\Utility\Users\Views\Settings;
 
 use Manix\Brat\Helpers\FormViews\DefaultFormView;
-use Project\Utility\Users\Views\DefaultSettingsLayout;
+use Project\Views\Users\DefaultSettingsLayout;
 
 class DefaultSettingsView extends DefaultSettingsLayout {
 

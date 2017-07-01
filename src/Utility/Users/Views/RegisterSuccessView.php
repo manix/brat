@@ -2,6 +2,8 @@
 
 namespace Manix\Brat\Utility\Users\Views;
 
+use Project\Views\Users\GuestFrame;
+
 class RegisterSuccessView extends GuestFrame {
 
   public function frame() {

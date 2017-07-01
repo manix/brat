@@ -5,6 +5,7 @@ namespace Manix\Brat\Utility\Users\Views;
 use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Helpers\FormViews\DefaultFormView;
 use Manix\Brat\Utility\Users\Controllers\Login;
+use Project\Views\Users\GuestFrame;
 use function route;
 
 class RegisterView extends GuestFrame {

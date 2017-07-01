@@ -8,6 +8,7 @@ use Manix\Brat\Helpers\HTMLGenerator;
 use Manix\Brat\Utility\Users\Controllers\Login;
 use Manix\Brat\Utility\Users\Controllers\Reset;
 use Manix\Brat\Utility\Users\Models\User;
+use Project\Views\Users\GuestFrame;
 use function route;
 
 class ResetView extends GuestFrame {

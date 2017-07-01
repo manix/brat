@@ -20,7 +20,11 @@ trait Mailer {
 
     $subject = $this->t8('manix/util/users/emails', 'verifySubject');
 
-    return email($email->email, $subject, new VerifyMail($email, new HTMLGenerator()));
+    return email($email->email, $subject, $this->getActivationMailView($email));
+  }
+
+  protected function getActivationMailView(UserEmail $email) {
+    return new VerifyMail($email, new HTMLGenerator);
   }
 
   public function sendForgottenPassMail(UserEmail $email, $code) {
@@ -30,10 +34,14 @@ trait Mailer {
 
     $subject = $this->t8('manix/util/users/emails', 'forgotPass');
 
-    return email($email->email, $subject, new ForgotMail([
-        'id' => $email->user_id,
+    return email($email->email, $subject, $this->getForgottenPassMailView($email->user_id, $code));
+  }
+
+  protected function getForgottenPassMailView($userId, $code) {
+    return new ForgotMail([
+        'id' => $userId,
         'code' => $code
-    ], new HTMLGenerator()));
+    ], new HTMLGenerator());
   }
 
 }

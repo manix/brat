@@ -5,7 +5,7 @@ namespace Manix\Brat\Utility\Users\Views\Settings;
 use Manix\Brat\Components\Forms\FormInput;
 use Manix\Brat\Helpers\FormViews\DefaultFormView;
 use Manix\Brat\Utility\Users\Models\Auth;
-use Project\Utility\Users\Views\DefaultSettingsLayout;
+use Project\Views\Users\DefaultSettingsLayout;
 use function html;
 
 class PhotoView extends DefaultSettingsLayout {

@@ -9,7 +9,6 @@ use Manix\Brat\Components\Validation\Ruleset;
 use Manix\Brat\Utility\Users\Models\Auth;
 use Manix\Brat\Utility\Users\Models\UserGateway;
 use Manix\Brat\Utility\Users\Models\UserTokenGateway;
-use Project\Utility\Users\Controllers\SettingsController;
 
 class Password extends SettingsController {
 

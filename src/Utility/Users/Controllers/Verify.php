@@ -7,7 +7,7 @@ use Manix\Brat\Utility\Users\Views\VerifyView;
 
 class Verify extends Controller {
 
-  use GatewayFactory;
+  use UserGatewayFactory;
 
   public $page = VerifyView::class;
 

@@ -6,16 +6,15 @@ use Exception;
 use Manix\Brat\Components\Criteria;
 use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Validation\Ruleset;
-use Manix\Brat\Utility\Users\Controllers\GatewayFactory;
+use Manix\Brat\Utility\Users\Controllers\UserGatewayFactory;
 use Manix\Brat\Utility\Users\Controllers\Mailer;
 use Manix\Brat\Utility\Users\Models\Auth;
 use Manix\Brat\Utility\Users\Models\UserEmail;
 use Manix\Brat\Utility\Users\Views\Settings\EmailsView;
-use Project\Utility\Users\Controllers\SettingsController;
 
 class Emails extends SettingsController {
 
-  use GatewayFactory,
+  use UserGatewayFactory,
       Mailer;
 
   public $page = EmailsView::class;

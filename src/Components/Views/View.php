@@ -27,6 +27,9 @@ abstract class View {
         return $this;
     }
 
+    /**
+     * Must return the data for render.
+     */
     abstract protected function render();
 
     public function __toString() {

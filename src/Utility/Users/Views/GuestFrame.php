@@ -6,8 +6,13 @@ use Project\Views\Layouts\DefaultLayout;
 
 abstract class GuestFrame extends DefaultLayout {
 
-  public function body() {
+  public function __construct($data, \Manix\Brat\Helpers\HTMLGenerator $html) {
+    parent::__construct($data, $html);
+
     $this->cacheT8('manix/util/users/common');
+  }
+
+  public function body() {
     ?>
     <div class="jumbotron text-center">
       <?= $this->heading() ?>

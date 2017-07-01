@@ -2,7 +2,9 @@
 
 namespace Manix\Brat\Utility\Users\Models;
 
+use Manix\Brat\Components\Model;
 use Manix\Brat\Utility\Users\Controllers\Login;
+use Manix\Brat\Utility\Users\Controllers\UserGatewayFactory;
 use const MANIX;
 use const SITE_DOMAIN;
 use function cache;
@@ -10,6 +12,8 @@ use function url;
 
 class AuthManager {
 
+  use UserGatewayFactory;
+  
   protected $user;
 
   /**
@@ -32,6 +36,13 @@ class AuthManager {
         
         if ($this->user) {
           $this->register($this->user);
+          
+          $this->getLoginGateway()->persist(new Model([
+              'user_id' => $this->user->id,
+              'ua' => $_SERVER['HTTP_USER_AGENT'] ?? null,
+              'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
+              'detail' => 't'
+          ]));
         } else {
           $this->expireRememberCookie();
         }

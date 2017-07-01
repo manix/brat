@@ -5,16 +5,15 @@ namespace Manix\Brat\Utility\Users\Controllers\Settings;
 use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Validation\Ruleset;
 use Manix\Brat\Helpers\Image;
-use Manix\Brat\Utility\Users\Controllers\GatewayFactory;
+use Manix\Brat\Utility\Users\Controllers\UserGatewayFactory;
 use Manix\Brat\Utility\Users\Models\Auth;
 use Manix\Brat\Utility\Users\Models\UserGateway;
 use Manix\Brat\Utility\Users\Views\Settings\PhotoView;
-use Project\Utility\Users\Controllers\SettingsController;
 use const PUBLIC_PATH;
 
 class Photo extends SettingsController {
 
-  use GatewayFactory;
+  use UserGatewayFactory;
 
   public $page = PhotoView::class;
 

@@ -10,6 +10,7 @@ use Manix\Brat\Components\Filesystem\Factory;
 use Manix\Brat\Components\Filesystem\File;
 use Manix\Brat\Components\Model;
 use Manix\Brat\Components\Persistence\Gateway;
+use Manix\Brat\Components\Sorter;
 use Manix\Brat\Components\Translator;
 
 abstract class FilesystemGateway extends Gateway {
@@ -45,6 +46,11 @@ abstract class FilesystemGateway extends Gateway {
 
         return $this->instantiate($set);
     }
+    
+    public function sort(Sorter $sorter) {
+      // TODO implement sorter in findBy(
+      throw new Exception('Sorter has not yet been implemented in FilesystemGateway', 500);
+    }
 
     public function findBy(Criteria $criteria): Collection {
         $set = [];
@@ -67,7 +73,7 @@ abstract class FilesystemGateway extends Gateway {
         $data = [];
 
         if ($fields === null) {
-            $fields = $this->fields;
+            $fields = $this->getFields();
         }
 
 
@@ -84,7 +90,7 @@ abstract class FilesystemGateway extends Gateway {
             $data[$field] = $model->$field ?? null;
         }
 
-        return (bool)file_put_contents(new File($this->dir . '/' . $this->getPKString($model)), serialize($data));
+        return (bool)file_put_contents(new File($this->dir . '/' . $this->getPKString($model)), serialize($this->pack($data)));
     }
 
     public function wipe(...$pk): bool {

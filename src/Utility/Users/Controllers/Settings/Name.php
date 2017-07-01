@@ -4,13 +4,12 @@ namespace Manix\Brat\Utility\Users\Controllers\Settings;
 
 use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Validation\Ruleset;
-use Manix\Brat\Utility\Users\Controllers\GatewayFactory;
+use Manix\Brat\Utility\Users\Controllers\UserGatewayFactory;
 use Manix\Brat\Utility\Users\Models\Auth;
-use Project\Utility\Users\Controllers\SettingsController;
 
 class Name extends SettingsController {
 
-  use GatewayFactory;
+  use UserGatewayFactory;
 
   public function __construct() {
     parent::__construct();

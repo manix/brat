@@ -11,7 +11,7 @@ use function cache;
 
 class Forgot extends FormController {
 
-  use GatewayFactory,
+  use UserGatewayFactory,
       Mailer;
 
   public $page = ForgotView::class;
