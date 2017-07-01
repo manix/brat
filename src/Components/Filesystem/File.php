@@ -2,7 +2,7 @@
 
 namespace Manix\Brat\Components\Filesystem;
 
-use Quasar\Exceptions\Exception;
+use Exception;
 
 class File extends Inode {
 
