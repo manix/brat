@@ -20,8 +20,10 @@ class Register extends FormController {
   public $page = RegisterView::class;
   protected $captcha;
 
-  public function __construct() {
+  public function before($method) {
     $this->captcha = new CaptchaManager();
+    
+    return parent::before($method);
   }
 
   /**

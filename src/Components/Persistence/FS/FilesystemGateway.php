@@ -15,161 +15,165 @@ use Manix\Brat\Components\Translator;
 
 abstract class FilesystemGateway extends Gateway {
 
-    const PK_CONCAT = '/';
+  const PK_CONCAT = '/';
 
-    use Translator;
+  use Translator;
 
-    protected $dir;
-    protected static $cache;
+  protected $dir;
+  protected static $cache;
 
-    /**
-     * A gateway for raw file system storage.
-     * @param Directory $dir The root directory.
-     */
-    public function __construct(Directory $dir) {
-        $this->dir = new Directory($dir . '/' . $this->table);
+  /**
+   * A gateway for raw file system storage.
+   * @param Directory $dir The root directory.
+   */
+  public function __construct(Directory $dir) {
+    $this->dir = new Directory($dir . '/' . $this->table);
+  }
+
+  public function find(...$pk): Collection {
+    $set = [];
+    $path = $this->dir . '/' . join(self::PK_CONCAT, $pk);
+
+    if (count($pk) < count($this->pk)) {
+      foreach (glob($path . self::PK_CONCAT . '*') as $path) {
+        $set[] = $this->performJoins($this->read($path));
+      }
+    } else {
+      if (is_file($path)) {
+        $set[] = $this->performJoins($this->read($path));
+      }
     }
 
-    public function find(...$pk): Collection {
-        $set = [];
-        $path = $this->dir . '/' . join(self::PK_CONCAT, $pk);
+    return $this->instantiate($set);
+  }
 
-        if (count($pk) < count($this->pk)) {
-            foreach (glob($path . self::PK_CONCAT . '*') as $path) {
-                $set[] = $this->performJoins($this->read($path));
-            }
-        } else {
-            if (is_file($path)) {
-                $set[] = $this->performJoins($this->read($path));
-            }
+  public function sort(Sorter $sorter) {
+    // TODO implement sorter in findBy(
+    throw new Exception('Sorter has not yet been implemented in FilesystemGateway', 500);
+  }
+
+  public function findBy(Criteria $criteria): Collection {
+    $set = [];
+    $interpreter = new FilesystemGatewayCriteriaInterpreter($criteria);
+
+    foreach ($this->dir->files() as $file) {
+      $data = $this->read($file);
+
+      if ($interpreter->validate($data)) {
+        $set[] = $this->performJoins($data);
+      }
+    }
+
+    // TOOD implement sorter
+
+    return $this->instantiate($set);
+  }
+
+  public function persist(Model $model, array $fields = null): bool {
+    $data = [];
+
+    if ($fields === null) {
+      $fields = $this->getFields();
+    }
+
+    foreach ($fields as $field) {
+      $data[$field] = $model->$field ?? null;
+    }
+
+    if ($this->ai !== null && empty($model->{$this->ai})) {
+      $ai = $this->getLastAIValue() + 1;
+      $data[$this->ai] = $ai;
+
+      if (!$this->setAI($ai)) {
+        throw new Exception($this->t8('common', 'cantSaveAI', [$this->table]), 500);
+      }
+    }
+
+    $data = $this->pack($data);
+
+    // Set timestamps, AI and other generated data back into the model.
+    $model->fill($this->unpack($data));
+
+    return (bool)file_put_contents(new File($this->dir . '/' . $this->getPKString($model)), serialize($data));
+  }
+
+  public function wipe(...$pk): bool {
+    $path = $this->dir . '/' . join(self::PK_CONCAT, $pk);
+
+    try {
+      return (new Factory())->get($path)->delete();
+    } catch (Exception $ex) {
+      
+    }
+
+    return false;
+  }
+
+  public function wipeBy(Criteria $criteria): bool {
+    $interpreter = new FilesystemGatewayCriteriaInterpreter($criteria);
+
+    foreach ($this->dir->files() as $file) {
+      $data = $this->read($file);
+
+      if ($interpreter->validate($data)) {
+        if (!$file->delete()) {
+          $fail = true;
         }
-
-        return $this->instantiate($set);
-    }
-    
-    public function sort(Sorter $sorter) {
-      // TODO implement sorter in findBy(
-      throw new Exception('Sorter has not yet been implemented in FilesystemGateway', 500);
+      }
     }
 
-    public function findBy(Criteria $criteria): Collection {
-        $set = [];
-        $interpreter = new FilesystemGatewayCriteriaInterpreter($criteria);
+    return !isset($fail);
+  }
 
-        foreach ($this->dir->files() as $file) {
-            $data = $this->read($file);
+  /**
+   * Get a string uniquely identifying this object by primary key.
+   * @param Model $model
+   * @return string The PK string.
+   */
+  public function getPKString(Model $model) {
+    $fields = [];
 
-            if ($interpreter->validate($data)) {
-                $set[] = $this->performJoins($data);
-            }
-        }
-        
-        // TOOD implement sorter
-
-        return $this->instantiate($set);
+    foreach ($this->pk as $field) {
+      $fields[] = $model->$field;
     }
 
-    public function persist(Model $model, array $fields = null): bool {
-        $data = [];
+    return join(self::PK_CONCAT, $fields);
+  }
 
-        if ($fields === null) {
-            $fields = $this->getFields();
-        }
+  /**
+   * Get the current last auto increment value for the table.
+   * @return int The last AI value.
+   */
+  protected function getLastAIValue(): int {
+    return (int)file_get_contents(new File($this->dir . '/.meta'));
+  }
 
+  /**
+   * Set a new last AI value.
+   * @param int $ai The new last AI value
+   * @return bool Whether saving the AI value was successful or not.
+   */
+  protected function setAI(int $ai): bool {
+    return (bool)file_put_contents($this->dir . '/.meta', $ai);
+  }
 
-        if ($this->ai !== null && empty($model->{$this->ai})) {
-            $ai = $this->getAI() + 1;
-            $model->{$this->ai} = $ai;
+  /**
+   * Read a stored object's information.
+   * @param string $path
+   * @return array Stored data.
+   */
+  protected function read(string $path) {
+    return unserialize(file_get_contents($path));
+  }
 
-            if (!$this->setAI($ai)) {
-                throw new Exception($this->t8('common', 'cantSaveAI', [$this->table]), 500);
-            }
-        }
-
-        foreach ($fields as $field) {
-            $data[$field] = $model->$field ?? null;
-        }
-
-        return (bool)file_put_contents(new File($this->dir . '/' . $this->getPKString($model)), serialize($this->pack($data)));
+  protected function performJoins($row) {
+    if (!empty($this->joins)) {
+      foreach ($this->joins as $key => $gate) {
+        $row[$key] = $gate->findBy((new Criteria)->equals($this->getRemoteRelationKey($key, $gate), $row[$this->getLocalRelationKey($key)]));
+      }
     }
 
-    public function wipe(...$pk): bool {
-        $path = $this->dir . '/' . join(self::PK_CONCAT, $pk);
-
-        try {
-            return (new Factory())->get($path)->delete();
-        } catch (Exception $ex) {
-            
-        }
-
-        return false;
-    }
-
-    public function wipeBy(Criteria $criteria): bool {
-        $interpreter = new FilesystemGatewayCriteriaInterpreter($criteria);
-
-        foreach ($this->dir->files() as $file) {
-            $data = $this->read($file);
-
-            if ($interpreter->validate($data)) {
-                if (!$file->delete()) {
-                    $fail = true;
-                }
-            }
-        }
-
-        return !isset($fail);
-    }
-
-    /**
-     * Get a string uniquely identifying this object by primary key.
-     * @param Model $model
-     * @return string The PK string.
-     */
-    public function getPKString(Model $model) {
-        $fields = [];
-
-        foreach ($this->pk as $field) {
-            $fields[] = $model->$field;
-        }
-
-        return join(self::PK_CONCAT, $fields);
-    }
-
-    /**
-     * Get the current last auto increment value for the table.
-     * @return int The last AI value.
-     */
-    protected function getAI(): int {
-        return (int)file_get_contents(new File($this->dir . '/.meta'));
-    }
-
-    /**
-     * Set a new last AI value.
-     * @param int $ai The new last AI value
-     * @return bool Whether saving the AI value was successful or not.
-     */
-    protected function setAI(int $ai): bool {
-        return (bool)file_put_contents($this->dir . '/.meta', $ai);
-    }
-
-    /**
-     * Read a stored object's information.
-     * @param string $path
-     * @return array Stored data.
-     */
-    protected function read(string $path) {
-        return unserialize(file_get_contents($path));
-    }
-
-    protected function performJoins($row) {
-        if (!empty($this->joins)) {
-            foreach ($this->joins as $key => $gate) {
-                $row[$key] = $gate->findBy((new Criteria)->equals($this->getRemoteRelationKey($key, $gate), $row[$this->getLocalRelationKey($key)]));
-            }
-        }
-
-        return $row;
-    }
+    return $row;
+  }
 
 }

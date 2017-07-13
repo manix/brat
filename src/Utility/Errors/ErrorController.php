@@ -15,7 +15,9 @@ class ErrorController extends Controller {
   }
 
   public function display() {
-    http_response_code((int)$this->throwable->getCode());
+    $code = (int)$this->throwable->getCode();
+    
+    http_response_code($code > 99 && $code < 600 ? $code : 500);
     
     return $this->throwable;
   }

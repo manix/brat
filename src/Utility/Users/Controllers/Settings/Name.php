@@ -11,10 +11,10 @@ class Name extends SettingsController {
 
   use UserGatewayFactory;
 
-  public function __construct() {
-    parent::__construct();
-
+  public function before($method) {
     $this->addSaveButton();
+    
+    return parent::before($method);
   }
 
   public function put() {

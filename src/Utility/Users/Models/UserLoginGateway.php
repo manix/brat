@@ -18,7 +18,7 @@ class UserLoginGateway extends DefaultGateway {
 
   public function pack($row) {
     $row = parent::pack($row);
-
+    
     $row['ip'] = inet_pton($row['ip'] ?? null);
     $row['detail'] = json_encode($row['detail'] ?? []);
 

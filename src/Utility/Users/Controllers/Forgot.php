@@ -17,9 +17,11 @@ class Forgot extends FormController {
   public $page = ForgotView::class;
   protected $captcha;
 
-  public function __construct() {
+  public function before($method) {
     $this->captcha = new CaptchaManager();
     $this->cacheT8('manix/util/users/common');
+    
+    return $method;
   }
 
   protected function constructForm(Form $form): Form {

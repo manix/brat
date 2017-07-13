@@ -12,11 +12,11 @@ use Manix\Brat\Utility\Users\Models\UserTokenGateway;
 
 class Password extends SettingsController {
 
-  public function __construct() {
-    parent::__construct();
-
+  public function before($method) {
     $this->requireCurrentPassword();
     $this->addSaveButton();
+    
+    return parent::before($method);
   }
 
   public function get() {

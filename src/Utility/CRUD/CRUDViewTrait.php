@@ -3,11 +3,12 @@
 namespace Manix\Brat\Utility\CRUD;
 
 use Manix\Brat\Components\Forms\Form;
+use Manix\Brat\Components\Views\View;
 use Manix\Brat\Helpers\FormViews\DefaultFormView;
 
 trait CRUDViewTrait {
 
-  protected function constructFormView(Form $form) {
+  protected function constructFormView(Form $form): View {
     $view = new DefaultFormView($form, $this->html);
 
     foreach ($form->inputs() as $name => $input) {

@@ -50,7 +50,7 @@ class SQLGateway extends Gateway {
     }
 
     $query->limit($this->cutoff, $this->limit);
-
+    
     $stmt = $this->pdo->prepare($query->build());
     $stmt->execute($query->data());
 
@@ -69,15 +69,19 @@ class SQLGateway extends Gateway {
       $query->addColumn($field);
       $data[$field] = $model->$field ?? null;
     }
+    
+    $data = $this->pack($data);
 
-    $stmt = $this->pdo->prepare($query->insert($this->pack($data))->onDuplicateKey(true)->build());
+    $stmt = $this->pdo->prepare($query->insert($data)->onDuplicateKey(true)->build());
     $stmt->execute($query->data());
 
     $status = (bool)$stmt->rowCount();
 
     if ($status && $this->ai !== null && empty($model->{$this->ai})) {
-      $model->{$this->ai} = $this->pdo->lastInsertId();
+      $data[$this->ai] = $this->pdo->lastInsertId();
     }
+    
+    $model->fill($this->unpack($data));
 
     return $status;
   }

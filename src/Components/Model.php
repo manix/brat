@@ -8,10 +8,18 @@ class Model {
 
   /**
    * Create a new model instance.
-   * @param array $data Model's data.
+   * @param mixed $data Model's data.
    */
-  public function __construct(array $data = []) {
-    foreach ($data as $key => $value) {
+  public function __construct($data = []) {
+    $this->fill($data);
+  }
+
+  /**
+   * Fill the model from a source.
+   * @param \Iterable $source
+   */
+  public function fill($source) {
+    foreach ($source as $key => $value) {
       $this->$key = $value;
     }
   }

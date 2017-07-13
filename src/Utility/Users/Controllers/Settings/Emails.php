@@ -19,10 +19,10 @@ class Emails extends SettingsController {
 
   public $page = EmailsView::class;
 
-  public function __construct() {
-    parent::__construct();
-
+  public function before($method) {
     $this->requireCurrentPassword();
+    
+    return parent::before($method);
   }
 
   public function get() {

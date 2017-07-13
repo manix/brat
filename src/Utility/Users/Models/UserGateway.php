@@ -17,4 +17,6 @@ class UserGateway extends DefaultGateway {
     protected $rel = [
         'emails' => [UserEmailGateway::class, 'id', 'user_id']
     ];
+    protected $timestamps = true;
+    
 }

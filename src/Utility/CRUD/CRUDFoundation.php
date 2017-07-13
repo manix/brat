@@ -12,6 +12,7 @@ trait CRUDFoundation {
     if ($this->crud_gateway === null) {
       $this->crud_gateway = $this->constructGateway();
     }
+    
     return $this->crud_gateway;
   }
 

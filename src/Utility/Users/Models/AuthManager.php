@@ -135,7 +135,7 @@ class AuthManager {
     if ($this->user() === false) {
       global $manix;
 
-      $controller = new Login(url());
+      $controller = new Login();
 
       http_response_code(403);
       exit($manix->program()->respond($controller->execute('get')));

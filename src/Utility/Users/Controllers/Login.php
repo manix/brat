@@ -7,7 +7,6 @@ use Manix\Brat\Components\Model;
 use Manix\Brat\Components\Validation\Ruleset;
 use Manix\Brat\Components\Validation\Validator;
 use Manix\Brat\Helpers\FormController;
-use Manix\Brat\Helpers\Time;
 use Manix\Brat\Utility\Users\Models\Auth;
 use Manix\Brat\Utility\Users\Models\User;
 use Manix\Brat\Utility\Users\Views\LoginSuccessView;
@@ -22,13 +21,11 @@ class Login extends FormController {
   public $page = LoginView::class;
   protected $backto;
 
-  public function __construct($backto = null) {
-    if ($backto === null) {
-      $backto = $_GET['b'] ?? null;
-    }
-
-    $this->backto = $backto;
+  public function before($method) {
+    $this->backto = $_GET['b'] ?? url();
     $this->cacheT8('manix/util/users/common');
+    
+    return parent::before($method);
   }
 
   /**

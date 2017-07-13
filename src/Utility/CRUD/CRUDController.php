@@ -13,6 +13,11 @@ use function route;
 abstract class CRUDController extends FormController {
 
   use CRUDFoundation;
+  
+  /**
+   * The key used to recognise a delete GET request
+   */
+  const DELETE = 'delete';
 
   protected $model;
   protected $crud_get_type;
@@ -57,7 +62,7 @@ abstract class CRUDController extends FormController {
     if ($this->crud_get_type === null) {
       if ($this->getModel() === false) {
         $this->crud_get_type = 'c';
-      } else if ($_GET['delete'] ?? null) {
+      } else if ($_GET[self::DELETE] ?? null) {
         $this->crud_get_type = 'd';
       } else {
         $this->crud_get_type = 'u';
@@ -87,10 +92,10 @@ abstract class CRUDController extends FormController {
   }
 
   public function put() {
-    return $this->validate($_POST, function() {
+    return $this->validate($_REQUEST, function($data) {
       $model = $this->getModel();
-
-      foreach ($_POST as $key => $value) {
+      
+      foreach ($data as $key => $value) {
         $model->$key = $value;
       }
 
@@ -103,7 +108,7 @@ abstract class CRUDController extends FormController {
 
       foreach ($this->getGateway()->getPK() as $key) {
         $pk[] = $_GET[$key];
-        $pk_route[$key] = $model->$key;
+        $pk_route[$key] = (string)$model->$key;
 
         if ($model->$key != $_GET[$key]) {
           $wipeOld = true;
@@ -122,16 +127,12 @@ abstract class CRUDController extends FormController {
   }
 
   public function post() {
-    return $this->validate($_POST, function($data) {
+    return $this->validate($_REQUEST, function($data) {
       $gate = $this->getGateway();
 
       $class = $gate::MODEL;
-      $model = new $class();
+      $model = new $class($data);
 
-      foreach ($data as $key => $value) {
-        $model->$key = $value;
-      }
-      
       // just in case
       unset($data[$gate->getAI()]);
 
@@ -142,7 +143,7 @@ abstract class CRUDController extends FormController {
       $pk = [];
 
       foreach ($gate->getPK() as $key) {
-        $pk[$key] = $model->$key;
+        $pk[$key] = (string)$model->$key;
       }
 
       return [
@@ -202,6 +203,14 @@ abstract class CRUDController extends FormController {
   }
 
   /**
+   * Get the array of fields that should be presented for editing on create and update.
+   * @return array List of model property names (fields).
+   */
+  public function getEditableFields() {
+    return $this->getGateway()->getFields();
+  }
+  
+  /**
    * Get the form that is going to create new models.
    * @param Form $form A blank form instance.
    * @return Form The constructed form.
@@ -211,9 +220,9 @@ abstract class CRUDController extends FormController {
 
     $ai = $this->getGateway()->getAI();
 
-    foreach ($this->getGateway()->getFields() as $key) {
+    foreach ($this->getEditableFields() as $key) {
       // Skip adding inputs for primary key properties
-      if ($key == $ai) {
+      if ($key === $ai) {
         continue;
       }
 
@@ -242,7 +251,7 @@ abstract class CRUDController extends FormController {
   protected function constructUpdateForm(Form $form) {
     $form->setMethod('PUT');
 
-    foreach ($this->getGateway()->getFields() as $key) {
+    foreach ($this->getEditableFields() as $key) {
       $form->add($key, 'text');
     }
 

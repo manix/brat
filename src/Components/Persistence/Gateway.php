@@ -72,7 +72,7 @@ abstract class Gateway {
    * Whether this gateway has timestamps or not.
    * @var bool
    */
-  protected $timestamps;
+  protected $timestamps = false;
 
   /**
    * Get the key names that form the model's primary key.
@@ -202,7 +202,7 @@ abstract class Gateway {
         $this->joins[$rel] = $gate;
         return $gate;
       }
-      
+
       throw new Exception('Trying to join a wrong gateway.', 500);
     } else {
       throw new Exception('Trying to join an undefined relation.', 500);
@@ -222,6 +222,10 @@ abstract class Gateway {
 
     return $this;
   }
+  
+  public function getSorter(): Sorter {
+    return $this->sorter;
+  }
 
   /**
    * Prepare model data for persistence.
@@ -230,7 +234,13 @@ abstract class Gateway {
    */
   public function pack($row) {
     if ($this->timestamps) {
-      $row[($row[self::TIMESTAMP_CREATED] ?? null) ? self::TIMESTAMP_UPDATED : self::TIMESTAMP_CREATED] = new Time();
+      $now = (string)new Time();
+
+      if (empty($row[self::TIMESTAMP_CREATED])) {
+        $row[self::TIMESTAMP_CREATED] = $now;
+      }
+
+      $row[self::TIMESTAMP_UPDATED] = $now;
     }
 
     return $row;

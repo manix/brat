@@ -14,12 +14,17 @@ abstract class SettingsController extends FormController {
     return ['form' => $this->getForm()];
   }
 
-  public function __construct() {
+  public function before($method) {
     Auth::required();
-
     $this->cacheT8('manix/util/users/settings');
 
-    $this->data['ctrl'] = $this;
+    return parent::before($method);
+  }
+
+  public function after($data) {
+    $data['ctrl'] = $this;
+
+    return parent::after($data);
   }
 
   protected function requireCurrentPassword() {
