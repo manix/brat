@@ -18,7 +18,16 @@ class SQLGateway extends Gateway {
   protected $pdo;
 
   public function __construct(PDO $pdo) {
+    $this->setPDO($pdo);
+  }
+  
+  public function getPDO() {
+    return $this->pdo;
+  }
+  
+  public function setPDO(PDO $pdo) {
     $this->pdo = $pdo;
+    return $this;
   }
 
   public function find(...$pk): Collection {
