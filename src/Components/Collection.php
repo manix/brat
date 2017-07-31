@@ -129,13 +129,13 @@ class Collection implements JsonSerializable, Iterator {
 
   /**
    * Modify a property on all objects contained in this collection.
-   * @param string $key The property to be modified.
-   * @param mixed $value The new value or a callback.
+   * @param string $key The property to be modified or a callback that will get passed the entire model.
+   * @param mixed $value The new value or null when using a callback.
    */
-  public function modify($key, $value) {
-    if (is_callable($value)) {
+  public function modify($key, $value = null) {
+    if (is_callable($key)) {
       foreach ($this->list as $item) {
-        $value($item);
+        $key($item);
       }
     } else {
       foreach ($this->list as $item) {
