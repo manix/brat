@@ -13,7 +13,7 @@ use function url;
 class AuthManager {
 
   use UserGatewayFactory;
-  
+
   protected $user;
 
   /**
@@ -28,15 +28,15 @@ class AuthManager {
         $this->user = cache('users/auth/' . $id);
 
         // Extend the ttl for the cached user if it's about to expire soon.
-        if ($this->user === null) {
-          $this->register((new UserGateway())->find($id)->first());
+        if (!$this->user) {
+          $this->register($this->fetchUserFromPersistence($id));
         }
       } else {
         $this->user = $this->fetchUserFromPersistentLogin($_COOKIE[$this->rememberMeCookieParams(null)[0]] ?? null);
-        
+
         if ($this->user) {
           $this->register($this->user);
-          
+
           $this->getLoginGateway()->persist(new Model([
               'user_id' => $this->user->id,
               'ua' => $_SERVER['HTTP_USER_AGENT'] ?? null,
@@ -52,6 +52,10 @@ class AuthManager {
     return $this->user;
   }
 
+  protected function fetchUserFromPersistence($id) {
+    return (new UserGateway())->find($id)->first();
+  }
+
   /**
    * Validate a persistent login token and return the corresponding user.
    * @param string $token
@@ -59,11 +63,11 @@ class AuthManager {
    */
   protected function fetchUserFromPersistentLogin($token) {
     $record = $this->fetchPersistentLoginTokenFromString($token);
-    
+
     if (!$this->validatePersistentLoginToken($record, $token, $_SERVER['HTTP_USER_AGENT'] ?? null)) {
       return false;
     }
-    
+
     return $record->user->first() ?? false;
   }
 
@@ -164,7 +168,7 @@ class AuthManager {
 
   /**
    * Return an unpackable array of arguments to be passed to setcookie(...)
-   * 
+   *
    * @param string $value The value argument for the cookie.
    * @return array
    */
