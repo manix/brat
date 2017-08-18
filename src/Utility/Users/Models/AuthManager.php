@@ -29,7 +29,7 @@ class AuthManager {
 
         // Extend the ttl for the cached user if it's about to expire soon.
         if ($this->user === null) {
-          $this->register((new UserGateway())->find($id)->first());
+          $this->register($this->getUserGateway()->find($id)->first());
         }
       } else {
         $this->user = $this->fetchUserFromPersistentLogin($_COOKIE[$this->rememberMeCookieParams(null)[0]] ?? null);
