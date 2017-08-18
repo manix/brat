@@ -53,7 +53,7 @@ class AuthManager {
   }
 
   protected function fetchUserFromPersistence($id) {
-    return (new UserGateway())->find($id)->first();
+    return $this->getUserGateway()->find($id)->first();
   }
 
   /**
