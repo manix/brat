@@ -164,6 +164,8 @@ class AuthManager {
     $value = pack('L', $token->id) . $code;
 
     setcookie(...$this->rememberMeCookieParams($value));
+    
+    return $value;
   }
 
   /**
