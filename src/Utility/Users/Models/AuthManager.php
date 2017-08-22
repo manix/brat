@@ -76,7 +76,7 @@ class AuthManager {
       return false;
     }
 
-    $id = unpack('Lid', substr($token, 0, 4))['id'] ?? null;
+    $id = $this->getTokenIdFromTokenString($token);
 
     $gate = new UserTokenGateway();
     $gate->join('user');
@@ -96,7 +96,15 @@ class AuthManager {
   }
 
   protected function validatePersistentLoginToken($record, $token, $ua) {
-    return $record && $record->validateHash(substr($token, 4)) && $record->validateUA($ua);
+    return $record && $record->validateHash($this->getHashFromTokenString($token)) && $record->validateUA($ua);
+  }
+
+  protected function getHashFromTokenString($token) {
+    return substr($token, 4);
+  }
+
+  protected function getTokenIdFromTokenString($token) {
+    return unpack('Lid', substr($token, 0, 4))['id'] ?? null;
   }
 
   /**
@@ -154,18 +162,26 @@ class AuthManager {
     $token->user_id = $this->user->id;
     $token->ua = $_SERVER['HTTP_USER_AGENT'] ?? null;
 
-    $code = random_bytes(28);
+    $code = $this->generateTokenCode();
 
     $token->setHash($code);
 
     $gate = new UserTokenGateway();
     $gate->persist($token);
 
-    $value = pack('L', $token->id) . $code;
+    $value = $this->computeCookieValue($token, $code);
 
     setcookie(...$this->rememberMeCookieParams($value));
-    
+
     return $value;
+  }
+
+  protected function generateTokenCode() {
+    return random_bytes(28);
+  }
+
+  protected function computeCookieValue(UserToken $token, $code) {
+    return pack('L', $token->id) . $code;
   }
 
   /**
