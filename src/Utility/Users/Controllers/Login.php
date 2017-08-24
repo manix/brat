@@ -131,8 +131,6 @@ class Login extends FormController {
         $v->setError('email', $this->t8('userNotFound'));
       }
 
-      $this->onLoginAttemptResolved($user, $v);
-
       return $this->defaultFailAction($data, $v);
     });
   }

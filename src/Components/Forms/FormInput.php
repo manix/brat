@@ -2,9 +2,10 @@
 
 namespace Manix\Brat\Components\Forms;
 
+use JsonSerializable;
 use Manix\Brat\Helpers\HTMLGenerator;
 
-class FormInput {
+class FormInput implements JsonSerializable {
 
     use FormElement;
 
@@ -45,5 +46,9 @@ class FormInput {
                 return $html->input($attributes['name'], $type, (string)$value, $attributes);
         }
     }
+
+  public function jsonSerialize() {
+    return $this->attributes;
+  }
 
 }

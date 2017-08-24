@@ -2,11 +2,13 @@
 
 namespace Manix\Brat\Components\Forms;
 
+use JsonSerializable;
 use Manix\Brat\Components\Validation\Ruleset;
 use Manix\Brat\Helpers\HTMLGenerator;
 use Manix\Brat\Helpers\URL;
+use const CSRF_TOKEN;
 
-class Form {
+class Form implements JsonSerializable {
 
   use FormElement;
 
@@ -20,7 +22,7 @@ class Form {
    * Keys correspond to input names and values represent error messages.
    */
   public $errors = [];
-  
+
   /**
    * Add an input element to the form.
    * @param string $name The name attribute of the input element
@@ -140,7 +142,7 @@ class Form {
     }
 
     $this->attributes['method'] = $method;
-    
+
     return $html->formOpen($this->attributes) . $output;
   }
 
@@ -212,6 +214,13 @@ class Form {
     }
 
     return $this;
+  }
+
+  public function jsonSerialize() {
+    return [
+        'inputs' => $this->inputs,
+        'errors' => $this->errors
+    ];
   }
 
 }
