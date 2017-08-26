@@ -188,16 +188,7 @@ class HTTPProgram extends Program {
 
     return $this->t8('common', 'unsuppFormat');
   }
-
-  /**
-   * This function defines how your program reacts to errors. Essentially
-   * this function will just get passed to set_exception_handler()
-   * @param Throwable $t
-   */
-  public function error(Throwable $t) {
-    echo $this->respond((new ErrorController($t))->execute('display'));
-  }
-
+  
   /**
    * Create and return a controller instance from a given route.
    * @param string $route

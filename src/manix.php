@@ -172,15 +172,7 @@ $manix = new class {
   function run(Program $program) {
     $this->program = $program;
 
-    set_exception_handler(function($throwable) {
-      if (DEBUG_MODE) {
-        $ec = new ErrorController($throwable);
-        
-        echo $this->program->respond($ec->execute('display'));
-      } else {
-        $this->program->error($throwable);
-      }
-    });
+    set_exception_handler([$this->program, 'error']);
 
     $controller = $program->createController($program->determineRoute());
 

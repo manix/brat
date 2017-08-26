@@ -196,7 +196,7 @@ class Validator {
 
   protected function between($v, $d) {
     list($min, $max) = $d;
-
+    
     switch (gettype($v)) {
       case 'integer':
       case 'double':

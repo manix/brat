@@ -27,7 +27,9 @@ abstract class Program {
 
   abstract public function determineMethod(): string;
 
-  abstract public function error(Throwable $t);
+  public function error(Throwable $t) {
+    echo $this->respond((new ErrorController($t))->execute('display'));
+  }
 
   abstract public function respond($data);
 
