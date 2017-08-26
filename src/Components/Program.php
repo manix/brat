@@ -5,6 +5,7 @@ namespace Manix\Brat\Components;
 use Manix\Brat\Components\Cache\CacheGateway;
 use Manix\Brat\Components\Cache\FilesystemCache;
 use Manix\Brat\Components\Filesystem\Directory;
+use Manix\Brat\Utility\Errors\ErrorController;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 use Throwable;
