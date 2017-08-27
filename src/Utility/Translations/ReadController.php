@@ -2,13 +2,12 @@
 
 namespace Manix\Brat\Utility\Translations;
 
+use Exception;
 use Manix\Brat\Components\Controller;
 use const LANG;
 use const PROJECT_PATH;
 
 class ReadController extends Controller {
-
-  public $page = TranslationsScriptView::class;
 
   public function get() {
     if (isset($_GET['path'])) {
@@ -19,7 +18,7 @@ class ReadController extends Controller {
       }
     }
 
-    return [];
+    throw new Exception('Please specify path', 400);
   }
 
 }
