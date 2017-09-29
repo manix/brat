@@ -124,7 +124,7 @@ class SQLGateway extends Gateway {
         $gate->tmpJoinAlias = $tblAlias;
         $gate->addJoins($query->join('LEFT', $gate->table . ' ' . $tblAlias, ($this->tmpJoinAlias ?? $query->alias) . '.' . $this->getLocalRelationKey($key) . ' = ' . $tblAlias . '.' . $this->getRemoteRelationKey($key, $gate)), $colAlias);
 
-        foreach ($gate->fields as $field) {
+        foreach ($gate->getFields() as $field) {
           $query->addColumn($tblAlias . '.' . $field . ' AS ' . $colAlias . $field);
         }
       }

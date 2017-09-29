@@ -5,6 +5,7 @@ namespace Manix\Brat\Components;
 use Manix\Brat\Components\Cache\CacheGateway;
 use Manix\Brat\Components\Cache\FilesystemCache;
 use Manix\Brat\Components\Filesystem\Directory;
+use Manix\Brat\Utility\Errors\ErrorController;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 use Throwable;
@@ -27,7 +28,9 @@ abstract class Program {
 
   abstract public function determineMethod(): string;
 
-  abstract public function error(Throwable $t);
+  public function error(Throwable $t) {
+    echo $this->respond((new ErrorController($t))->execute('display'));
+  }
 
   abstract public function respond($data);
 

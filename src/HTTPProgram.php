@@ -8,12 +8,11 @@ use Manix\Brat\Components\Translator;
 use Manix\Brat\Components\Views\JSONView;
 use Manix\Brat\Components\Views\PlainTextView;
 use Manix\Brat\Helpers\HTMLGenerator;
-use Manix\Brat\Utility\Errors\ErrorController;
 use Manix\Brat\Utility\Events\Controllers\BeforeExecute;
 use PHPMailer\PHPMailer\Exception;
 use SessionHandler;
 use SessionHandlerInterface;
-use Throwable;
+use const CSRF_TOKEN;
 use const MANIX;
 use const SITE_DOMAIN;
 use const SITE_URL;
@@ -188,16 +187,7 @@ class HTTPProgram extends Program {
 
     return $this->t8('common', 'unsuppFormat');
   }
-
-  /**
-   * This function defines how your program reacts to errors. Essentially
-   * this function will just get passed to set_exception_handler()
-   * @param Throwable $t
-   */
-  public function error(Throwable $t) {
-    echo $this->respond((new ErrorController($t))->execute('display'));
-  }
-
+  
   /**
    * Create and return a controller instance from a given route.
    * @param string $route

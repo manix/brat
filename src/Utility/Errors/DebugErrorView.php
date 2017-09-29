@@ -10,7 +10,7 @@ class DebugErrorView extends BootstrapLayout {
   public $title = 'Error.';
 
   public function body() {
-    $t = $this->data;
+    $t = $this->data['throwable'];
     ?>
 
     <div class="heading bg-danger text-white h2 mb-0 d-flex align-items-center justify-content-between" style="min-height: 20vh; padding: 0 5%;">

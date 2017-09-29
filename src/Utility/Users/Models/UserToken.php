@@ -36,11 +36,11 @@ class UserToken extends Model {
   }
 
   public function setUA($ua) {
-    $this->ua = crc32($ua);
+    $this->ua = md5($ua);
   }
   
   public function validateUA($ua) {
-    return $this->ua === crc32($ua);
+    return $this->ua === md5($ua);
   }
   
   public function setHash($hash) {
