@@ -8,7 +8,6 @@ use Manix\Brat\Utility\Users\Controllers\UserGatewayFactory;
 use const MANIX;
 use const SITE_DOMAIN;
 use function cache;
-use function url;
 
 class AuthManager {
 

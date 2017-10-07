@@ -33,9 +33,9 @@ class Auth {
 
   /**
    * Register the current session to a user.
-   * @param User $user
+   * @param mixed $user User or false
    */
-  public static function register(User $user) {
+  public static function register($user) {
     return self::$manager->register($user);
   }
 

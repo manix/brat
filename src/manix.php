@@ -1,7 +1,6 @@
 <?php
 
 use Manix\Brat\Components\Program;
-use Manix\Brat\Utility\Errors\ErrorController;
 
 //register_shutdown_function(function($time){
 //    echo microtime(true) - $time;
