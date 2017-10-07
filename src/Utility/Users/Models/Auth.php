@@ -18,6 +18,10 @@ class Auth {
   public static function registerManager(AuthManager $manager) {
     self::$manager = $manager;
   }
+  
+  public static function getManager() {
+    return self::$manager;
+  }
 
   /**
    * Retrieve the cached user associated with the current session.
