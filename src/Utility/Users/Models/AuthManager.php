@@ -111,10 +111,15 @@ class AuthManager {
    * Register the current session to a user.
    * @param User $user
    */
-  public function register(User $user) {
-    $_SESSION[MANIX]['auth'] = $user->id;
-    $this->updateCache($user);
-    $this->user = $user;
+  public function register($user) {
+    if ($user) {
+      $_SESSION[MANIX]['auth'] = $user->id;
+      $this->updateCache($user);
+      $this->user = $user;
+    } else {
+      unset($_SESSION[MANIX]['auth']);
+      $this->user = false;
+    }
   }
 
   /**
