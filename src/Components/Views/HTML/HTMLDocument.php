@@ -21,9 +21,7 @@ abstract class HTMLDocument extends HTMLElement {
      * @param array $attributes Attributes of the element.
      */
     public function addScript($src, array $attributes = []) {
-        $attributes['src'] = $src;
-
-        $this->head[] = $this->html->script(null, $attributes);
+        $this->head[] = $this->html->script($src, $attributes);
     }
 
     /**
