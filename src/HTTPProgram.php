@@ -9,7 +9,7 @@ use Manix\Brat\Components\Views\JSONView;
 use Manix\Brat\Components\Views\PlainTextView;
 use Manix\Brat\Helpers\HTMLGenerator;
 use Manix\Brat\Utility\Events\Controllers\BeforeExecute;
-use PHPMailer\PHPMailer\Exception;
+use Exception;
 use SessionHandler;
 use SessionHandlerInterface;
 use const CSRF_TOKEN;
