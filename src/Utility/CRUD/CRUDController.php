@@ -131,24 +131,24 @@ abstract class CRUDController extends FormController {
       $gate = $this->getGateway();
 
       $class = $gate::MODEL;
-      $model = new $class($data);
+      $this->model = new $class($data);
 
       // just in case
       unset($data[$gate->getAI()]);
 
-      if (!$gate->persist($model)) {
+      if (!$gate->persist($this->model)) {
         throw new Exception('Unexpected error.', 500);
       }
 
       $pk = [];
 
       foreach ($gate->getPK() as $key) {
-        $pk[$key] = (string)$model->$key;
+        $pk[$key] = (string)$this->model->$key;
       }
-
+      
       return [
           'success' => true,
-          'model' => $model,
+          'model' => $this->model,
           'goto' => route(static::class, $pk)
       ];
     });
