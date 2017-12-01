@@ -48,12 +48,16 @@ trait CRUDListExtractor {
   protected function getQuery() {
     return $_GET['query'] ?? null;
   }
+  
+  protected function getCriteria() {
+    return new Criteria;
+  }
 
   public function getListData() {
     $controller = $this->getCRUDController();
     $searchable = $this->getSearchableColumns();
     $query = $this->getQuery();
-    $criteria = new Criteria;
+    $criteria = $this->getCriteria();
     
     if ($query) {
       $queryCriteria = $criteria->group('OR');
@@ -62,7 +66,7 @@ trait CRUDListExtractor {
         $queryCriteria->like($field, '%' . $query . '%');
       }
     }
-
+    
     return [
         $controller->getGateway()->sort($this->getSorter())->findBy($criteria),
         $this->getColumns(),

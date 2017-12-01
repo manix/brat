@@ -10,12 +10,12 @@ class Stat extends Number {
 
             for ($i = 1e12; $i > 1; $i /= 1e3) {
                 if ($this->value > $i) {
-                    return round($this->value / $i, $this->round) . $matrix[log10($i) / 3];
+                    return (string)round($this->value / $i, $this->round) . $matrix[log10($i) / 3];
                 }
             }
         }
 
-        return $this->value;
+        return (string)$this->value;
     }
 
 }
