@@ -21,7 +21,9 @@ class MemcachedCache extends CacheGateway {
     }
 
     public function retrieve($key) {
-        return $this->conn->get($this->key($key));
+        $value = $this->conn->get($this->key($key));
+        
+        return $value === false ? null : $value;
     }
 
     public function wipe($key) {
