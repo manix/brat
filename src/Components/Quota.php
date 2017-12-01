@@ -38,7 +38,7 @@ class Quota {
   public function __construct($type, $id, $threshold, $timeframe = self::HOUR) {
     $this->threshold = $threshold;
     $this->timeframe = $timeframe;
-    $this->key = 'quota_' . $type . '_' . $id . '_' . gmdate($this->timeframe);
+    $this->key = 'quota/' . $type . '/' . $id . '_' . gmdate($this->timeframe);
   }
 
   public function retrieve() {
