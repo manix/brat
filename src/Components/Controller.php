@@ -5,6 +5,8 @@ namespace Manix\Brat\Components;
 use Exception;
 use Manix\Brat\Components\Events\EventEmitter;
 use Manix\Brat\Components\Events\EventEmitterInterface;
+use Manix\Brat\Components\Validation\Ruleset;
+use Manix\Brat\Components\Validation\Validator;
 use Manix\Brat\Utility\Events\Controllers\AfterExecute;
 use Manix\Brat\Utility\Events\Controllers\BeforeExecute;
 use function registry;
@@ -23,13 +25,19 @@ abstract class Controller implements EventEmitterInterface {
    * @var array An array of common data to return to each request.
    */
   protected $data = [];
-  
+
   /**
    * Gets called before the program executes a method on the controller.
    * @param string $method The method that is about to get executed.
    * @return string The method that will be executed.
    */
   public function before($method) {
+    $v = new Validator();
+    
+    if (!$v->validate($_GET, $this->query(new Ruleset()))) {
+      throw new Exception('Invalid query parameters', 400);
+    }
+    
     return $method;
   }
 
@@ -51,13 +59,22 @@ abstract class Controller implements EventEmitterInterface {
   public function data() {
     return $this->data;
   }
-  
+
   /**
    * Fetch the method names that must be protected against CSRF attacks.
    * @return array List of method names.
    */
   public function csrf() {
     return ['post', 'put', 'delete'];
+  }
+
+  /**
+   * Apply rules to the $_GET array
+   * @param Ruleset $rules
+   * @return Ruleset
+   */
+  public function query(Ruleset $rules): Ruleset {
+    return $rules;
   }
 
   public function __call($name, $arguments) {
