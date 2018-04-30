@@ -4,8 +4,9 @@ namespace Manix\Brat\Helpers;
 
 use DateTime;
 use DateTimeZone;
+use JsonSerializable;
 
-class Time extends DateTime {
+class Time extends DateTime implements JsonSerializable {
 
   public $toStringFormat = 'Y-m-d H:i:s';
 
@@ -15,6 +16,10 @@ class Time extends DateTime {
 
   public function __toString() {
     return $this->format($this->toStringFormat);
+  }
+
+  public function jsonSerialize() {
+    return $this->__toString();
   }
 
 }
