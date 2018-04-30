@@ -9,6 +9,7 @@ use JsonSerializable;
 class Time extends DateTime implements JsonSerializable {
 
   public $toStringFormat = 'Y-m-d H:i:s';
+  public $toJSONFormat = 'c';
 
   public function __construct($time = null, $object = null) {
     parent::__construct($time, $object ?? new DateTimeZone('UTC'));
@@ -19,7 +20,7 @@ class Time extends DateTime implements JsonSerializable {
   }
 
   public function jsonSerialize() {
-    return $this->__toString();
+    return $this->format($this->toJSONFormat);
   }
 
 }
