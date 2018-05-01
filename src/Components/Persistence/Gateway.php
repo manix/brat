@@ -279,4 +279,11 @@ abstract class Gateway {
     return $this->rel[$relation][2] ?? $remoteGateway->getPK()[0] ?? false;
   }
 
+  
+  /**
+   * Enable/disable timestamps
+   */
+  public function timestamps($enable) {
+    $this->timestamps = $enable;
+  }
 }
