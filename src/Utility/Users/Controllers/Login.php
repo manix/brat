@@ -7,12 +7,14 @@ use Manix\Brat\Components\Model;
 use Manix\Brat\Components\Validation\Ruleset;
 use Manix\Brat\Components\Validation\Validator;
 use Manix\Brat\Helpers\FormController;
+use Manix\Brat\Helpers\Time;
 use Manix\Brat\Utility\Users\Models\Auth;
 use Manix\Brat\Utility\Users\Models\User;
 use Manix\Brat\Utility\Users\Views\LoginSuccessView;
 use Manix\Brat\Utility\Users\Views\LoginView;
 use function cache;
 use function route;
+use function url;
 
 class Login extends FormController {
 
@@ -24,7 +26,7 @@ class Login extends FormController {
   public function before($method) {
     $this->backto = $_GET['b'] ?? url();
     $this->cacheT8('manix/util/users/common');
-    
+
     return parent::before($method);
   }
 
@@ -141,5 +143,5 @@ class Login extends FormController {
 
     return $rules;
   }
-
+  
 }

@@ -31,16 +31,17 @@ class AuthManager {
           $this->register($this->fetchUserFromPersistence($id));
         }
       } else {
-        $this->user = $this->fetchUserFromPersistentLogin($_COOKIE[$this->rememberMeCookieParams(null)[0]] ?? null);
+        $token = $this->fetchPersistentLoginTokenFromString($_COOKIE[$this->rememberMeCookieParams(null)[0]] ?? null);
+        $this->user = $token ? ($token->user->first() ?? false) : false;
 
-        if ($this->user) {
+        if ($token && $this->user) {
           $this->register($this->user);
 
           $this->getLoginGateway()->persist(new Model([
               'user_id' => $this->user->id,
               'ua' => $_SERVER['HTTP_USER_AGENT'] ?? null,
               'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
-              'detail' => 't'
+              'detail' => ['t' => $token->id]
           ]));
         } else {
           $this->expireRememberCookie();
@@ -60,26 +61,26 @@ class AuthManager {
    * @param string $token
    * @return mixed User or false
    */
-  protected function fetchUserFromPersistentLogin($token) {
-    $record = $this->fetchPersistentLoginTokenFromString($token);
+  protected function fetchUserFromPersistentLogin($token, $fields = null) {
+    $record = $this->fetchPersistentLoginTokenFromString($token, null, $fields);
 
-    if (!$this->validatePersistentLoginToken($record, $token, $_SERVER['HTTP_USER_AGENT'] ?? null)) {
-      return false;
-    }
-
-    return $record->user->first() ?? false;
+    return $record ? ($record->user->first() ?? false) : false;
   }
 
-  protected function fetchPersistentLoginTokenFromString($token) {
+  protected function fetchPersistentLoginTokenFromString($token, $tokenFields = null, $userFields = null) {
     if (!$token) {
       return false;
     }
 
     $id = $this->getTokenIdFromTokenString($token);
 
-    $gate = new UserTokenGateway();
-    $gate->join('user');
+    $gate = $this->getTokenGateway($tokenFields);
+    $gate->join('user', $this->getUserGateway($userFields));
     $record = $gate->find($id)->first();
+    
+    if (!$this->validatePersistentLoginToken($record, $token, $_SERVER['HTTP_USER_AGENT'] ?? null)) {
+      return false;
+    }
 
     return $record;
   }
@@ -87,7 +88,7 @@ class AuthManager {
   protected function destroyPersistentLoginToken($token) {
     $record = $this->fetchPersistentLoginTokenFromString($token);
 
-    if ($this->validatePersistentLoginToken($record, $token, $_SERVER['HTTP_USER_AGENT'] ?? null)) {
+    if ($record) {
       $gate = new UserTokenGateway;
       $gate->wipe($record->id);
       $this->expireRememberCookie();
