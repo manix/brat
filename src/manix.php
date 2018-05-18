@@ -149,6 +149,16 @@ function registry($key, $value = null) {
   }
 }
 
+/**
+ * Get the currently executing program
+ * @return HTTPProgram
+ */
+function program() {
+  global $manix;
+  
+  return $manix->program();
+}
+
 $manix = new class {
 
   /**
