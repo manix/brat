@@ -5,8 +5,37 @@ namespace Manix\Brat\Utility\CRUD;
 use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Views\View;
 use Manix\Brat\Helpers\FormViews\DefaultFormView;
+use Manix\Brat\Helpers\HTMLGenerator;
+use Project\Views\Layouts\DefaultLayout;
 
-trait CRUDViewTrait {
+class CRUDView extends DefaultLayout {
+
+  public function __construct($data, HTMLGenerator $html) {
+
+    parent::__construct($data, $html);
+
+    if ($data['success'] ?? null) {
+      header('Location: ' . $data['goto'] ?? null);
+      exit;
+    }
+  }
+
+  public function body() {
+    if (isset($this->data['form'])) {
+      ?>
+      <div class="container mt-4 mb-2">
+        <div class="text-center mb-2">
+          <a href="<?= route(get_class($this->data['ctrl'])) ?>">
+            <?= $this->t8('common', 'toList') ?>
+          </a>
+        </div>
+        <?= $this->form() ?>
+      </div>
+      <?php
+    } else {
+      echo new CRUDListView($this->html, ...$this->data);
+    }
+  }
 
   protected function constructFormView(Form $form): View {
     $view = new DefaultFormView($form, $this->html);
@@ -20,7 +49,7 @@ trait CRUDViewTrait {
     }
 
     $view->setCustomRenderer('manix-wipe', [$this, 'renderDelete']);
-    
+
     return $view;
   }
 

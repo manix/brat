@@ -2,11 +2,14 @@
 
 namespace Manix\Brat\Components;
 
+use Exception;
 use Manix\Brat\Components\Cache\CacheGateway;
 use Manix\Brat\Components\Cache\FilesystemCache;
+use Manix\Brat\Components\Errors\Exception as Exception2;
+use Manix\Brat\Components\Errors\Handler;
 use Manix\Brat\Components\Filesystem\Directory;
-use Manix\Brat\Utility\Errors\ErrorController;
-use PHPMailer\PHPMailer\Exception;
+use Manix\Brat\Utility\Events\Controllers\AfterExecute;
+use Manix\Brat\Utility\Events\Controllers\BeforeExecute;
 use PHPMailer\PHPMailer\PHPMailer;
 use Throwable;
 use const DEBUG_MODE;
@@ -29,10 +32,43 @@ abstract class Program {
   abstract public function determineMethod(): string;
 
   public function error(Throwable $t) {
-    echo $this->respond((new ErrorController($t))->execute('display'));
+    echo $this->respond($this->executeController($t instanceof Exception2 ? $t->getHandler() : new Handler($t)));
   }
 
   abstract public function respond($data);
+
+  abstract public function createController(string $route): Controller;
+
+  /**
+   * Executes a controller
+   * @param Controller $controller
+   * @param string $method Override the method returned from Controller::before
+   * @return mixed Data returned from the executed method
+   */
+  public function executeController(Controller $controller, $method = null) {
+    $m = $controller->before($this->determineMethod($controller));
+
+    if (!$method) {
+      $method = $m;
+    }
+    
+    foreach ($controller->getMiddleware($method) as $rule) {
+      $class = $rule[0] === '\\' ? $rule : ('\\Project\\Middleware\\' . ucfirst($rule));
+      $mw = new $class;
+
+      if ($mw instanceof Middleware) {
+        $mw->execute($controller, $method, $this);
+      } else {
+        throw new Exception('Invalid middleware', 500);
+      }
+    }
+
+    $controller->emit(new BeforeExecute($controller, $method));
+    $data = $controller->after($controller->$method());
+    $controller->emit(new AfterExecute($controller, $data));
+
+    return $data;
+  }
 
   /**
    * Send mail using SMTP. This method is chosen by default because it is believed to be 

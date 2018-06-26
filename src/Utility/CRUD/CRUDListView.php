@@ -3,6 +3,7 @@
 namespace Manix\Brat\Utility\CRUD;
 
 use Manix\Brat\Components\Collection;
+use Manix\Brat\Components\Controller;
 use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Forms\FormInput;
 use Manix\Brat\Components\Model;
@@ -14,9 +15,9 @@ use function route;
 class CRUDListView extends HTMLElement {
 
   protected $fields;
-  protected $crudController;
+  protected $controller;
+  protected $controllerInstance;
   protected $pk;
-  protected $listController;
   protected $sort;
   protected $order;
   protected $query;
@@ -28,20 +29,19 @@ class CRUDListView extends HTMLElement {
    * @param HTMLGenerator $html
    * @param Collection $data
    * @param array $fields List of fields that should be displayed as columns.
-   * @param string $crudController FQCN of a CRUDController that can manipulate the models in the collection.
+   * @param Controller $controller a CRUD Controller that can manipulate the models in the collection.
    * @param array $pk The primary key definition for the models in $data.
-   * @param string $listController FQCN of a CRUDListController that can supply this view.
    * @param string $sort The field that was used to sort $data
    * @param string $order The order in which $data was sorted
    * @param string $query The query that was used in order to filter $data
    * @param mixed $sortable List of sortable column names or empty.
    * @param mixed $searchable List of searchable column names or empty.
    */
-  function __construct(HTMLGenerator $html, Collection $data, array $fields = [], $crudController = null, array $pk = [], $listController = null, $sort = null, $order = null, $query = null, $sortable = null, $searchable = null) {
+  function __construct(HTMLGenerator $html, Collection $data, array $fields = [], Controller $controller = null, array $pk = [], $sort = null, $order = null, $query = null, $sortable = null, $searchable = null) {
     $this->fields = $fields;
-    $this->crudController = $crudController;
+    $this->controllerInstance = $controller;
+    $this->controller = get_class($controller);
     $this->pk = empty($pk) ? $this->fields : $pk;
-    $this->listController = $listController;
     $this->sort = $sort;
     $this->order = strtolower($order);
     $this->query = $query;
@@ -52,16 +52,16 @@ class CRUDListView extends HTMLElement {
   }
 
   public function html() {
-    $actions = $this->crudController !== null;
-    $sortable = $this->listController === null ? [] : array_flip($this->getSortableFields());
+    $actions = $this->controller !== null;
+    $sortable = $this->controller === null ? [] : array_flip($this->getSortableFields());
     ?>
     <div class="table-responsive">
       <table class="<?= $this->getTableClass() ?>">
         <thead>
           <?php
-          if ($this->listController !== null && $this->search !== false):
+          if ($this->controller !== null && $this->search !== false):
             $form = new Form();
-            $form->setMethod('GET')->setAction(route($this->listController));
+            $form->setMethod('GET')->setAction(route($this->controller));
             if ($this->sort) {
               $form->add('sort', 'hidden', $this->sort);
             }
@@ -72,7 +72,12 @@ class CRUDListView extends HTMLElement {
             ?>
             <tr>
               <td colspan="<?= count($this->fields) + (int)$actions ?>" class="p-0">
-                <?= $this->renderSearchForm($form) ?>
+                <div class="d-flex">
+                  <?= $this->renderSearchForm($form) ?>
+                  <a href="<?= route($this->controller, [$this->controllerInstance->createKey => 'yes']) ?>" class="btn btn-success rounded-0">
+                    <i class="fa fa-plus"></i>
+                  </a>
+                </div>
               </td>
             </tr>
           <?php endif; ?>
@@ -81,7 +86,7 @@ class CRUDListView extends HTMLElement {
               <th>
                 <?php if (isset($sortable[$field])): $asc = $this->sort === $field && $this->order === 'asc'; ?>
                   <a href="<?=
-                  route($this->listController, [
+                  route($this->controller, [
                       'query' => $this->query,
                       'sort' => $field,
                       'order' => $asc ? 'desc' : 'asc'
@@ -149,10 +154,10 @@ class CRUDListView extends HTMLElement {
     $pk = $this->extractPKValues($model);
     ?>
     <div class="btn-group">
-      <a href="<?= route($this->crudController, $pk) ?>" class="btn btn-secondary">
+      <a href="<?= route($this->controller, $pk) ?>" class="btn btn-light">
         <i class="fa fa-pencil"></i>
       </a>
-      <a href="<?= route($this->crudController, $pk + [$this->crudController::DELETE => true]) ?>" class="btn btn-warning">
+      <a href="<?= route($this->controller, $pk + [$this->controllerInstance->deleteKey => true]) ?>" class="btn btn-warning">
         <i class="fa fa-trash"></i>
       </a>
     </div>
@@ -196,6 +201,8 @@ class CRUDListView extends HTMLElement {
   }
 
   public function renderSearchForm(Form $form) {
+    $form->setAttribute('style', 'flex: 1');
+
     echo new class($form, $this->html) extends FormView {
 
       public function renderInput(FormInput $input) {
@@ -204,7 +211,7 @@ class CRUDListView extends HTMLElement {
           <div class="input-group">
             <?= $input->setAttribute('class', 'form-control rounded-0 border-0')->toHTML($this->html) ?>
             <div class="input-group-btn">
-              <button type="submit" class="btn btn-secondary rounded-0 border-0">
+              <button type="submit" class="btn btn-light rounded-0 border-0">
                 <i class="fa fa-search"></i>
               </button>
             </div>

@@ -27,6 +27,8 @@ abstract class FilesystemGateway extends Gateway {
    * @param Directory $dir The root directory.
    */
   public function __construct(Directory $dir) {
+    parent::__construct();
+    
     $this->dir = new Directory($dir . '/' . $this->table);
   }
 

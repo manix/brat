@@ -1,10 +1,11 @@
 <?php
 
-namespace Manix\Brat\Utility\Scripts;
+namespace Manix\Brat\Utility\Users\Scripts;
 
 use Manix\Brat\Components\Criteria;
 use Manix\Brat\Components\Validation\Ruleset;
 use Manix\Brat\Helpers\Time;
+use Manix\Brat\Utility\Scripts\ScriptController;
 use Manix\Brat\Utility\Users\Controllers\UserGatewayFactory;
 
 class Users extends ScriptController {

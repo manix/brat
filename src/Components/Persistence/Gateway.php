@@ -74,6 +74,10 @@ abstract class Gateway {
    */
   protected $timestamps = false;
 
+  public function __construct() {
+    
+  }
+
   /**
    * Get the key names that form the model's primary key.
    * @return array
@@ -222,7 +226,7 @@ abstract class Gateway {
 
     return $this;
   }
-  
+
   public function getSorter(): Sorter {
     return $this->sorter;
   }
@@ -279,11 +283,11 @@ abstract class Gateway {
     return $this->rel[$relation][2] ?? $remoteGateway->getPK()[0] ?? false;
   }
 
-  
   /**
    * Enable/disable timestamps
    */
   public function timestamps($enable) {
     $this->timestamps = $enable;
   }
+
 }

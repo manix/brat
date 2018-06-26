@@ -6,9 +6,6 @@ use Exception;
 use Manix\Brat\Components\Events\EventEmitter;
 use Manix\Brat\Components\Events\EventEmitterInterface;
 use Manix\Brat\Components\Validation\Ruleset;
-use Manix\Brat\Components\Validation\Validator;
-use Manix\Brat\Utility\Events\Controllers\AfterExecute;
-use Manix\Brat\Utility\Events\Controllers\BeforeExecute;
 use function registry;
 
 abstract class Controller implements EventEmitterInterface {
@@ -27,17 +24,16 @@ abstract class Controller implements EventEmitterInterface {
   protected $data = [];
 
   /**
+   * @var array Middleware
+   */
+  protected $mw = [];
+
+  /**
    * Gets called before the program executes a method on the controller.
    * @param string $method The method that is about to get executed.
    * @return string The method that will be executed.
    */
   public function before($method) {
-    $v = new Validator();
-    
-    if (!$v->validate($_GET, $this->query(new Ruleset()))) {
-      throw new Exception('Invalid query parameters', 400);
-    }
-    
     return $method;
   }
 
@@ -61,35 +57,41 @@ abstract class Controller implements EventEmitterInterface {
   }
 
   /**
-   * Fetch the method names that must be protected against CSRF attacks.
-   * @return array List of method names.
+   * Determine whether to detect user's preferred language
+   * @param string $method
+   * @return boolean
    */
-  public function csrf() {
-    return ['post', 'put', 'delete'];
+  public function lang($method) {
+    if ($method) {
+      return true;
+    }
   }
 
   /**
-   * Apply rules to the $_GET array
-   * @param Ruleset $rules
-   * @return Ruleset
+   * Add middleware
    */
-  public function query(Ruleset $rules): Ruleset {
-    return $rules;
+  public function addMiddleware(...$names) {
+    foreach ($names as $name) {
+      $this->mw[] = $name;
+    }
+  }
+
+  /**
+   * Define the middleware rules to be applied to all methods
+   * @return array Names
+   */
+  public function middleware() {
+    return [];
+  }
+
+  public function getMiddleware($method) {
+    return array_merge($this->mw, $this->middleware(), empty($this->$method) ? [] : $this->$method);
   }
 
   public function __call($name, $arguments) {
     if (isset($name) && isset($arguments)) {
       throw new Exception('Method not found.', 404);
     }
-  }
-
-  public final function execute($method) {
-    $method = $this->before($method);
-    $this->emit(new BeforeExecute($this, $method));
-    $data = $this->after($this->$method());
-    $this->emit(new AfterExecute($this, $data));
-
-    return $data;
   }
 
 }

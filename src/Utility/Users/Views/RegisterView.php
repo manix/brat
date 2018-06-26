@@ -21,7 +21,7 @@ class RegisterView extends GuestFrame {
     $view->setCustomRenderer('captcha', function($input) use($form) {
       $error = $form->errors[$input->name] ?? null;
       ?>
-      <div class="form-group <?= $error ? 'has-danger' : null ?>">
+      <div class="form-group">
         <div class="text-center">
           <?=
           $this->data['captcha']->generateImageTag($this->html, [
@@ -37,7 +37,7 @@ class RegisterView extends GuestFrame {
           </span>
         <?php endif; ?>
         <?=
-        $input->setAttribute('class', 'form-control')
+        $input->setAttribute('class', 'form-control ' . ($error ? ' is-invalid' : ''))
         ->setAttribute('autocomplete', 'off')
         ->toHTML($this->html)
         ?>

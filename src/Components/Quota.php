@@ -24,12 +24,15 @@ class Quota {
 
   public static function enforce(self $quota, $amount = 1) {
     if ($quota->test($amount)) {
-      throw new Exception('Quota threshold exceeded.', 503);
+      throw new Exception('Quota threshold reached.', 503);
     } $quota->persist($quota->getTested());
   }
 
   protected $threshold;
-  protected $timeframe;/**   * Last tested value */
+  protected $timeframe;
+  /**   
+   * Last tested value 
+   */
   protected $tested;
 
   public function __construct($type, $id, $threshold, $timeframe = self::HOUR) {

@@ -2,11 +2,11 @@
 
 namespace Manix\Brat\Utility\Users\Controllers;
 
-use Manix\Brat\Components\Controller;
+use Manix\Brat\Utility\HTTP\HTTPController;
 use Manix\Brat\Utility\Users\Views\ResetView;
 use function cache;
 
-class Reset extends Controller {
+class Reset extends HTTPController {
 
   use UserGatewayFactory;
 

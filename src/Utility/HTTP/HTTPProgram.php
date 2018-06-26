@@ -1,19 +1,16 @@
 <?php
 
-namespace Manix\Brat;
+namespace Manix\Brat\Utility\HTTP;
 
+use Exception;
 use Manix\Brat\Components\Controller;
 use Manix\Brat\Components\Program;
 use Manix\Brat\Components\Translator;
 use Manix\Brat\Components\Views\JSONView;
 use Manix\Brat\Components\Views\PlainTextView;
 use Manix\Brat\Helpers\HTMLGenerator;
-use Manix\Brat\Utility\Events\Controllers\BeforeExecute;
-use Exception;
 use SessionHandler;
 use SessionHandlerInterface;
-use const CSRF_TOKEN;
-use const MANIX;
 use const SITE_DOMAIN;
 use const SITE_URL;
 use function config;
@@ -31,6 +28,7 @@ class HTTPProgram extends Program {
    * @var array The sorted list of preferred response types.
    */
   protected $requested = [];
+
   /**
    * @var array Stores the resolved class-to-url results.
    */
@@ -73,57 +71,6 @@ class HTTPProgram extends Program {
     }
 
     rsort($this->requested);
-
-    /*
-     * Start the session
-     */
-    $this->startSession();
-
-    /*
-     * Generate a CSRF token
-     */
-    if (!isset($_SESSION[MANIX]['csrf'])) {
-      $_SESSION[MANIX]['csrf'] = $this->generateCSRFToken(32);
-    }
-
-    if (!defined('CSRF_TOKEN')) {
-      define('CSRF_TOKEN', $_SESSION[MANIX]['csrf']);
-    }
-
-    /*
-     * Determine language and store in session.
-     */
-    if (!isset($_SESSION[MANIX]['lang'])) {
-      $lc = config('lang');
-
-      if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-        $langs = $lc['languages'];
-
-        $q = 0;
-        foreach (explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']) as $part) {
-          list($code, $priority) = explode(';q=', $part . ';q=');
-
-          if (isset($langs[$code])) {
-            if (!isset($priority)) {
-              $priority = 1;
-            }
-
-            if ($priority >= $q) {
-              $lang = $code;
-              $q = $priority;
-            }
-          }
-        }
-
-        $_SESSION[MANIX]['lang'] = $lang ?? $lc['default'];
-      } else {
-        $_SESSION[MANIX]['lang'] = $lc['default'];
-      }
-    }
-
-    if (!defined('LANG')) {
-      define('LANG', $_SESSION[MANIX]['lang']);
-    }
   }
 
   /**
@@ -143,20 +90,11 @@ class HTTPProgram extends Program {
   protected function createSessionHandler(): SessionHandlerInterface {
     return new SessionHandler();
   }
-
-  /**
-   * Generates a random token.
-   * @param int $length Length of the generated token.
-   * @return string The token.
-   */
-  protected function generateCSRFToken($length) {
-    $token = '';
-
-    for ($i = 0; $i < $length; $i++) {
-      $token .= mt_rand(0, 9);
-    }
-
-    return $token;
+  
+  public function executeController(Controller $controller, $method = null) {
+    $controller->addMiddleware('session', 'CSRF', 'query', 'lang');
+    
+    return parent::executeController($controller, $method);
   }
 
   /**
@@ -181,13 +119,14 @@ class HTTPProgram extends Program {
         case 'text/*':
         case 'text/html':
           header('Content-Type: text/html');
+          
           return new $page($data, new HTMLGenerator());
       }
     }
 
     return $this->t8('common', 'unsuppFormat');
   }
-  
+
   /**
    * Create and return a controller instance from a given route.
    * @param string $route
@@ -226,36 +165,8 @@ class HTTPProgram extends Program {
     if (!loader()->loadClass($class)) {
       throw new Exception($this->t8('common', 'ctrlnotfound'), 404);
     }
-    
-    $controller = new $class;
 
-    $controller->on(BeforeExecute::class, function($event) {
-      $this->validateSession();
-
-      if (in_array($event->getMethod(), $event->getController()->csrf())) {
-        $this->validateCSRF();
-      }
-    });
-
-    return $controller;
-  }
-
-  protected function validateSession() {
-    $fingerprint = md5($_SERVER['HTTP_USER_AGENT'] ?? null);
-
-    if (empty($_SESSION[MANIX]['fp'])) {
-      $_SESSION[MANIX]['fp'] = $fingerprint;
-    } else if ($fingerprint !== $_SESSION[MANIX]['fp']) {
-      throw new Exception('Invalid session fingerprint.', 400);
-    }
-  }
-
-  protected function validateCSRF() {
-    $token = $_POST['manix-csrf'] ?? $_SERVER['HTTP_CSRF_TOKEN'] ?? null;
-
-    if (CSRF_TOKEN !== $token) {
-      throw new \Exception('CSRF token mismatch.', 400);
-    }
+    return new $class;
   }
 
   /**

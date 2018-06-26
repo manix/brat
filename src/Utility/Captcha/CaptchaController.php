@@ -2,9 +2,9 @@
 
 namespace Manix\Brat\Utility\Captcha;
 
-use Manix\Brat\Components\Controller;
+use Manix\Brat\Utility\HTTP\HTTPController;
 
-class CaptchaController extends Controller {
+class CaptchaController extends HTTPController {
 
   public $page = CaptchaView::class;
 

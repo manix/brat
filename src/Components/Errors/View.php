@@ -1,15 +1,17 @@
 <?php
 
-namespace Manix\Brat\Utility\Errors;
+namespace Manix\Brat\Components\Errors;
 
 use Manix\Brat\Utility\BootstrapLayout;
+use const DEBUG_MODE;
 use function html;
 
-class DebugErrorView extends BootstrapLayout {
+class View extends BootstrapLayout {
 
   public $title = 'Error.';
 
   public function body() {
+    
     $t = $this->data['throwable'];
     ?>
 

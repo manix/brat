@@ -19,6 +19,7 @@ class LoginView extends GuestFrame {
     ];
 
     $view->setCustomRenderer('remember', function($input) {
+      $input->setAttribute('class', 'd-none');
       ?>
       <div class="form-group" data-toggle="buttons">
         <label class="btn btn-outline-primary btn-block">

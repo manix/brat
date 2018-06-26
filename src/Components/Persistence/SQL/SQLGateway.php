@@ -13,11 +13,13 @@ use Manix\Brat\Components\Sorter;
 use Manix\Brat\Helpers\Arrays;
 use PDO;
 
-class SQLGateway extends Gateway {
+abstract class SQLGateway extends Gateway {
 
   protected $pdo;
 
   public function __construct(PDO $pdo) {
+    parent::__construct();
+    
     $this->setPDO($pdo);
   }
   

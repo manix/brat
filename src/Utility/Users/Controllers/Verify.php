@@ -2,10 +2,10 @@
 
 namespace Manix\Brat\Utility\Users\Controllers;
 
-use Manix\Brat\Components\Controller;
+use Manix\Brat\Utility\HTTP\HTTPController;
 use Manix\Brat\Utility\Users\Views\VerifyView;
 
-class Verify extends Controller {
+class Verify extends HTTPController {
 
   use UserGatewayFactory;
 

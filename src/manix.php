@@ -151,7 +151,7 @@ function registry($key, $value = null) {
 
 /**
  * Get the currently executing program
- * @return HTTPProgram
+ * @return Program
  */
 function program() {
   global $manix;
@@ -175,7 +175,7 @@ $manix = new class {
   }
 
   /**
-   * Run a Manix program.
+   * Run a program.
    * @param Program $program Your program.
    */
   function run(Program $program) {
@@ -184,12 +184,8 @@ $manix = new class {
     set_exception_handler([$this->program, 'error']);
 
     $controller = $program->createController($program->determineRoute());
+    $data = $program->executeController($controller);
 
-    /*
-     * Determine the method that must be called on the controller
-     */
-    $method = $program->determineMethod($controller);
-
-    exit($program->respond($controller->execute($method)));
+    exit($program->respond($data));
   }
 };

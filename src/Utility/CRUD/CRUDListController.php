@@ -2,9 +2,9 @@
 
 namespace Manix\Brat\Utility\CRUD;
 
-use Manix\Brat\Components\Controller;
+use Manix\Brat\Utility\HTTP\HTTPController;
 
-abstract class CRUDListController extends Controller {
+abstract class CRUDListController extends HTTPController {
 
   use CRUDListExtractor;
   

@@ -20,6 +20,9 @@ class DefaultFormView extends FormView {
   }
 
   public function renderFormGroup(FormInput $input) {
+    $name = $input->name;
+    $error = $this->data->errors[$name] ?? null;
+
     switch ($input->getAttribute('type')) {
       case 'hidden':
         echo $input->toHTML($this->html);
@@ -30,19 +33,16 @@ class DefaultFormView extends FormView {
         $class = 'd-flex justify-content-end';
         $input->setAttribute('class', $input->getAttribute('class') ?? 'btn btn-secondary');
         break;
-      
-      
+
+
       case 'password':
         $input->setAttribute('value', '');
-        // break intentionally ommited, must add form-control class
-        
+      // break intentionally ommited, must add form-control class
+
       default:
-        $input->setAttribute('class', $input->getAttribute('class') ?? 'form-control');
+        $input->setAttribute('class', ($input->getAttribute('class') ?? 'form-control') . ($error ? ' is-invalid' : ''));
         break;
     }
-
-    $name = $input->name;
-    $error = $this->data->errors[$name] ?? null;
     ?>
 
     <div class="form-group <?= $class ?? null, $error ? 'has-danger' : null ?>">
