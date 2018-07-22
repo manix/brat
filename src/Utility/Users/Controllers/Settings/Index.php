@@ -10,9 +10,7 @@ class Index extends SettingsController {
 
   public $page = IndexView::class;
 
-  public function get() {
-    
-  }
+  
 
   protected function constructForm(Form $form): Form {
     return $form;

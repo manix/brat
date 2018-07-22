@@ -11,14 +11,16 @@ class RunSQL extends ScriptController {
   public function run(...$args) {
     list($path) = $args;
 
+    $driver = $_ENV['db']['driver'] ?? 'mysql';
     $host = $_ENV['db']['host'] ?? null;
     $dbname = $_ENV['db']['dbname'] ?? null;
     $charset = $_ENV['db']['charset'] ?? null;
     $user = $_ENV['db']['user'] ?? null;
     $pass = $_ENV['db']['pass'] ?? null;
+    $port = $_ENV['db']['port'] ?? 3306;
 
     try {
-      $pdo = new PDO("mysql:host={$host};dbname={$dbname};charset={$charset};", $user, $pass, [
+      $pdo = new PDO("{$driver}:host={$host};dbname={$dbname};port={$port};charset={$charset};", $user, $pass, [
           PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
       ]);
 
@@ -44,11 +46,11 @@ class RunSQL extends ScriptController {
 
   public function help($name) {
     return <<<HELP
-    
+
 Usage: "{$name} <file>"
 
 Executes an sql statement from a file using the connection defined in project/.env.php under key "db".
-    
+
 HELP;
   }
 

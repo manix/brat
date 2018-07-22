@@ -14,8 +14,11 @@ abstract class SettingsController extends FormController {
     return ['form' => $this->getForm()];
   }
 
+  public function middleware() {
+    return ['auth'];
+  }
+  
   public function before($method) {
-    Auth::required();
     $this->cacheT8('manix/util/users/settings');
 
     return parent::before($method);

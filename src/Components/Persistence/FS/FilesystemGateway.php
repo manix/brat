@@ -169,6 +169,7 @@ abstract class FilesystemGateway extends Gateway {
   }
 
   protected function performJoins($row) {
+    // TODO make flexible via new design, see SQL gateway
     if (!empty($this->joins)) {
       foreach ($this->joins as $key => $gate) {
         $row[$key] = $gate->findBy((new Criteria)->equals($this->getRemoteRelationKey($key, $gate), $row[$this->getLocalRelationKey($key)]));

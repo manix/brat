@@ -19,14 +19,14 @@ abstract class SQLGateway extends Gateway {
 
   public function __construct(PDO $pdo) {
     parent::__construct();
-    
+
     $this->setPDO($pdo);
   }
-  
+
   public function getPDO() {
     return $this->pdo;
   }
-  
+
   public function setPDO(PDO $pdo) {
     $this->pdo = $pdo;
     return $this;
@@ -61,7 +61,8 @@ abstract class SQLGateway extends Gateway {
     }
 
     $query->limit($this->cutoff, $this->limit);
-    
+
+//    echo "<pre>" . print_r($query->build(), true) . "</pre>";exit;
     $stmt = $this->pdo->prepare($query->build());
     $stmt->execute($query->data());
 
@@ -80,7 +81,7 @@ abstract class SQLGateway extends Gateway {
       $query->addColumn($field);
       $data[$field] = $model->$field ?? null;
     }
-    
+
     $data = $this->pack($data);
 
     $stmt = $this->pdo->prepare($query->insert($data)->onDuplicateKey(true)->build());
@@ -91,7 +92,7 @@ abstract class SQLGateway extends Gateway {
     if ($status && $this->ai !== null && empty($model->{$this->ai})) {
       $data[$this->ai] = $this->pdo->lastInsertId();
     }
-    
+
     $model->fill($this->unpack($data));
 
     return $status;
@@ -118,13 +119,74 @@ abstract class SQLGateway extends Gateway {
     return (bool)$stmt->rowCount();
   }
 
+  protected function produceJoinRule(Criteria $criteria) {
+    $dummy = new SelectQuery();
+    switch ($criteria->glue()) {
+      case 'OR':
+        $method = 'orWhere';
+        break;
+
+      default:
+        $method = 'where';
+        break;
+    }
+
+    $map = ['eq' =>
+        '=',
+        'noteq' =>
+        '!=',
+        'gt' =>
+        '>',
+        'lt' =>
+        '<',
+        'in' =>
+        'IN',
+        'notin' =>
+        'NOT IN',
+        'btw' =>
+        'BETWEEN',
+        'notbtw' =>
+        'NOT BETWEEN',
+        'like' =>
+        'LIKE',
+        'notlike' =>
+        'NOT LIKE',];
+
+
+    foreach ($criteria->rules() as $rule) {
+      foreach ($rule as $key => $data) {
+        $dummy->$method($data[0], $map[$key], $data[1]);
+      }
+    }
+
+    $rule = str_replace($dummy->getSelectClause() . '  WHERE ', '', $dummy->build());
+    foreach ($dummy->data() as $placeholder => $value) {
+      $rule = str_replace($placeholder, $value[0] === '`' ? $value : $this->pdo->quote($value), $rule);
+    }
+    
+    return $rule;
+  }
+
   protected function addJoins(SelectQuery $query, $base = null): SelectQuery {
     if (!empty($this->joins)) {
       foreach ($this->joins as $key => $gate) {
         $tblAlias = Query::getAlias();
         $colAlias = $base . '$' . $tblAlias . '$_';
         $gate->tmpJoinAlias = $tblAlias;
-        $gate->addJoins($query->join('LEFT', $gate->table . ' ' . $tblAlias, ($this->tmpJoinAlias ?? $query->alias) . '.' . $this->getLocalRelationKey($key) . ' = ' . $tblAlias . '.' . $this->getRemoteRelationKey($key, $gate)), $colAlias);
+        $localalias = ($this->tmpJoinAlias ?? $query->alias);
+
+        if (isset($gate->customJoiner)) {
+          $joiner = $gate->customJoiner;
+          $rule = $this->produceJoinRule($joiner(function ($field) use ($localalias) {
+            return "`$localalias`.`$field`";
+          }, function ($field) use ($tblAlias) {
+            return "`$tblAlias`.`$field`";
+          }));
+        } else {
+          $rule = $localalias . '.' . $this->getLocalRelationKey($key) . ' = ' . $tblAlias . '.' . $this->getRemoteRelationKey($key, $gate);
+        }
+
+        $gate->addJoins($query->join('LEFT', $gate->table . ' ' . $tblAlias, $rule), $colAlias);
 
         foreach ($gate->getFields() as $field) {
           $query->addColumn($tblAlias . '.' . $field . ' AS ' . $colAlias . $field);

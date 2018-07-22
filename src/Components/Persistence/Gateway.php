@@ -192,14 +192,18 @@ abstract class Gateway {
    * @param mixed $gate A gateway instance or array of fields to select.
    * @return $gate
    */
-  public function join($rel, $gate = null): Gateway {
+  public function join($rel, $gate = null, callable $joiner = null): Gateway {
     if (isset($this->rel[$rel])) {
       $class = $this->rel[$rel][0];
-
+      
       if (is_array($gate)) {
         $gate = (new $class)->setFields($gate);
-      } elseif ($gate === null) {
+      } else {
         $gate = new $class;
+      }
+      
+      if ($joiner) {
+        $gate->customJoiner = $joiner;
       }
 
       if ($gate instanceof $class) {

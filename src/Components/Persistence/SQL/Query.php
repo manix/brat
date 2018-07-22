@@ -136,7 +136,7 @@ abstract class Query {
                 break;
 
             default:
-                throw new Exception('Unsupported operand type in where clause.', 500);
+                throw new Exception('Unsupported operand type [' . $operand . '] in where clause.', 500);
         }
 
         return $sql;

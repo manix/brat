@@ -112,6 +112,7 @@ class AuthManager {
    * @param User $user
    */
   public function register($user) {
+    
     if ($user) {
       $_SESSION[MANIX]['auth'] = $user->id;
       $this->updateCache($user);
