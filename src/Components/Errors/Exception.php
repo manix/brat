@@ -10,7 +10,7 @@ class Exception extends E {
   protected $handler;
 
   /**
-   * @param Controller $controller The login controller to render
+   * @param Controller $controller The controller to render
    */
   public function setHandler(Controller $controller) {
     $this->handler = $controller;

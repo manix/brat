@@ -5,6 +5,9 @@ namespace Manix\Brat\Components\Errors;
 use Manix\Brat\Components\Controller;
 use Throwable;
 
+/**
+ * The default error handler
+ */
 class Handler extends Controller {
   
   public $page = View::class;

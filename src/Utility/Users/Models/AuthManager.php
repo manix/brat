@@ -2,6 +2,7 @@
 
 namespace Manix\Brat\Utility\Users\Models;
 
+use Manix\Brat\Components\Errors\Exception;
 use Manix\Brat\Components\Model;
 use Manix\Brat\Utility\Users\Controllers\Login;
 use Manix\Brat\Utility\Users\Controllers\UserGatewayFactory;
@@ -151,14 +152,12 @@ class AuthManager {
    */
   public function required() {
     if ($this->user() === false) {
-      global $manix;
-
-      $program = $manix->program();
-      $controller = new Login();
-
-      http_response_code(403);
-      exit($program->respond($program->executeController($controller)));
+      throw (new Exception("Log in", 403))->setHandler($this->getLoginController());
     }
+  }
+
+  public function getLoginController() {
+    return new Login();
   }
 
   /**

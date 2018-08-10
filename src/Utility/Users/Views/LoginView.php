@@ -6,7 +6,6 @@ use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Helpers\FormViews\DefaultFormView;
 use Manix\Brat\Utility\Users\Controllers\Forgot;
 use Manix\Brat\Utility\Users\Controllers\Register;
-use Project\Views\Users\GuestFrame;
 use function route;
 
 class LoginView extends GuestFrame {
