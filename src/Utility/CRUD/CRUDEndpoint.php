@@ -9,7 +9,7 @@ use Manix\Brat\Components\Sorter;
 use Manix\Brat\Components\Validation\Ruleset;
 use Manix\Brat\Helpers\FormEndpoint;
 use Manix\Brat\Helpers\Redirect;
-use PHPMailer\PHPMailer\Exception;
+use Exception;
 use function route;
 
 trait CRUDEndpoint {
@@ -55,11 +55,19 @@ trait CRUDEndpoint {
     if ($this->model === null) {
       $pk = [];
 
+      $criteria = $this->getCriteria();
+
+      $matchPK = $criteria->group('AND');
+
       foreach ($this->getGateway()->getPK() as $key) {
-        $pk[] = $_GET[$key] ?? null;
+        if (isset($_GET[$key])) {
+          $matchPK->equals($key, $_GET[$key]);
+        } else {
+          return false;
+        }
       }
 
-      $this->model = $this->fetchModel($pk);
+      $this->model = $this->fetchModel($criteria);
     }
 
     return $this->model;
@@ -70,8 +78,8 @@ trait CRUDEndpoint {
    * @param array The primary key values for the model.
    * @return mixed The model or false if not found.
    */
-  protected function fetchModel($pk) {
-    return $this->getGateway()->find(...$pk)->first() ?? false;
+  protected function fetchModel(Criteria $criteria) {
+    return $this->getGateway()->findBy($criteria)->first() ?? false;
   }
 
   /**
@@ -108,14 +116,13 @@ trait CRUDEndpoint {
           break;
         case 'l':
           $this->page = $this->getListView();
-
           return $this->getListData();
-
-        default:
+          
+          default:
           throw new Exception('not found', 404);
+        }
       }
-    }
-
+      
     return [
         'form' => $this->getForm(),
     ];
