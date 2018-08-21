@@ -74,7 +74,6 @@ class AuthManager {
     }
 
     $id = $this->getTokenIdFromTokenString($token);
-
     $gate = $this->getTokenGateway($tokenFields);
     $gate->join('user', $this->getUserGateway($userFields));
     $record = $gate->find($id)->first();

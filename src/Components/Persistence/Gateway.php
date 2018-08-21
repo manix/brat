@@ -198,7 +198,7 @@ abstract class Gateway {
       
       if (is_array($gate)) {
         $gate = (new $class)->setFields($gate);
-      } else {
+      } elseif ($gate === null) {
         $gate = new $class;
       }
       
