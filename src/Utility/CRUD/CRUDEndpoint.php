@@ -2,14 +2,15 @@
 
 namespace Manix\Brat\Utility\CRUD;
 
+use Exception;
 use Manix\Brat\Components\Criteria;
 use Manix\Brat\Components\Forms\Form;
+use Manix\Brat\Components\Model;
 use Manix\Brat\Components\Persistence\Gateway;
 use Manix\Brat\Components\Sorter;
 use Manix\Brat\Components\Validation\Ruleset;
 use Manix\Brat\Helpers\FormEndpoint;
 use Manix\Brat\Helpers\Redirect;
-use Exception;
 use function route;
 
 trait CRUDEndpoint {
@@ -117,24 +118,30 @@ trait CRUDEndpoint {
         case 'l':
           $this->page = $this->getListView();
           return $this->getListData();
-          
-          default:
+
+        default:
           throw new Exception('not found', 404);
-        }
       }
-      
+    }
+
     return [
         'form' => $this->getForm(),
     ];
+  }
+
+  public function populateModel(Model $model, $data) {
+    foreach ($this->getEditableFields() as $field) {
+      if (isset($data[$field])) {
+        $model->$field = $data[$field];
+      }
+    }
   }
 
   public function put() {
     return $this->validate($_REQUEST, function($data) {
       $model = $this->getModel();
 
-      foreach ($data as $key => $value) {
-        $model->$key = $value;
-      }
+      $this->populateModel($model, $data);
 
       if (!$this->getGateway()->persist($model)) {
         throw new Exception('Unexpected error.', 500);
@@ -168,7 +175,8 @@ trait CRUDEndpoint {
       $gate = $this->getGateway();
 
       $class = $gate::MODEL;
-      $this->model = new $class($data);
+      $this->model = new $class();
+      $this->populateModel($model, $data);
 
       // just in case
       unset($data[$gate->getAI()]);

@@ -77,7 +77,7 @@ class AuthManager {
     $gate = $this->getTokenGateway($tokenFields);
     $gate->join('user', $this->getUserGateway($userFields));
     $record = $gate->find($id)->first();
-    
+
     if (!$this->validatePersistentLoginToken($record, $token, $_SERVER['HTTP_USER_AGENT'] ?? null)) {
       return false;
     }
@@ -112,7 +112,7 @@ class AuthManager {
    * @param User $user
    */
   public function register($user) {
-    
+
     if ($user) {
       $_SESSION[MANIX]['auth'] = $user->id;
       $this->updateCache($user);
