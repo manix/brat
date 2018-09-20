@@ -176,7 +176,7 @@ trait CRUDEndpoint {
 
       $class = $gate::MODEL;
       $this->model = new $class();
-      $this->populateModel($model, $data);
+      $this->populateModel($this->model, $data);
 
       // just in case
       unset($data[$gate->getAI()]);
