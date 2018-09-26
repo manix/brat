@@ -74,9 +74,7 @@ class CRUDListView extends HTMLElement {
               <td colspan="<?= count($this->fields) + (int)$actions ?>" class="p-0">
                 <div class="d-flex">
                   <?= $this->renderSearchForm($form) ?>
-                  <a href="<?= route($this->controller, [$this->controllerInstance->createKey => 'yes']) ?>" class="btn btn-success rounded-0">
-                    <i class="fa fa-plus"></i>
-                  </a>
+                  <?= $this->renderCreateButton() ?>
                 </div>
               </td>
             </tr>
@@ -222,6 +220,14 @@ class CRUDListView extends HTMLElement {
         }
       }
     };
+  }
+
+  public function renderCreateButton() {
+    ?>
+    <a href="<?= route($this->controller, [$this->controllerInstance->createKey => 'yes']) ?>" class="btn btn-success rounded-0">
+      <i class="fa fa-plus"></i>
+    </a>
+    <?php
   }
 
 }
