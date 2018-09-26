@@ -54,8 +54,6 @@ trait CRUDEndpoint {
    */
   public final function getModel() {
     if ($this->model === null) {
-      $pk = [];
-
       $criteria = $this->getCriteria();
 
       $matchPK = $criteria->group('AND');

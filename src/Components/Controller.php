@@ -90,7 +90,7 @@ abstract class Controller implements EventEmitterInterface {
 
   public function __call($name, $arguments) {
     if (isset($name) && isset($arguments)) {
-      throw new Exception('Method not found.', 404);
+      throw new Exception('Method ' . $name . ' not found.', 404);
     }
   }
 
