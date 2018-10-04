@@ -33,8 +33,13 @@ class CRUDView extends DefaultLayout {
       </div>
       <?php
     } else {
-      echo new CRUDListView($this->html, ...$this->data);
+      $class = $this->getCrudListView();
+      echo new $class($this->html, ...$this->data);
     }
+  }
+
+  protected function getCrudListView() {
+    return CRUDListView::class;
   }
 
   protected function constructFormView(Form $form): View {
