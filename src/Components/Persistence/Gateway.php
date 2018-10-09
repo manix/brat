@@ -75,7 +75,7 @@ abstract class Gateway {
   protected $timestamps = false;
 
   public function __construct() {
-    
+
   }
 
   /**
@@ -109,6 +109,10 @@ abstract class Gateway {
     return $fields;
   }
 
+  public function getRelations() {
+    return $this->rel;
+  }
+
   /**
    * Set the key names that this gateway cares about.
    * @param array $fields
@@ -132,7 +136,7 @@ abstract class Gateway {
 
   /**
    * Persist an object.
-   * 
+   *
    * @param Model $model The model.
    * @param array $fields The fields to persist from the model. If null, then persist all.
    * @return bool Whether the model was persisted successfully or not.
@@ -157,7 +161,7 @@ abstract class Gateway {
 
   /**
    * Wipe a persisted object.
-   * 
+   *
    * @param array $pk Values for primary key.
    * @return bool Whether object was wiped successfully or not.
    */
@@ -167,7 +171,7 @@ abstract class Gateway {
 
   /**
    * Find a persisted object by primary key.
-   * 
+   *
    * @param array $pk Values for primary key.
    * @return Collection The found objects.
    */
@@ -175,15 +179,20 @@ abstract class Gateway {
 
   abstract public function findBy(Criteria $criteria): Collection;
 
-  protected function instantiate(array $set) {
+  protected function instantiate(array $set, $asList = true) {
     $interface = static::MODEL;
-    $collection = new Collection($interface);
 
-    foreach ($set as $row) {
-      $collection->push(new $interface($this->unpack($row)));
+    if ($asList) {
+      $collection = new Collection($interface);
+
+      foreach ($set as $row) {
+        $collection->push(new $interface($this->unpack($row)));
+      }
+
+      return $collection;
+    } else {
+      return new $interface($this->unpack(end($set)));
     }
-
-    return $collection;
   }
 
   /**
@@ -195,13 +204,13 @@ abstract class Gateway {
   public function join($rel, $gate = null, callable $joiner = null): Gateway {
     if (isset($this->rel[$rel])) {
       $class = $this->rel[$rel][0];
-      
+
       if (is_array($gate)) {
         $gate = (new $class)->setFields($gate);
       } elseif ($gate === null) {
         $gate = new $class;
       }
-      
+
       if ($joiner) {
         $gate->customJoiner = $joiner;
       }

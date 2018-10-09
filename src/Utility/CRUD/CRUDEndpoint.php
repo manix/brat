@@ -395,6 +395,10 @@ trait CRUDEndpoint {
     return $_GET['query'] ?? null;
   }
 
+  protected function getQueryFields() {
+    return empty($_GET['fields']) ? null : array_intersect($this->getSearchableColumns(), explode(',', $_GET['fields']));
+  }
+
   protected function getCriteria() {
     return new Criteria;
   }
@@ -403,7 +407,42 @@ trait CRUDEndpoint {
    * The view that will be used to render the list page.
    */
   public function getListView() {
-    return CRUDView::class;
+    return CRUDListView::class;
+  }
+
+  /**
+   * Defines the relations to other CRUD controllers to enable hyperlinks in column bodies
+   * @return array Keys are key names in this controller's gateway relations and values are FQCNs of respective CRUD controllers
+   */
+  public function getRelations() {
+    return [
+//    'relation-name-in-gateway' => class | [field, class]
+    ];
+  }
+
+  public function getParsedRelations() {
+    $relations = [];
+    $gateRelations = $this->getGateway()->getRelations();
+    foreach ($this->getRelations() as $key => $data) {
+      $rel = $gateRelations[$key];
+      if (is_array($data)) {
+        $field = $data[0];
+        $class = $data[1];
+      } else {
+        $field = $rel[1] ?? $key;
+        $class = $data;
+      }
+
+      $gate = new $rel[0];
+      $pk = $gate->getPK();
+      $relations[$field] = route($class, count($pk) > 1 ? [
+          'fields' => $pk[0],
+          'query' => ''
+      ] : [
+          $pk[0] => ''
+      ]);
+    }
+    return $relations;
   }
 
   public function getListData() {
@@ -414,7 +453,7 @@ trait CRUDEndpoint {
     if ($query) {
       $queryCriteria = $criteria->group('OR');
 
-      foreach ($searchable as $field) {
+      foreach ($this->getQueryFields() ?? $searchable as $field) {
         $queryCriteria->like($field, '%' . $query . '%');
       }
     }
@@ -428,7 +467,8 @@ trait CRUDEndpoint {
         $this->getOrder(),
         $query,
         $this->getSortableColumns(),
-        $searchable
+        $searchable,
+        $this->getParsedRelations()
     ];
   }
 

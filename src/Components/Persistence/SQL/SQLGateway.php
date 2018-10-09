@@ -163,7 +163,7 @@ abstract class SQLGateway extends Gateway {
     foreach ($dummy->data() as $placeholder => $value) {
       $rule = str_replace($placeholder, $value[0] === '`' ? $value : $this->pdo->quote($value), $rule);
     }
-    
+
     return $rule;
   }
 
@@ -173,6 +173,7 @@ abstract class SQLGateway extends Gateway {
         $tblAlias = Query::getAlias();
         $colAlias = $base . '$' . $tblAlias . '$_';
         $gate->tmpJoinAlias = $tblAlias;
+        $gate->tmpJoinAsList = empty($this->rel[$key][3]);
         $localalias = ($this->tmpJoinAlias ?? $query->alias);
 
         if (isset($gate->customJoiner)) {
@@ -225,7 +226,6 @@ abstract class SQLGateway extends Gateway {
 
       unset($set[$index]);
     }
-
     if (!empty($this->joins)) {
       foreach ($joined as $pks => $data) {
         foreach ($this->joins as $key => $gate) {
@@ -234,7 +234,7 @@ abstract class SQLGateway extends Gateway {
       }
     }
 
-    return $this->instantiate($joined);
+    return $this->instantiate($joined, $this->tmpJoinAsList ?? true);
   }
 
 }
