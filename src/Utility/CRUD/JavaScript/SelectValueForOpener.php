@@ -9,12 +9,12 @@ class SelectValueForOpener extends HTMLElement {
   public function html() {
     ?>
     <script>
-      if (window.opener) {
-        if (window.opener.selectForeignValue.url.indexOf(location.href.replace(location.search, "")) !== 0) {
-          location.href = window.opener.selectForeignValue.url;
-        }
+      if (window.opener || window.parent !== window) {
+        (function (pki, w, owner) {
+          if (owner.selectForeignValue.url.indexOf(location.href.replace(location.search, "")) !== 0) {
+            location.href = owner.selectForeignValue.url;
+          }
 
-        (function (pki, w, select) {
           var pk = w.document.querySelector(".table-crud thead th.pk");
           while ((pk = pk.previousElementSibling) !== null) {
             pki++;
@@ -22,13 +22,22 @@ class SelectValueForOpener extends HTMLElement {
           var records = w.document.querySelectorAll(".table-crud tbody tr");
           var select = function (e) {
             e.preventDefault();
-            w.opener.selectForeignValue(this.children[pki].textContent.trim());
+            owner.selectForeignValue(this.children[pki].textContent.trim());
             w.close();
           };
           for (var i = 0, l = records.length; i < l; i++) {
             records[i].onclick = select;
           }
-        })(0, window);
+        })(0, window, window.opener || window.parent);
+
+
+        document.addEventListener("keypress", function (e) {
+          if (e.key === "Escape") {
+            window.close();
+          }
+        });
+
+        document.querySelector('input[name="query"]').focus();
       }
     </script>
     <?php

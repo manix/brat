@@ -120,6 +120,12 @@ trait CRUDList {
       </table>
     </div>
 
+    <?php if (!$this->query && $this->controllerInstance->requireQuery()): ?>
+      <div class="text-center my-3">
+        <i class="fa fa-3x fa-search"></i>
+      </div>
+    <?php endif; ?>
+
     <?php
     // TODO possibly relocate script
     echo new SelectValueForOpener(NULL, $this->html);

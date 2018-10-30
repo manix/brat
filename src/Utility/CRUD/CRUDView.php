@@ -65,7 +65,7 @@ class CRUDView extends DefaultLayout {
         <?php
       }
     };
-    $rel = $this->data['ctrl']->getParsedRelations();
+    $rel = $this->data['ctrl']->getParsedRelations(true);
 
 
     foreach ($form->inputs() as $name => $input) {
@@ -78,7 +78,7 @@ class CRUDView extends DefaultLayout {
       if (isset($rel[$input->name])) {
         $input->readonly = 'readonly';
         $input->class = 'btn btn-light form-control text-left ml-2';
-        $input->{'data-url'} = $rel[$input->name];
+        $input->{'data-url'} = $rel[$input->name] . $input->value;
         $input->onclick = 'openForeignSelector(this)';
         $view->setCustomRenderer($input->name, [$view, 'renderForeignSelector']);
       }

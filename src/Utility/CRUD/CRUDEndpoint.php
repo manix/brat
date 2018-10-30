@@ -35,6 +35,28 @@ trait CRUDEndpoint {
 
   abstract protected function constructGateway(): Gateway;
 
+  /**
+   * Define whether records should be displayed only when there is a query.
+   * @return boolean
+   */
+  public function requireQuery() {
+    return false;
+  }
+
+  /**
+   * Removes empty strings from the array which are relations
+   * @param type $input
+   */
+  public function cleanInput($input) {
+    $rel = $this->getRelations();
+
+    foreach ($input as $key => $value) {
+      if (isset($rel[$key]) && $value === '') {
+        unset($_REQUEST[$key]);
+      }
+    }
+  }
+
   public function after($data) {
 
     if ($this->getCRUDType() !== 'l') {
@@ -136,6 +158,8 @@ trait CRUDEndpoint {
   }
 
   public function put() {
+    $this->cleanInput($_REQUEST);
+
     return $this->validate($_REQUEST, function($data) {
       $model = $this->getModel();
 
@@ -169,6 +193,8 @@ trait CRUDEndpoint {
   }
 
   public function post() {
+    $this->cleanInput($_REQUEST);
+
     return $this->validate($_REQUEST, function($data) {
       $gate = $this->getGateway();
 
@@ -420,7 +446,7 @@ trait CRUDEndpoint {
     ];
   }
 
-  public function getParsedRelations() {
+  public function getParsedRelations($alwaysList = false) {
     $relations = [];
     $gateRelations = $this->getGateway()->getRelations();
     foreach ($this->getRelations() as $key => $data) {
@@ -435,7 +461,7 @@ trait CRUDEndpoint {
 
       $gate = new $rel[0];
       $pk = $gate->getPK();
-      $relations[$field] = route($class, count($pk) > 1 ? [
+      $relations[$field] = route($class, $alwaysList || count($pk) > 1 ? [
           'fields' => $pk[0],
           'query' => ''
       ] : [
@@ -459,7 +485,7 @@ trait CRUDEndpoint {
     }
 
     return [
-        $this->getGateway()->sort($this->getSorter())->findBy($criteria),
+        $query || !$this->requireQuery() ? $this->getGateway()->sort($this->getSorter())->findBy($criteria) : [],
         $this->getColumns(),
         $this,
         $this->getGateway()->getPK(),
