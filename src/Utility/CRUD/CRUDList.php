@@ -105,9 +105,9 @@ trait CRUDList {
         </thead>
         <tbody>
           <?php foreach ($this->data as $model): ?>
-            <tr>
+            <tr class="<?= $this->getRowClass($model) ?>">
               <?php foreach ($this->fields as $field): ?>
-                <td>
+                <td class="<?= $this->getColClass($model, $field) ?>">
                   <?= $this->renderColumnBody($model, $field) ?>
                 </td>
               <?php endforeach; ?>
@@ -129,6 +129,14 @@ trait CRUDList {
     <?php
     // TODO possibly relocate script
     echo new SelectValueForOpener(NULL, $this->html);
+  }
+
+  public function getRowClass(Model $model) {
+    return '';
+  }
+
+  public function getColClass(Model $model, $field) {
+    return '';
   }
 
   /**
