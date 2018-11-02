@@ -99,6 +99,11 @@ abstract class Query {
         $this->data[$p] = $data;
         break;
 
+      case 'IS NULL':
+      case 'IS NOT NULL':
+        $sql .= ' ' . $operand;
+        break;
+
       case 'NOT IN':
       case 'IN':
         $sql .= ' ' . $operand . ' (';

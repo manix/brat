@@ -34,11 +34,11 @@ class SQLGatewayCriteriaInterpreter extends CriteriaInterpreter {
   }
 
   protected function eq($data, $value) {
-    return '=';
+    return $value === null ? 'IS NULL' : '=';
   }
 
   protected function noteq($data, $value) {
-    return '!=';
+    return $value === null ? 'IS NOT NULL' : '!=';
   }
 
   protected function gt($data, $value) {
