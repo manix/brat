@@ -2,16 +2,20 @@
 
 namespace Manix\Brat\Utility\Users\Controllers;
 
+use Exception;
 use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Model;
 use Manix\Brat\Components\Validation\Ruleset;
 use Manix\Brat\Components\Validation\Validator;
 use Manix\Brat\Helpers\FormController;
+use Manix\Brat\Helpers\Redirect;
 use Manix\Brat\Utility\Users\Models\Auth;
 use Manix\Brat\Utility\Users\Models\User;
+use Project\Traits\Users\UserGatewayFactory;
 use Manix\Brat\Utility\Users\Views\LoginSuccessView;
 use Manix\Brat\Utility\Users\Views\LoginView;
 use function cache;
+use function config;
 use function route;
 use function url;
 
@@ -23,7 +27,7 @@ class Login extends FormController {
   protected $backto;
 
   public function before($method) {
-    $this->backto = $_GET['b'] ?? url();
+    $this->backto = $_SESSION['backto'] = $_GET['b'] ?? url();
     $this->cacheT8('manix/util/users/common');
 
     return parent::before($method);
@@ -82,10 +86,26 @@ class Login extends FormController {
   }
 
   public function get() {
-    return $this->getForm();
+    if (Auth::user()) {
+      $url = $_SESSION['backto'] ?? $_GET['b'] ?? url();
+      unset($_SESSION['backto']);
+      new Redirect($url);
+    }
+
+    try {
+      $config = config('social');
+    } catch (Exception $e) {
+      $config = false;
+    }
+
+    return [
+        'form' => $this->getForm(),
+        'social' => $config
+    ];
   }
 
   public function post() {
+    unset($_SESSION['backto']);
 
     return $this->validate($_POST, function($data, $v) {
       $egate = $this->getEmailGateway();
@@ -142,5 +162,5 @@ class Login extends FormController {
 
     return $rules;
   }
-  
+
 }

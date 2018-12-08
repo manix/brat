@@ -9,7 +9,7 @@ class DefaultSettingsView extends DefaultSettingsLayout {
 
   public function card() {
     ?>
-    <div class="card-block">
+    <div class="card-body">
       <?=
       new DefaultFormView($this->data['form'], $this->html, [
           'name' => $this->t8('name'),

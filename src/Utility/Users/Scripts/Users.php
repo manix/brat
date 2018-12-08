@@ -6,7 +6,7 @@ use Manix\Brat\Components\Criteria;
 use Manix\Brat\Components\Validation\Ruleset;
 use Manix\Brat\Helpers\Time;
 use Manix\Brat\Utility\Scripts\ScriptController;
-use Manix\Brat\Utility\Users\Controllers\UserGatewayFactory;
+use Project\Traits\Users\UserGatewayFactory;
 
 class Users extends ScriptController {
   

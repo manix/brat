@@ -5,7 +5,6 @@ namespace Manix\Brat\Components;
 use Exception;
 use Manix\Brat\Components\Events\EventEmitter;
 use Manix\Brat\Components\Events\EventEmitterInterface;
-use Manix\Brat\Components\Validation\Ruleset;
 use function registry;
 
 abstract class Controller implements EventEmitterInterface {
@@ -90,7 +89,7 @@ abstract class Controller implements EventEmitterInterface {
 
   public function __call($name, $arguments) {
     if (isset($name) && isset($arguments)) {
-      throw new Exception('Method ' . $name . ' not found.', 404);
+      throw new Exception('Method ' . $name . ' not found.', 405);
     }
   }
 

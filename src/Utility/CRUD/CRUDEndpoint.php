@@ -136,7 +136,7 @@ trait CRUDEndpoint {
         case 'd': $this->page = $this->getDeleteView();
           break;
         case 'l':
-          $this->page = $this->getListView();
+          $this->page = $this->getCRUDView();
           return $this->getListData();
 
         default:
@@ -247,12 +247,16 @@ trait CRUDEndpoint {
     ];
   }
 
+  public function getCRUDView() {
+    return CRUDView::class;
+  }
+
   /**
    * Get the view that must render the update GET response.
    * @return string FQCN
    */
   public function getUpdateView() {
-    return CRUDView::class;
+    return $this->getCRUDView();
   }
 
   /**
@@ -260,7 +264,7 @@ trait CRUDEndpoint {
    * @return string FQCN
    */
   public function getCreateView() {
-    return CRUDView::class;
+    return $this->getCRUDView();
   }
 
   /**
@@ -268,7 +272,7 @@ trait CRUDEndpoint {
    * @return string FQCN
    */
   public function getDeleteView() {
-    return CRUDView::class;
+    return $this->getCRUDView();
   }
 
   /**
@@ -421,8 +425,27 @@ trait CRUDEndpoint {
     return $_GET['query'] ?? null;
   }
 
-  protected function getQueryFields() {
-    return empty($_GET['fields']) ? null : array_intersect($this->getSearchableColumns(), explode(',', $_GET['fields']));
+  protected function getQueryFields($searchable) {
+    $input = $_GET['fields'] ?? null;
+    $fields = [];
+
+    if (!$input || !is_array($input)) {
+      foreach ($searchable as $field) {
+        $fields[$field] = 'like';
+      }
+    } else {
+      foreach ($input as $field => $comparator) {
+        if (!$comparator) {
+          $comparator = 'like';
+        }
+
+        if (in_array($field, $searchable)) {
+          $fields[$field] = $comparator;
+        }
+      }
+    }
+
+    return $fields;
   }
 
   protected function getCriteria() {
@@ -433,6 +456,7 @@ trait CRUDEndpoint {
    * The view that will be used to render the list page.
    */
   public function getListView() {
+    // CRUDView automatically calls CRUDListView internally.
     return CRUDListView::class;
   }
 
@@ -442,7 +466,7 @@ trait CRUDEndpoint {
    */
   public function getRelations() {
     return [
-//    'relation-name-in-gateway' => class | [field, class]
+//    'relation-name-in-gateway' => class | [field, class, search_fields]
     ];
   }
 
@@ -462,25 +486,31 @@ trait CRUDEndpoint {
       $gate = new $rel[0];
       $pk = $gate->getPK();
       $relations[$field] = route($class, $alwaysList || count($pk) > 1 ? [
-          'fields' => $pk[0],
+          'fields' => $data[2] ?? $pk[0],
           'query' => ''
       ] : [
           $pk[0] => ''
       ]);
     }
+
     return $relations;
   }
 
   public function getListData() {
     $searchable = $this->getSearchableColumns();
     $query = $this->getQuery();
+
+    if (empty($searchable) && $this->requireQuery()) {
+      throw new Exception('Controller with mandatory query requires at least 1 searchable column', 500);
+    }
+
     $criteria = $this->getCriteria();
 
     if ($query) {
-      $queryCriteria = $criteria->group('OR');
+      $queryCriteria = $criteria->group($_GET['glue'] ?? 'OR');
 
-      foreach ($this->getQueryFields() ?? $searchable as $field) {
-        $queryCriteria->like($field, '%' . $query . '%');
+      foreach ($this->getQueryFields($searchable) as $field => $comparator) {
+        $queryCriteria->$comparator($field, $comparator === 'like' ? ($query . '%') : $query);
       }
     }
 

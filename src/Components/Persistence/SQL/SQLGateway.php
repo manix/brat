@@ -62,7 +62,9 @@ abstract class SQLGateway extends Gateway {
 
     $query->limit($this->cutoff, $this->limit);
 
-//    echo "<pre>" . print_r($query->build(), true) . "</pre>";exit;
+//    echo "<pre>" . print_r($query->build(), true) . "</pre>";
+//    echo "<pre>" . print_r($query->data(), true) . "</pre>";
+//    exit;
     $stmt = $this->pdo->prepare($query->build());
     $stmt->execute($query->data());
 

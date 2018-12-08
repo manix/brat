@@ -19,14 +19,14 @@ class EmailsView extends DefaultSettingsLayout {
       Add address
     </div>
 
-    <div class="card-block">
+    <div class="card-body">
       <?= new AddEmailFormView($this->data['form'], $this->html) ?>
     </div>
 
     <div class="card-header">
       Your addresses
     </div>
-    <div class="card-block">
+    <div class="card-body">
       <?= $this->data['delete']->open($this->html) ?>
 
       <?php foreach ($this->data['addresses'] as $email): ?>

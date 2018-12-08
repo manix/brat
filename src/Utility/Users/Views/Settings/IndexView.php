@@ -9,7 +9,7 @@ class IndexView extends DefaultSettingsLayout {
   public function card() {
     ?>
 
-    <div class="card-block">
+    <div class="card-body">
 
       <?= $this->t8('index') ?>
 

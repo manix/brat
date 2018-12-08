@@ -9,20 +9,11 @@ use PDO;
 class RunSQL extends ScriptController {
 
   public function run(...$args) {
-    list($path) = $args;
-
-    $driver = $_ENV['db']['driver'] ?? 'mysql';
-    $host = $_ENV['db']['host'] ?? null;
-    $dbname = $_ENV['db']['dbname'] ?? null;
-    $charset = $_ENV['db']['charset'] ?? null;
-    $user = $_ENV['db']['user'] ?? null;
-    $pass = $_ENV['db']['pass'] ?? null;
-    $port = $_ENV['db']['port'] ?? 3306;
+    $path = $args[0];
+    $source = $_ENV['data-sources'][$args[1] ?? 0];
 
     try {
-      $pdo = new PDO("{$driver}:host={$host};dbname={$dbname};port={$port};charset={$charset};", $user, $pass, [
-          PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-      ]);
+      $pdo = new PDO(...$source);
 
       $pdo->exec(file_get_contents($path));
 

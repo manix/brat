@@ -2,10 +2,8 @@
 
 namespace Manix\Brat\Utility\Scripts;
 
-use Exception;
-use Manix\Brat\Components\Validation\Ruleset;
-use PDO;
 use Manix\Brat\Components\Plugin;
+use Manix\Brat\Components\Validation\Ruleset;
 
 class RunPlugin extends ScriptController {
 
@@ -15,13 +13,22 @@ class RunPlugin extends ScriptController {
     $plugin = new $class;
 
     $format = [
-      'install' => 'install',
-      'i' => 'install',
-      'uninstall' => 'uninstall',
-      'u' => 'uninstall'
+        'install' => 'install',
+        'i' => 'install',
+        'uninstall' => 'uninstall',
+        'u' => 'uninstall'
     ];
 
-    $plugin->{$format[$command]}();
+    $method = $format[$command];
+
+    // IMPORTANT: use get_class instead of $class to avoid issues with backslashes
+    if ($method === 'install' && in_array(get_class($plugin), config('plugins'))) {
+      return 'Plugin already installed.';
+    }
+
+    $plugin->$method();
+
+    return 'Plugin ' . $method . 'ed.';
   }
 
   public function argumentRules(Ruleset $rules): Ruleset {

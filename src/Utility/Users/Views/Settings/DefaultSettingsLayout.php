@@ -94,8 +94,8 @@ abstract class DefaultSettingsLayout extends DefaultLayout {
 
   protected function getSuccessCard($success) {
     ?>
-    <div class="card card-inverse card-success">
-      <div class="card-block">
+    <div class="card bg-success text-white">
+      <div class="card-body">
         <p class="mb-3">
           <?= $success === true ? $this->t8('changesSaved') : $success ?>
         </p>
@@ -110,8 +110,8 @@ abstract class DefaultSettingsLayout extends DefaultLayout {
 
   protected function getErrorCard($error) {
     ?>
-    <div class="card card-inverse card-danger">
-      <div class="card-block">
+    <div class="card bg-danger text-white">
+      <div class="card-body">
         <p class="mb-3"><?= $error ?></p>
 
         <a href="<?= url() ?>" class="btn btn-danger pull-right">

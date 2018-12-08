@@ -5,7 +5,7 @@ namespace Manix\Brat\Utility\Users\Models;
 use Manix\Brat\Components\Errors\Exception;
 use Manix\Brat\Components\Model;
 use Manix\Brat\Utility\Users\Controllers\Login;
-use Manix\Brat\Utility\Users\Controllers\UserGatewayFactory;
+use Project\Traits\Users\UserGatewayFactory;
 use const MANIX;
 use const SITE_DOMAIN;
 use function cache;
@@ -89,7 +89,7 @@ class AuthManager {
     $record = $this->fetchPersistentLoginTokenFromString($token);
 
     if ($record) {
-      $gate = new UserTokenGateway;
+      $gate = $this->getTokenGateway();
       $gate->wipe($record->id);
       $this->expireRememberCookie();
     }
@@ -171,7 +171,7 @@ class AuthManager {
 
     $token->setHash($code);
 
-    $gate = new UserTokenGateway();
+    $gate = $this->getTokenGateway();
     $gate->persist($token);
 
     $value = $this->computeCookieValue($token, $code);

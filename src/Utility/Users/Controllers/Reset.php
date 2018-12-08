@@ -3,6 +3,7 @@
 namespace Manix\Brat\Utility\Users\Controllers;
 
 use Manix\Brat\Utility\HTTP\HTTPController;
+use Project\Traits\Users\UserGatewayFactory;
 use Manix\Brat\Utility\Users\Views\ResetView;
 use function cache;
 
@@ -21,7 +22,7 @@ class Reset extends HTTPController {
     $id = $_POST['id'] ?? null;
     $gate = $this->getUserGateway();
     $user = $gate->find($id)->first();
-    
+
     if (!$user) {
       return false;
     }

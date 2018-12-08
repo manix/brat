@@ -179,7 +179,7 @@ abstract class Gateway {
 
   abstract public function findBy(Criteria $criteria): Collection;
 
-  protected function instantiate(array $set, $asList = true) {
+  public function instantiate(array $set, $asList = true) {
     $interface = static::MODEL;
 
     if ($asList) {
@@ -297,10 +297,17 @@ abstract class Gateway {
   }
 
   /**
-   * Enable/disable timestamps
+   * Enable/disable timestamps or get current status.
+   * @param bool $enable
+   * @return mixed Timestamps status or $this
    */
-  public function timestamps($enable) {
+  public function timestamps($enable = null) {
+    if ($enable === null) {
+      return $this->timestamps;
+    }
+
     $this->timestamps = $enable;
+    return $this;
   }
 
 }

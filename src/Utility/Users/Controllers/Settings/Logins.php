@@ -5,7 +5,7 @@ namespace Manix\Brat\Utility\Users\Controllers\Settings;
 use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Sorter;
 use Manix\Brat\Components\Validation\Ruleset;
-use Manix\Brat\Utility\Users\Controllers\UserGatewayFactory;
+use Project\Traits\Users\UserGatewayFactory;
 use Manix\Brat\Utility\Users\Models\Auth;
 use Manix\Brat\Utility\Users\Views\Settings\LoginsView;
 

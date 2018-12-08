@@ -17,7 +17,7 @@ abstract class SettingsController extends FormController {
   public function middleware() {
     return ['auth'];
   }
-  
+
   public function before($method) {
     $this->cacheT8('manix/util/users/settings');
 
@@ -40,7 +40,7 @@ abstract class SettingsController extends FormController {
   }
 
   protected function addSaveButton() {
-    $this->getForm()->add('', 'submit', $this->t8('save'));
+    $this->getForm()->add('save', 'submit', $this->t8('manix/util/users/settings', 'save'));
   }
 
 }

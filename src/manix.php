@@ -14,11 +14,16 @@ $_ENV = array_merge($_ENV, require(PROJECT_PATH . '/.env.php'));
 
 define('DEBUG_MODE', $_ENV['env'] === 'debug');
 
-$loader = require(PROJECT_PATH . '/../vendor/autoload.php');
+$projectLoader = require_once(PROJECT_PATH . '/../vendor/autoload.php');
+// require brat autoloader
+$bratLoader = require_once(__DIR__ . '/../vendor/autoload.php');
 
-function loader() {
-  global $loader;
-  return $loader;
+function loader($type = null) {
+  global $bratLoader, $projectLoader;
+  switch ($type) {
+    case 'brat': return $bratLoader;
+    default: return $projectLoader;
+  }
 }
 
 $protocol = null;
@@ -66,12 +71,12 @@ function html($string, $flag = ENT_QUOTES, $encoding = 'UTF-8') {
 $cache = null;
 
 /**
- * A complex function for working with cache. 
- * 
+ * A complex function for working with cache.
+ *
  * @param string $key The key for the cached item.
  * @param type $value A value that must be persisted or a callable that returns a default value for a read.
  * @param int $ttl Time to live measured in seconds.
- * 
+ *
  * @return mixed If no parameters are provided then the CacheGateway is returned. If only $key is provided or $key and $value are provided but $valeu is callable, then the item corresponding to $key will be returned and if there is nothing found $value will be invoked and its return value will be stored under $key and will be returned. If $key and $value are provided and $value is not callable then $value will be stored under $key for $ttl seconds.
  */
 function cache(string $key = null, $value = null, int $ttl = 600) {
@@ -116,7 +121,7 @@ function config($file) {
 }
 
 /**
- * Send mail using SMTP. This method is chosen by default because it is believed to be 
+ * Send mail using SMTP. This method is chosen by default because it is believed to be
  * the most utilised and the most secure one.
  * @param mixed $to Can be just a string representing the address or an array with 2 elements - [address, name]
  * @param string $subject
@@ -155,7 +160,7 @@ function registry($key, $value = null) {
  */
 function program() {
   global $manix;
-  
+
   return $manix->program();
 }
 
@@ -178,7 +183,13 @@ $manix = new class {
    * Run a program.
    * @param Program $program Your program.
    */
-  function run(Program $program) {
+  function run(Program $program, $debug = false) {
+    if ($debug) {
+      error_reporting(E_ALL);
+      ini_set('display_errors', 1);
+      header('Access-Control-Allow-Origin: *');
+    }
+
     $this->program = $program;
 
     set_exception_handler([$this->program, 'error']);

@@ -15,7 +15,7 @@ trait FormEndpoint {
    * Get the controller's form.
    * @return Form
    */
-  protected final function getForm(): Form {
+  protected function getForm(): Form {
     if ($this->form === null) {
       $this->form = $this->constructForm(new Form);
     }
@@ -35,14 +35,14 @@ trait FormEndpoint {
    * Get the controller's rule set.
    * @return Ruleset
    */
-  protected final function getRules(): Ruleset {
+  protected function getRules(): Ruleset {
     if ($this->rules === null) {
       $this->rules = $this->constructRules(new Ruleset);
     }
 
     return $this->rules;
   }
-  
+
   /**
    * Overwrite the controller's rule set.
    * @param Ruleset $rules
@@ -52,9 +52,9 @@ trait FormEndpoint {
   }
 
   /**
-   * Runs $dataset through a validator using the ruleset constructed in 
+   * Runs $dataset through a validator using the ruleset constructed in
    * constructRules() and returns the return value of $onPass or $onFail respectively.
-   * 
+   *
    * @param mixed $dataset Iterable dataset.
    * @param \callable $onPass
    * @param \callable $onFail
@@ -63,7 +63,7 @@ trait FormEndpoint {
   protected function validate($dataset, callable $onPass, callable $onFail = null, ...$data) {
     $validator = new Validator();
     $rules = $this->getRules();
-    
+
     if ($validator->validate($dataset, $rules)) {
       return $onPass($dataset, $validator, $rules, ...$data);
     } else {

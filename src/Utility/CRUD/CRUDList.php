@@ -2,6 +2,7 @@
 
 namespace Manix\Brat\Utility\CRUD;
 
+use Manix\Brat\Components\Collection;
 use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Forms\FormInput;
 use Manix\Brat\Components\Model;
@@ -42,9 +43,11 @@ trait CRUDList {
   public function body() {
     $actions = $this->actions && $this->controller !== null;
     $sortable = $this->controller === null ? [] : array_flip($this->getSortableFields());
+    $noQuery = !$this->query && $this->controllerInstance->requireQuery();
+    $noResults = !$noQuery && !($this->data instanceof Collection ? $this->data->count() : count($this->data));
     ?>
     <div class="table-responsive">
-      <table class="<?= $this->getTableClass() ?> table-crud">
+      <table class="<?= $this->getTableClass() ?> table-crud m-0">
         <thead>
           <?php
           if ($this->controller !== null && $this->search !== false):
@@ -60,69 +63,79 @@ trait CRUDList {
             ?>
             <tr>
               <td colspan="<?= count($this->fields) + (int)$actions ?>" class="p-0">
-                <div class="d-flex">
+                <div class="d-flex align-items-center">
                   <?= $this->renderSearchForm($form) ?>
                   <?= $this->renderCreateButton() ?>
                 </div>
+                <?php if ($noResults): ?>
+                  <div class="text-center py-3 border-top">
+                    <?= $this->t8('common', 'noResults') ?>
+                  </div>
+                <?php endif; ?>
               </td>
             </tr>
           <?php endif; ?>
-          <tr>
-            <?php foreach ($this->fields as $field): ?>
-              <th class="<?= in_array($field, $this->pk) ? 'pk' : '' ?>">
-                <?php if (isset($sortable[$field])): $asc = $this->sort === $field && $this->order === 'asc'; ?>
-                  <a href="<?=
-                  route($this->controller, [
-                      'query' => $this->query,
-                      'sort' => $field,
-                      'order' => $asc ? 'desc' : 'asc'
-                  ])
-                  ?>" class="d-flex justify-content-between align-items-center">
-                    <span><?= $this->renderColumnLabel($field) ?></span>
-                    <?php
-                    if ($this->sort === $field && isset($sortable[$field])):
-                      if ($asc):
-                        ?>
-                        <i class="fa fa-chevron-up"></i>
-                      <?php else: ?>
-                        <i class="fa fa-chevron-down"></i>
-                      <?php
-                      endif;
-                    endif;
-                    ?>
-                  </a>
-                <?php else: ?>
-                  <span><?= $this->renderColumnLabel($field) ?></span>
-                <?php endif; ?>
-              </th>
-            <?php endforeach; ?>
-            <?php if ($actions): ?>
-              <th>
-                Actions
-              </th>
-            <?php endif; ?>
-          </tr>
-        </thead>
-        <tbody>
-          <?php foreach ($this->data as $model): ?>
-            <tr class="<?= $this->getRowClass($model) ?>">
+          <?php if (!$noQuery && !$noResults): ?>
+            <tr>
               <?php foreach ($this->fields as $field): ?>
-                <td class="<?= $this->getColClass($model, $field) ?>">
-                  <?= $this->renderColumnBody($model, $field) ?>
-                </td>
+                <th class="<?= in_array($field, $this->pk) ? 'pk' : '' ?>">
+                  <?php if (isset($sortable[$field])): $asc = $this->sort === $field && $this->order === 'asc'; ?>
+                    <a href="<?=
+                    route($this->controller, [
+                        'query' => $this->query,
+                        'sort' => $field,
+                        'order' => $asc ? 'desc' : 'asc'
+                    ])
+                    ?>" class="d-flex justify-content-between align-items-center">
+                      <span><?= $this->renderColumnLabel($field) ?></span>
+                      <?php
+                      if ($this->sort === $field && isset($sortable[$field])):
+                        if ($asc):
+                          ?>
+                          <i class="fa fa-chevron-up"></i>
+                        <?php else: ?>
+                          <i class="fa fa-chevron-down"></i>
+                        <?php
+                        endif;
+                      endif;
+                      ?>
+                    </a>
+                  <?php else: ?>
+                    <span><?= $this->renderColumnLabel($field) ?></span>
+                  <?php endif; ?>
+                </th>
               <?php endforeach; ?>
               <?php if ($actions): ?>
-                <td class="actions"><?= $this->renderActions($model) ?></td>
+                <th>
+                  Actions
+                </th>
               <?php endif; ?>
             </tr>
-          <?php endforeach; ?>
-        </tbody>
+          <?php endif; ?>
+        </thead>
+        <?php if (!$noResults): ?>
+          <tbody>
+            <?php foreach ($this->data as $model): ?>
+              <tr class="<?= $this->getRowClass($model) ?>">
+                <?php foreach ($this->fields as $field): ?>
+                  <td class="<?= $this->getColClass($model, $field) ?>">
+                    <?= $this->renderColumnBody($model, $field) ?>
+                  </td>
+                <?php endforeach; ?>
+                <?php if ($actions): ?>
+                  <td class="actions"><?= $this->renderActions($model) ?></td>
+                <?php endif; ?>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        <?php endif; ?>
       </table>
     </div>
 
-    <?php if (!$this->query && $this->controllerInstance->requireQuery()): ?>
-      <div class="text-center my-3">
+    <?php if ($noQuery): ?>
+      <div class="text-center py-3">
         <i class="fa fa-3x fa-search"></i>
+        <div class="mt-2 text-muted"><?= $this->t8('common', 'enterQuery') ?></div>
       </div>
     <?php endif; ?>
 
@@ -157,21 +170,41 @@ trait CRUDList {
     return '#' . $model->$field;
   }
 
+  public function getRelationHref($relation, $query) {
+    return $this->relations[$relation] . $query;
+  }
+
   /**
    * Render the contents of the actions columns.
    * @param \Manix\Brat\Utility\CRUD\Model $model
    */
   public function renderActions(Model $model) {
-    $pk = $this->extractPKValues($model);
     ?>
     <div class="btn-group">
-      <a href="<?= route($this->controller, $pk) ?>" class="btn btn-light">
-        <i class="fa fa-pencil"></i>
-      </a>
-      <a href="<?= route($this->controller, $pk + [$this->controllerInstance->deleteKey => true]) ?>" class="btn btn-warning">
-        <i class="fa fa-trash"></i>
-      </a>
+      <?= $this->renderActionButtons($model) ?>
     </div>
+    <?php
+  }
+
+  public function renderActionButtons(Model $model) {
+    $pk = $this->extractPKValues($model);
+    $this->renderActionButtonEdit($pk);
+    $this->renderActionButtonDelete($pk);
+  }
+
+  public function renderActionButtonEdit($pk) {
+    ?>
+    <a href="<?= route($this->controller, $pk) ?>" class="btn btn-sm btn-light">
+      <i class="fa fa-pencil"></i>
+    </a>
+    <?php
+  }
+
+  public function renderActionButtonDelete($pk) {
+    ?>
+    <a href="<?= route($this->controller, $pk + [$this->controllerInstance->deleteKey => true]) ?>" class="btn btn-sm btn-danger">
+      <i class="fa fa-trash"></i>
+    </a>
     <?php
   }
 

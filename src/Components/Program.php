@@ -20,7 +20,7 @@ abstract class Program {
 
   /**
    * Defines the default caching gateway for the application.
-   * 
+   *
    * @return CacheGateway
    */
   public function constructCacheGateway(): CacheGateway {
@@ -51,9 +51,9 @@ abstract class Program {
     if (!$method) {
       $method = $m;
     }
-    
+
     foreach ($controller->getMiddleware($method) as $rule) {
-      $class = $rule[0] === '\\' ? $rule : ('\\Project\\Middleware\\' . ucfirst($rule));
+      $class = strpos($rule, '\\') !== false ? $rule : ('\\Project\\Middleware\\' . ucfirst($rule));
       $mw = new $class;
 
       if ($mw instanceof Middleware) {
@@ -71,7 +71,7 @@ abstract class Program {
   }
 
   /**
-   * Send mail using SMTP. This method is chosen by default because it is believed to be 
+   * Send mail using SMTP. This method is chosen by default because it is believed to be
    * the most utilised and the most secure one.
    * @param mixed $to Can be just a string representing the address or an array with 2 elements - [address, name]
    * @param string $subject
@@ -121,7 +121,7 @@ abstract class Program {
 
       return $mail->send();
     } catch (Exception $e) {
-      
+
     }
 
     return false;

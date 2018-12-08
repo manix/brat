@@ -24,13 +24,15 @@ class CRUDView extends DefaultLayout {
   public function body() {
     if (isset($this->data['form'])) {
       ?>
-      <div class="container mt-4 mb-2">
-        <div class="text-center mb-2">
-          <a href="<?= route(get_class($this->data['ctrl'])) ?>">
-            <?= $this->t8('common', 'toList') ?>
-          </a>
+      <a href="<?= route(get_class($this->data['ctrl'])) ?>" class="btn btn-light btn-block text-left rounded-0">
+        <i class="fa fa-chevron-left"></i>
+      </a>
+      <div class="container mt-3 mb-2">
+        <div class="card">
+          <div class="card-body">
+            <?= $this->form() ?>
+          </div>
         </div>
-        <?= $this->form() ?>
       </div>
       <?php
       echo new OpenSelector(null, $this->html);
@@ -38,7 +40,7 @@ class CRUDView extends DefaultLayout {
       /**
        * Kept for backwards compatibility
        */
-      $class = $this->getCrudListView();
+      $class = $this->data[2]->getListView();
       echo new $class($this->data, $this->html);
     }
   }
@@ -75,12 +77,14 @@ class CRUDView extends DefaultLayout {
 
       $view->labels[$name] = ucfirst(str_replace('_', ' ', $name));
 
-      if (isset($rel[$input->name])) {
+      if (isset($rel[$name])) {
+//        $view->labels[$name] = '<i class="fa fa-link"></i> ' . $view->labels[$name];
+
         $input->readonly = 'readonly';
-        $input->class = 'btn btn-light form-control text-left ml-2';
-        $input->{'data-url'} = $rel[$input->name] . $input->value;
+        $input->class = 'btn btn-light form-control text-left';
+        $input->{'data-url'} = $rel[$name] . $input->value;
         $input->onclick = 'openForeignSelector(this)';
-        $view->setCustomRenderer($input->name, [$view, 'renderForeignSelector']);
+//        $view->setCustomRenderer($input->name, [$view, 'renderForeignSelector']);
       }
     }
 
@@ -95,9 +99,11 @@ class CRUDView extends DefaultLayout {
 
   public function renderDelete($input) {
     ?>
-    <div class="text-center">
-      <div class="h4 p-3"><?= $this->t8('common', 'continueConfirm') ?></div>
-      <?= $input->setAttribute('class', 'btn btn-danger')->toHTML($this->html) ?>
+    <div class="card">
+      <div class="text-center card-body">
+        <div class="h4 p-3"><?= $this->t8('common', 'continueConfirm') ?></div>
+        <?= $input->setAttribute('class', 'btn btn-danger')->toHTML($this->html) ?>
+      </div>
     </div>
     <?php
   }

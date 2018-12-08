@@ -5,7 +5,7 @@ namespace Manix\Brat\Utility\Users\Controllers\Settings;
 use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Validation\Ruleset;
 use Manix\Brat\Helpers\Image;
-use Manix\Brat\Utility\Users\Controllers\UserGatewayFactory;
+use Project\Traits\Users\UserGatewayFactory;
 use Manix\Brat\Utility\Users\Models\Auth;
 use Manix\Brat\Utility\Users\Models\UserGateway;
 use Manix\Brat\Utility\Users\Views\Settings\PhotoView;
@@ -19,7 +19,7 @@ class Photo extends SettingsController {
 
   public function before($method) {
     $this->addSaveButton();
-    
+
     return parent::before($method);
   }
 
@@ -41,7 +41,7 @@ class Photo extends SettingsController {
 
       $user->photo_rev++;
 
-      $gate = new UserGateway;
+      $gate = $this->getUserGateway();
       $gate->persist($user);
       Auth::updateCache($user);
 

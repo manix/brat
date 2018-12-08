@@ -3,6 +3,7 @@
 namespace Manix\Brat\Utility\Users\Controllers;
 
 use Manix\Brat\Utility\HTTP\HTTPController;
+use Project\Traits\Users\UserGatewayFactory;
 use Manix\Brat\Utility\Users\Views\VerifyView;
 
 class Verify extends HTTPController {

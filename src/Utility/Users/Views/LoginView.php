@@ -44,7 +44,21 @@ class LoginView extends GuestFrame {
   }
 
   public function frame() {
-    echo $this->getFormView($this->data);
+    echo $this->getFormView($this->data['form']);
+
+    if ($this->data['social'] && is_array($this->data['social']['providers'])):
+      ?>
+      <hr/>
+
+      <div class="social-login text-center">
+        <?php foreach ($this->data['social']['providers'] as $class => $data): ?>
+          <a class="btn btn-light btn-lg" href="<?= route($class) ?>">
+            <i class="fa fa-<?= strtolower($class::icon()) ?>"></i>
+          </a>
+        <?php endforeach; ?>
+      </div>
+      <?php
+    endif;
   }
 
   public function heading() {

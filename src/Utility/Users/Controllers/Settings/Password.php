@@ -6,16 +6,17 @@ use Exception;
 use Manix\Brat\Components\Criteria;
 use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Validation\Ruleset;
+use Project\Traits\Users\UserGatewayFactory;
 use Manix\Brat\Utility\Users\Models\Auth;
-use Manix\Brat\Utility\Users\Models\UserGateway;
-use Manix\Brat\Utility\Users\Models\UserTokenGateway;
 
 class Password extends SettingsController {
+
+  use UserGatewayFactory;
 
   public function before($method) {
     $this->requireCurrentPassword();
     $this->addSaveButton();
-    
+
     return parent::before($method);
   }
 
@@ -28,7 +29,7 @@ class Password extends SettingsController {
 
   public function put() {
     return $this->validate($_POST, function($data) {
-      $gate = new UserGateway();
+      $gate = $this->getUserGateway();
 
       $user = Auth::user();
 
@@ -39,8 +40,8 @@ class Password extends SettingsController {
       }
 
       Auth::register($user);
-      
-      $tokenGate = new UserTokenGateway();
+
+      $tokenGate = $this->getTokenGateway();
       $criteria = new Criteria;
       $criteria->equals('user_id', $user->id);
       $tokenGate->wipeBy($criteria);

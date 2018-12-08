@@ -26,7 +26,7 @@ class Collection implements JsonSerializable, Iterator {
 
   /**
    * A collection of objects sharing a same interface.
-   * 
+   *
    * @param string $interface Name of the interface allowed in this collection.
    * @param array $items Array of objects to add to the collection initially.
    */
@@ -53,7 +53,7 @@ class Collection implements JsonSerializable, Iterator {
   }
 
   /**
-   * Add objects to this collection. If the object does not implement the 
+   * Add objects to this collection. If the object does not implement the
    * required interface it will be silently discarded.
    * @param array $items Objects to be added
    * @return $this
@@ -146,9 +146,9 @@ class Collection implements JsonSerializable, Iterator {
 
   /**
    * Get the first object in this collection.
-   * 
+   *
    * WARNING: This method modifies the internal array pointer.
-   * 
+   *
    * @return Object An instance of $this->interface.
    */
   public function first() {
@@ -157,9 +157,9 @@ class Collection implements JsonSerializable, Iterator {
 
   /**
    * Get the last object in this collection.
-   * 
+   *
    * WARNING: This method modifies the internal array pointer.
-   * 
+   *
    * @return Object An instance of $this->interface.
    */
   public function last() {
@@ -168,7 +168,7 @@ class Collection implements JsonSerializable, Iterator {
 
   /**
    * Returns the first model in the list which has a property that matches
-   * 
+   *
    * @param string $property The model property.
    * @param mixed $value Value for comparison
    * @param bool $key Whether to return the index at which the model resides or the model itself.
@@ -186,7 +186,7 @@ class Collection implements JsonSerializable, Iterator {
 
   /**
    * Returns the first model in the list which returns true from the callback
-   * 
+   *
    * @param callable $callback Callback for comparison, will be called with 1 argument - the model.
    * @param bool $key Whether to return the index at which the model resides or the model itself.
    * @return mixed Index or model, depending on $key.

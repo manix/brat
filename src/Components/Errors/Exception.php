@@ -7,6 +7,8 @@ use Manix\Brat\Components\Controller;
 
 class Exception extends E {
 
+  const DISPLAY_CODE = 666;
+
   protected $handler;
 
   /**
@@ -20,4 +22,5 @@ class Exception extends E {
   public function getHandler(): Controller {
     return $this->handler;
   }
+
 }

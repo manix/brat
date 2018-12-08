@@ -9,6 +9,7 @@ use Manix\Brat\Helpers\FormController;
 use Manix\Brat\Utility\Captcha\CaptchaManager;
 use Manix\Brat\Utility\Users\Models\User;
 use Manix\Brat\Utility\Users\Models\UserEmail;
+use Project\Traits\Users\UserGatewayFactory;
 use Manix\Brat\Utility\Users\Views\RegisterSuccessView;
 use Manix\Brat\Utility\Users\Views\RegisterView;
 
@@ -22,7 +23,7 @@ class Register extends FormController {
 
   public function before($method) {
     $this->captcha = new CaptchaManager();
-    
+
     return parent::before($method);
   }
 
@@ -81,17 +82,18 @@ class Register extends FormController {
       } else {
 
         $ugate = $this->getUserGateway();
-        $user = new User($data);
+
+        $user = $ugate->instantiate([$data], false);
         $user->setPassword($data['password']);
 
         if (!$ugate->persist($user)) {
           throw new Exception('Unexpected', 500);
         }
 
-        $email = new UserEmail([
+        $email = $egate->instantiate([
             'user_id' => $user->id,
             'email' => $data['email']
-        ]);
+        ], false);
         $email->invalidate();
 
         $this->captcha->expire();

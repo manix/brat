@@ -2,6 +2,7 @@
 
 namespace Manix\Brat\Utility\HTTP;
 
+use Error;
 use Exception;
 use Manix\Brat\Components\Controller;
 use Manix\Brat\Components\Program;
@@ -14,7 +15,6 @@ use SessionHandlerInterface;
 use const SITE_DOMAIN;
 use const SITE_URL;
 use function config;
-use function loader;
 use function registry;
 
 /**
@@ -77,10 +77,12 @@ class HTTPProgram extends Program {
    * Sets up and starts PHP's session mechanism.
    */
   public function startSession() {
-    session_name('manix-sess');
-    session_set_cookie_params(0, '/', SITE_DOMAIN, false, true);
-    session_set_save_handler($this->createSessionHandler(), true);
-    session_start();
+    if (!session_id()) {
+      session_name('manix-sess');
+      session_set_cookie_params(0, '/', SITE_DOMAIN, false, true);
+      session_set_save_handler($this->createSessionHandler(), true);
+      session_start();
+    }
   }
 
   /**
@@ -90,10 +92,10 @@ class HTTPProgram extends Program {
   protected function createSessionHandler(): SessionHandlerInterface {
     return new SessionHandler();
   }
-  
+
   public function executeController(Controller $controller, $method = null) {
     $controller->addMiddleware('session', 'CSRF', 'query', 'lang');
-    
+
     return parent::executeController($controller, $method);
   }
 
@@ -119,7 +121,7 @@ class HTTPProgram extends Program {
         case 'text/*':
         case 'text/html':
           header('Content-Type: text/html');
-          
+
           return new $page($data, new HTMLGenerator());
       }
     }
@@ -162,11 +164,14 @@ class HTTPProgram extends Program {
       }
     }
 
-    if (!loader()->loadClass($class)) {
-      throw new Exception($this->t8('common', 'ctrlnotfound'), 404);
+    try {
+      return new $class;
+    } catch (Error $err) {
+      if ($err->getMessage() === "Class '$class' not found") {
+        throw new Exception($this->t8('common', 'ctrlnotfound'), 404);
+      }
+      throw $err;
     }
-
-    return new $class;
   }
 
   /**
@@ -195,7 +200,7 @@ class HTTPProgram extends Program {
     $rc = $this->resolvedURLs;
 
     /*
-     * If this class has already been resolved then create a fake array of 
+     * If this class has already been resolved then create a fake array of
      * routes containing only the resolved one which will be returned below.
      */
     if (isset($rc[$class])) {

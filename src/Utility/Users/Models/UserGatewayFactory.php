@@ -1,6 +1,6 @@
 <?php
 
-namespace Manix\Brat\Utility\Users\Controllers;
+namespace Manix\Brat\Utility\Users\Models;
 
 use Manix\Brat\Components\Persistence\Gateway;
 use Manix\Brat\Utility\Users\Models\UserEmailGateway;
@@ -16,7 +16,7 @@ trait UserGatewayFactory {
   protected function getEmailGateway($fields = null) {
     return $this->constructUserGateway($this->getEmailGatewayClass(), $fields);
   }
-  
+
   protected function getEmailGatewayClass() {
     return UserEmailGateway::class;
   }
@@ -27,7 +27,7 @@ trait UserGatewayFactory {
   protected function getUserGateway($fields = null) {
     return $this->constructUserGateway($this->getUserGatewayClass(), $fields);
   }
-  
+
   protected function getUserGatewayClass() {
     return UserGateway::class;
   }
@@ -38,7 +38,7 @@ trait UserGatewayFactory {
   protected function getTokenGateway($fields = null) {
     return $this->constructUserGateway($this->getTokenGatewayClass(), $fields);
   }
-  
+
   protected function getTokenGatewayClass() {
     return UserTokenGateway::class;
   }
@@ -49,7 +49,7 @@ trait UserGatewayFactory {
   protected function getLoginGateway($fields = null) {
     return $this->constructUserGateway($this->getLoginGatewayClass(), $fields);
   }
-  
+
   protected function getLoginGatewayClass() {
     return UserLoginGateway::class;
   }
@@ -58,17 +58,18 @@ trait UserGatewayFactory {
     if ($fields) {
       return $gate->setFields($fields);
     }
-    
+
     return $gate;
   }
-  
+
   protected function constructUserGateway($class, $fields = null) {
     $gate = new $class;
-    
+
     if ($fields) {
       $gate->setFields($fields);
     }
-    
+
     return $gate;
   }
+
 }

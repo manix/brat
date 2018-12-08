@@ -6,6 +6,7 @@ use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Validation\Ruleset;
 use Manix\Brat\Helpers\FormController;
 use Manix\Brat\Utility\Captcha\CaptchaManager;
+use Project\Traits\Users\UserGatewayFactory;
 use Manix\Brat\Utility\Users\Views\ForgotView;
 use function cache;
 
@@ -20,7 +21,7 @@ class Forgot extends FormController {
   public function before($method) {
     $this->captcha = new CaptchaManager();
     $this->cacheT8('manix/util/users/common');
-    
+
     return $method;
   }
 

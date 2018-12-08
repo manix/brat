@@ -4,17 +4,17 @@ namespace Manix\Brat\Utility\Users\Controllers\Settings;
 
 use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Validation\Ruleset;
-use Manix\Brat\Utility\Users\Controllers\UserGatewayFactory;
+use Project\Traits\Users\UserGatewayFactory;
 use Manix\Brat\Utility\Users\Models\Auth;
 
 class Name extends SettingsController {
 
   use UserGatewayFactory;
 
-  public function before($method) {
+  public function get() {
     $this->addSaveButton();
-    
-    return parent::before($method);
+
+    return parent::get();
   }
 
   public function put() {

@@ -5,14 +5,6 @@ namespace Manix\Brat\Components;
 abstract class Plugin {
 
   /**
-   * Defines the admin panel features featured in the plugin.
-   * @return array List of FQCNs of feature controllers.
-   */
-  public function features(): array {
-    return [];
-  }
-
-  /**
    * Defines the routes required for the operation of the plugin.
    * @return array Associative array of routes, as defined in the routes configuration file.
    */
@@ -51,7 +43,7 @@ abstract class Plugin {
     $instance = $this->instance();
 
     if ($instance !== null) {
-      var_dump($instance->copy(PROJECT_PATH . '/..'));
+      $instance->copy(PROJECT_PATH . '/..');
     }
 
     $routes = $this->routes();
@@ -69,6 +61,8 @@ abstract class Plugin {
     $this->saveConfigFile('plugins', $plugins);
 
     $this->onafterInstall();
+
+    return true;
   }
 
   public final function uninstall() {
