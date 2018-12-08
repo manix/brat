@@ -16,7 +16,9 @@ define('DEBUG_MODE', $_ENV['env'] === 'debug');
 
 $projectLoader = require_once(PROJECT_PATH . '/../vendor/autoload.php');
 // require brat autoloader
-$bratLoader = require_once(__DIR__ . '/../vendor/autoload.php');
+if (is_file(__DIR__ . '/../vendor/autoload.php')) {
+  $bratLoader = require_once(__DIR__ . '/../vendor/autoload.php');
+}
 
 function loader($type = null) {
   global $bratLoader, $projectLoader;
