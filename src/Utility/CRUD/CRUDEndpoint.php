@@ -302,7 +302,7 @@ trait CRUDEndpoint {
       $form->add($key, 'text');
     }
 
-    $form->add('manix-create', 'submit', $this->t8('common', 'create'));
+    $form->add('manix-save', 'submit', $this->t8('common', 'create'));
 
     return $form;
   }
@@ -322,13 +322,10 @@ trait CRUDEndpoint {
    * @return Form The constructed form.
    */
   protected function constructUpdateForm(Form $form) {
+    $form = $this->constructCreateForm($form);
+
     $form->setMethod('PUT');
-
-    foreach ($this->getEditableFields() as $key) {
-      $form->add($key, 'text');
-    }
-
-    $form->add('manix-save', 'submit', $this->t8('common', 'save'));
+    $form->input('manix-save')->value = $this->t8('common', 'save');
 
     return $form->fill($this->getModel());
   }
@@ -339,6 +336,8 @@ trait CRUDEndpoint {
    * @return Ruleset The constructed rule set.
    */
   protected function constructUpdateRules(Ruleset $rules) {
+    $rules = $this->constructCreateRules($rules);
+
     foreach ($this->getGateway()->getPK() as $key) {
       $rules->add($key)->required();
     }
