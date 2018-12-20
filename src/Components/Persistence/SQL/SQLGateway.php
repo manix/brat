@@ -23,6 +23,18 @@ abstract class SQLGateway extends Gateway {
     $this->setPDO($pdo);
   }
 
+  public function constructSelectQuery() {
+    return new SelectQuery($this->table);
+  }
+
+  public function constructInsertQuery() {
+    return new InsertQuery($this->table);
+  }
+
+  public function constructDeleteQuery() {
+    return new DeleteQuery($this->table);
+  }
+
   public function getPDO() {
     return $this->pdo;
   }
@@ -43,7 +55,7 @@ abstract class SQLGateway extends Gateway {
   }
 
   public function findBy(Criteria $criteria): Collection {
-    $query = new SelectQuery($this->table);
+    $query = $this->constructSelectQuery();
 
     $fields = [];
     foreach ($this->getFields() as $field) {
@@ -72,7 +84,7 @@ abstract class SQLGateway extends Gateway {
   }
 
   public function persist(Model $model, array $fields = null): bool {
-    $query = new InsertQuery($this->table);
+    $query = $this->constructInsertQuery();
     $data = [];
 
     if ($fields === null) {
@@ -85,6 +97,10 @@ abstract class SQLGateway extends Gateway {
     }
 
     $data = $this->pack($data);
+
+//    echo "<pre>" . print_r($query->insert($data)->onDuplicateKey(true)->build(), true) . "</pre>";
+//    echo "<pre>" . print_r($query->data(), true) . "</pre>";
+//    exit;
 
     $stmt = $this->pdo->prepare($query->insert($data)->onDuplicateKey(true)->build());
     $stmt->execute($query->data());
@@ -111,7 +127,7 @@ abstract class SQLGateway extends Gateway {
   }
 
   public function wipeBy(Criteria $criteria): bool {
-    $query = new DeleteQuery($this->table);
+    $query = $this->constructDeleteQuery();
     $interpreter = new SQLGatewayCriteriaInterpreter();
     $interpreter->patch($query, $criteria);
 

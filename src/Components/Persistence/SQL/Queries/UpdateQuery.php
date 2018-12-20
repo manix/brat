@@ -34,7 +34,7 @@ class UpdateQuery extends Query {
         $this->updates[$col] = $val;
       } else {
         $p = $this->getPlaceholder();
-        $this->updates[$column] = $p;
+        $this->updates[$column] = $this->getPlaceholderExpression($column, $p);
         $this->data[$p] = $value;
       }
     }

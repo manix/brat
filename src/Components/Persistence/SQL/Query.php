@@ -95,7 +95,7 @@ abstract class Query {
       case 'LIKE':
       case 'NOT LIKE':
         $p = $this->getPlaceholder();
-        $sql .= ' ' . $operand . ' ' . $p;
+        $sql .= ' ' . $operand . ' ' . $this->getPlaceholderExpression($column, $p);
         $this->data[$p] = $data;
         break;
 
@@ -113,7 +113,7 @@ abstract class Query {
         } else {
           foreach ($data as $value) {
             $p = $this->getPlaceholder();
-            $sql .= $p . ', ';
+            $sql .= $this->getPlaceholderExpression($column, $p) . ', ';
             $this->data[$p] = $value;
           }
 
@@ -127,7 +127,7 @@ abstract class Query {
       case 'BETWEEN':
         $p1 = $this->getPlaceholder();
         $p2 = $this->getPlaceholder();
-        $sql .= ' ' . $operand . ' ' . $p1 . ' AND ' . $p2;
+        $sql .= ' ' . $operand . ' ' . $this->getPlaceholderExpression($column, $p1) . ' AND ' . $this->getPlaceholderExpression($column, $p2);
         $this->data[$p1] = $data[0];
         $this->data[$p2] = $data[1];
         break;
@@ -136,12 +136,12 @@ abstract class Query {
       case 'MATCH IN NATURAL LANGUAGE MODE':
       case 'MATCH WITH QUERY EXPANSION':
       case 'MATCH IN BOOLEAN MODE':
-        $p = $this->getPlaceholder();
+        $p = $this->getPlaceholder($column);
         if (!is_array($column)) {
           $column = [$column];
         }
         $mode = substr($operand, 5);
-        $sql = ' MATCH (' . join(',', $column) . ') AGAINST (' . $p . $mode . ') ';
+        $sql = ' MATCH (' . join(',', $column) . ') AGAINST (' . $this->getPlaceholderExpression($column, $p) . $mode . ') ';
         $this->data[$p] = $data;
         break;
 
@@ -154,6 +154,10 @@ abstract class Query {
 
   public static function getPlaceholder() {
     return ':' . self::$placeholder++;
+  }
+
+  public static function getPlaceholderExpression($column, $placeholder) {
+    return $placeholder;
   }
 
   public static function getAlias() {

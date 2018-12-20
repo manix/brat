@@ -40,9 +40,9 @@ class InsertQuery extends Query {
 
     foreach ($datasets as $set) {
       $sql = '(';
-      foreach ($set as $value) {
-        $p = $this->getPlaceholder();
-        $sql .= $p . ', ';
+      foreach ($set as $column => $value) {
+        $p = $this->getPlaceholder($column);
+        $sql .= $this->getPlaceholderExpression($column, $p) . ', ';
         $this->data[$p] = $value;
       }
       $this->dataset .= substr($sql, 0, -2) . '), ';
@@ -57,16 +57,16 @@ class InsertQuery extends Query {
       $this->data = array_merge($this->data, $param->data());
     } elseif ($param === true) {
       $this->duplicate = ' ON DUPLICATE KEY UPDATE ';
-      
+
       foreach ($this->columns as $col) {
         $this->duplicate .= $col . ' = VALUES(' . $col . '),';
       }
-      
+
       $this->duplicate = substr($this->duplicate, 0, -1);
     } else {
       $this->duplicate = ' ON DUPLICATE KEY ' . $param;
     }
-    
+
     return $this;
   }
 
