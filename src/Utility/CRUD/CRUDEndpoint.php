@@ -125,7 +125,7 @@ trait CRUDEndpoint {
     return $this->operation;
   }
 
-  public final function get() {
+  public function get() {
 
     if ($this->page === null) {
       switch ($this->getCRUDType()) {

@@ -31,7 +31,7 @@ class DefaultFormView extends FormView {
       case 'submit':
       case 'button':
         $class = 'd-flex justify-content-end';
-        $input->setAttribute('class', $input->getAttribute('class') ?? 'btn btn-secondary');
+        $input->setAttribute('class', $input->getAttribute('class') ?? 'btn btn-light btn-block border text-muted');
         break;
 
 

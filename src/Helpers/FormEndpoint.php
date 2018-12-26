@@ -5,11 +5,20 @@ namespace Manix\Brat\Helpers;
 use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Validation\Ruleset;
 use Manix\Brat\Components\Validation\Validator;
+use Manix\Brat\Helpers\FormViews\FormPageView;
 
 trait FormEndpoint {
 
   protected $form;
   protected $rules;
+
+  public function get() {
+    $this->page = FormPageView::class;
+
+    return [
+        'form' => $this->getForm()
+    ];
+  }
 
   /**
    * Get the controller's form.
