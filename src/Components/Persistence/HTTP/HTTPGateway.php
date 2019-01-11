@@ -10,6 +10,11 @@ use Manix\Brat\Components\Persistence\Gateway;
 
 abstract class HTTPGateway extends Gateway {
 
+  /**
+   * @var boolean Skip verifying peer and host
+   */
+  protected $skipSSLVerification = DEBUG_MODE;
+
   abstract function getURL();
 
   public function getCreateURL() {
@@ -39,7 +44,7 @@ abstract class HTTPGateway extends Gateway {
         ]
     ));
 
-    if (DEBUG_MODE) {
+    if ($this->skipSSLVerification) {
       curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
       curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
     }
