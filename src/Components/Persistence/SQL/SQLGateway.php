@@ -44,16 +44,6 @@ abstract class SQLGateway extends Gateway {
     return $this;
   }
 
-  public function find(...$pk): Collection {
-    $criteria = new Criteria();
-
-    foreach ($pk as $index => $value) {
-      $criteria->equals($this->pk[$index], $value);
-    }
-
-    return $this->findBy($criteria);
-  }
-
   public function findBy(Criteria $criteria): Collection {
     $query = $this->constructSelectQuery();
 
@@ -114,16 +104,6 @@ abstract class SQLGateway extends Gateway {
     $model->fill($this->unpack($data));
 
     return $status;
-  }
-
-  public function wipe(...$pk): bool {
-    $criteria = new Criteria();
-
-    foreach ($pk as $index => $value) {
-      $criteria->equals($this->pk[$index], $value);
-    }
-
-    return $this->wipeBy($criteria);
   }
 
   public function wipeBy(Criteria $criteria): bool {

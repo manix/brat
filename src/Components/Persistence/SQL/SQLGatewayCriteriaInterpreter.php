@@ -27,7 +27,7 @@ class SQLGatewayCriteriaInterpreter extends CriteriaInterpreter {
         $query->whereGroupEnd();
       } else {
         foreach ($rule as $key => $data) {
-          $query->$method($query->alias . '.' . $data[0], $this->$key(...$data), $data[1]);
+          $query->$method($query->alias . '.' . $data[0], $this->$key(...$data), strpos($key, 'like') !== false ? ($data[1] . '%') : $data[1]);
         }
       }
     }

@@ -496,6 +496,19 @@ trait CRUDEndpoint {
   }
 
   public function getListData() {
+    $definedColumns = $this->getColumns();
+
+    if (isset($_GET['columns'])) {
+      $columns = [];
+      foreach (is_array($_GET['columns']) ? $_GET['columns'] : explode(',', $_GET['columns']) as $col) {
+        if (in_array($col, $definedColumns)) {
+          $columns[] = $col;
+        }
+      }
+    } else {
+      $columns = $definedColumns;
+    }
+
     $searchable = $this->getSearchableColumns();
     $query = $this->getQuery();
 
@@ -509,15 +522,25 @@ trait CRUDEndpoint {
       $queryCriteria = $criteria->group($_GET['glue'] ?? 'OR');
 
       foreach ($this->getQueryFields($searchable) as $field => $comparator) {
-        $queryCriteria->$comparator($field, $comparator === 'like' ? ($query . '%') : $query);
+        $queryCriteria->$comparator($field, $query[$field] ?? $query);
       }
     }
 
+    $gate = $this->getGateway();
+    $gatedefaultcols = $gate->getFields();
+    $gatecols = [];
+    foreach ($columns as $col) {
+      if (in_array($col, $gatedefaultcols)) {
+        $gatecols[] = $col;
+      }
+    }
+    $gate->setFields($gatecols);
+
     return [
-        $query || !$this->requireQuery() ? $this->getGateway()->sort($this->getSorter())->findBy($criteria) : [],
-        $this->getColumns(),
+        $query || !$this->requireQuery() ? $gate->sort($this->getSorter())->findBy($criteria) : [],
+        $columns,
         $this,
-        $this->getGateway()->getPK(),
+        $gate->getPK(),
         $this->getSort(),
         $this->getOrder(),
         $query,

@@ -165,7 +165,15 @@ abstract class Gateway {
    * @param array $pk Values for primary key.
    * @return bool Whether object was wiped successfully or not.
    */
-  abstract public function wipe(...$pk): bool;
+  public function wipe(...$pk): bool {
+    $criteria = new Criteria();
+
+    foreach ($pk as $index => $value) {
+      $criteria->equals($this->pk[$index], $value);
+    }
+
+    return $this->wipeBy($criteria);
+  }
 
   abstract public function wipeBy(Criteria $criteria): bool;
 
@@ -175,7 +183,15 @@ abstract class Gateway {
    * @param array $pk Values for primary key.
    * @return Collection The found objects.
    */
-  abstract public function find(...$pk): Collection;
+  public function find(...$pk): Collection {
+    $criteria = new Criteria();
+
+    foreach ($pk as $index => $value) {
+      $criteria->equals($this->pk[$index], $value);
+    }
+
+    return $this->findBy($criteria);
+  }
 
   abstract public function findBy(Criteria $criteria): Collection;
 
