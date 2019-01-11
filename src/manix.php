@@ -10,8 +10,6 @@ define('MANIX', 'MANIX');
 define('SITE_DOMAIN', isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : null);
 define('SITE_URL', SITE_DOMAIN === null ? null : (((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') ? 'https://' : 'http://') . SITE_DOMAIN . substr($_SERVER['PHP_SELF'], 0, -10)));
 
-$_ENV = array_merge($_ENV, require(PROJECT_PATH . '/.env.php'));
-
 define('DEBUG_MODE', $_ENV['env'] === 'debug');
 
 $projectLoader = require_once(PROJECT_PATH . '/../vendor/autoload.php');
