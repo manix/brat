@@ -401,6 +401,10 @@ trait CRUDEndpoint {
   }
 
   public function getColumns() {
+    return $this->fetchColumns();
+  }
+  
+  public function fetchColumns() {
     return $this->getGateway()->getFields();
   }
 
@@ -496,8 +500,8 @@ trait CRUDEndpoint {
   }
 
   public function getListData() {
-    $definedColumns = $this->getColumns();
-
+    $definedColumns = $this->fetchColumns();
+    
     if (isset($_GET['columns'])) {
       $columns = [];
       foreach (is_array($_GET['columns']) ? $_GET['columns'] : explode(',', $_GET['columns']) as $col) {
@@ -525,7 +529,7 @@ trait CRUDEndpoint {
         $queryCriteria->$comparator($field, $query[$field] ?? $query);
       }
     }
-
+    
     $gate = $this->getGateway();
     $gatedefaultcols = $gate->getFields();
     $gatecols = [];
@@ -535,10 +539,10 @@ trait CRUDEndpoint {
       }
     }
     $gate->setFields($gatecols);
-
+    
     return [
         $query || !$this->requireQuery() ? $gate->sort($this->getSorter())->findBy($criteria) : [],
-        $columns,
+        $this->getColumns(),
         $this,
         $gate->getPK(),
         $this->getSort(),

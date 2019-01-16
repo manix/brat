@@ -106,7 +106,7 @@ abstract class Gateway {
       $fields[] = self::TIMESTAMP_UPDATED;
     }
 
-    return $fields;
+    return array_unique($fields);
   }
 
   public function getRelations() {
