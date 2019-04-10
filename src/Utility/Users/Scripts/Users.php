@@ -77,7 +77,7 @@ FROM
 LEFT OUTER JOIN {$lgate->getTable()} l ON l.detail = CONCAT('{"t":', t.id, '}')
 WHERE
 	l.created < ?
-OR l.created IS NULL
+OR (l.created IS NULL AND t.user_id = l.user_id)
 SQL;
 
     $stmt = $tgate->getPDO()->prepare($sql);
