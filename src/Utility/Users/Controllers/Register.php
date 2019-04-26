@@ -64,6 +64,12 @@ class Register extends FormController {
   }
 
   public function get() {
+    if (Auth::user()) {
+      $url = $_SESSION['backto'] ?? $_GET['b'] ?? SITE_URL;
+      unset($_SESSION['backto']);
+      new Redirect($url);
+    }
+    
     return [
         'form' => $this->getForm(),
         'captcha' => $this->captcha

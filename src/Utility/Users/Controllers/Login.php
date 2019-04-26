@@ -87,7 +87,7 @@ class Login extends FormController {
 
   public function get() {
     if (Auth::user()) {
-      $url = $_SESSION['backto'] ?? $_GET['b'] ?? url();
+      $url = $_SESSION['backto'] ?? $_GET['b'] ?? SITE_URL;
       unset($_SESSION['backto']);
       new Redirect($url);
     }
