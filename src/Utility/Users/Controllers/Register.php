@@ -12,6 +12,7 @@ use Manix\Brat\Utility\Users\Models\UserEmail;
 use Project\Traits\Users\UserGatewayFactory;
 use Manix\Brat\Utility\Users\Views\RegisterSuccessView;
 use Manix\Brat\Utility\Users\Views\RegisterView;
+use Manix\Brat\Utility\Users\Models\Auth;
 
 class Register extends FormController {
 
@@ -69,7 +70,7 @@ class Register extends FormController {
       unset($_SESSION['backto']);
       new Redirect($url);
     }
-    
+
     return [
         'form' => $this->getForm(),
         'captcha' => $this->captcha
