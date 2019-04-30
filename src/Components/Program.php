@@ -32,6 +32,9 @@ abstract class Program {
   abstract public function determineMethod(): string;
 
   public function error(Throwable $t) {
+    $code = (int)$t->getCode();
+    http_response_code($code > 99 && $code < 600 ? $code : 500);
+
     echo $this->respond($this->executeController($t instanceof Exception2 ? $t->getHandler() : new Handler($t)));
   }
 

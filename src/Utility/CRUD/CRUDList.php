@@ -36,57 +36,40 @@ trait CRUDList {
     }
     $this->order = strtolower($this->order);
     $this->search = !empty($this->search);
+    $this->labels = $this->controllerInstance->getLabels();
 
     parent::__construct($data, $html);
   }
 
   public function body() {
-    $actions = $this->actions && $this->controller !== null;
+    $actions = $this->actions && $this->controller !== null && $this->controllerInstance->listActions();
     $sortable = $this->controller === null ? [] : array_flip($this->getSortableFields());
     $noQuery = !$this->query && $this->controllerInstance->requireQuery();
     $noResults = !$noQuery && !($this->data instanceof Collection ? $this->data->count() : count($this->data));
+
+    if ($this->controller !== null && $this->search !== false) {
+      $form = $this->getSearchForm();
+    }
     ?>
+    <div class="d-flex align-items-center justify-content-between bg-white">
+      <?php $this->renderPageName() ?>
+      <?php isset($form) ? $this->renderSearchForm($form) : '' ?>
+      <?php $this->renderCreateButton() ?>
+    </div>
+    <?php if ($noResults): ?>
+      <div class="text-center py-3 border-top">
+        <?= $this->t8('common', 'noResults') ?>
+      </div>
+    <?php endif; ?>
     <div class="table-responsive">
       <table class="<?= $this->getTableClass() ?> table-crud m-0">
         <thead>
-          <?php
-          if ($this->controller !== null && $this->search !== false):
-            $form = new Form();
-            $form->setMethod('GET')->setAction(route($this->controller));
-            if ($this->sort) {
-              $form->add('sort', 'hidden', $this->sort);
-            }
-            if ($this->order) {
-              $form->add('order', 'hidden', $this->order);
-            }
-            $form->add('query', 'text', $this->query);
-            ?>
-            <tr>
-              <td colspan="<?= count($this->fields) + (int)$actions ?>" class="p-0">
-                <div class="d-flex align-items-center">
-                  <?= $this->renderSearchForm($form) ?>
-                  <?= $this->renderCreateButton() ?>
-                </div>
-                <?php if ($noResults): ?>
-                  <div class="text-center py-3 border-top">
-                    <?= $this->t8('common', 'noResults') ?>
-                  </div>
-                <?php endif; ?>
-              </td>
-            </tr>
-          <?php endif; ?>
           <?php if (!$noQuery && !$noResults): ?>
             <tr>
               <?php foreach ($this->fields as $field): ?>
                 <th class="<?= in_array($field, $this->pk) ? 'pk' : '' ?>">
                   <?php if (isset($sortable[$field])): $asc = $this->sort === $field && $this->order === 'asc'; ?>
-                    <a href="<?=
-                    route($this->controller, [
-                        'query' => $this->query,
-                        'sort' => $field,
-                        'order' => $asc ? 'desc' : 'asc'
-                    ])
-                    ?>" class="d-flex justify-content-between align-items-center">
+                    <a href="<?= $this->getSortURL($field, $asc) ?>" class="d-flex justify-content-between align-items-center">
                       <span><?= $this->renderColumnLabel($field) ?></span>
                       <?php
                       if ($this->sort === $field && isset($sortable[$field])):
@@ -123,7 +106,7 @@ trait CRUDList {
                   </td>
                 <?php endforeach; ?>
                 <?php if ($actions): ?>
-                  <td class="actions"><?= $this->renderActions($model) ?></td>
+                  <td class="<?= $this->getActionsClass($model) ?>"><?= $this->renderActions($model) ?></td>
                 <?php endif; ?>
               </tr>
             <?php endforeach; ?>
@@ -144,12 +127,41 @@ trait CRUDList {
     echo new SelectValueForOpener(NULL, $this->html);
   }
 
+  public function renderPageName() {
+    
+  }
+
+  public function getSearchForm() {
+    $form = new Form();
+    $form->setMethod('GET')->setAction(route($this->controller));
+    if ($this->sort) {
+      $form->add('sort', 'hidden', $this->sort);
+    }
+    if ($this->order) {
+      $form->add('order', 'hidden', $this->order);
+    }
+    $form->add('query', 'text', $this->query);
+    return $form;
+  }
+
   public function getRowClass(Model $model) {
     return '';
   }
 
   public function getColClass(Model $model, $field) {
     return '';
+  }
+
+  public function getActionsClass(Model $model) {
+    return 'actions';
+  }
+
+  public function getSortURL($field, $asc) {
+    return route($this->controller, [
+        'query' => $this->query,
+        'sort' => $field,
+        'order' => $asc ? 'desc' : 'asc'
+    ]);
   }
 
   /**
@@ -223,7 +235,7 @@ trait CRUDList {
    * @return string
    */
   public function getTableClass() {
-    return 'table table-bordered collection-table';
+    return 'table table-bordered collection-table bg-white';
   }
 
   /**
@@ -232,7 +244,7 @@ trait CRUDList {
    * @return string The label that will appear in the table header.
    */
   public function renderColumnLabel($field) {
-    return ucfirst(str_replace('_', ' ', $field));
+    return $this->labels[$field] ?? ucfirst(str_replace('_', ' ', $field));
   }
 
   /**
@@ -268,9 +280,13 @@ trait CRUDList {
     };
   }
 
+  public function getCreateButtonURL() {
+    return route($this->controller, [$this->controllerInstance->createKey => 'yes']);
+  }
+
   public function renderCreateButton() {
     ?>
-    <a href="<?= route($this->controller, [$this->controllerInstance->createKey => 'yes']) ?>" class="btn btn-success rounded-0">
+    <a href="<?= $this->getCreateButtonURL() ?>" class="btn btn-success rounded-0">
       <i class="fa fa-plus"></i>
     </a>
     <?php

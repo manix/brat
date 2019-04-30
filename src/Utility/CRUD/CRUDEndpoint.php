@@ -136,7 +136,7 @@ trait CRUDEndpoint {
         case 'd': $this->page = $this->getDeleteView();
           break;
         case 'l':
-          $this->page = $this->getCRUDView();
+          $this->page = $this->getListView();
           return $this->getListData();
 
         default:
@@ -201,7 +201,7 @@ trait CRUDEndpoint {
       $class = $gate::MODEL;
       $this->model = new $class();
       $this->populateModel($this->model, $data);
-
+      
       // just in case
       unset($data[$gate->getAI()]);
 
@@ -218,9 +218,19 @@ trait CRUDEndpoint {
       return [
           'success' => true,
           'model' => $this->model,
-          'goto' => route(static::class, $pk)
+          'goto' => $this->getPostReturnURL($pk)
       ];
     });
+  }
+  
+  public function getPostReturnURL($pk) {
+    return route(static::class, $pk);
+  }
+  
+  public function getLabels() {
+    return [
+      // field => label  
+    ];
   }
 
   public function delete() {
@@ -294,8 +304,8 @@ trait CRUDEndpoint {
     $ai = $this->getGateway()->getAI();
 
     foreach ($this->getEditableFields() as $key) {
-      // Skip adding inputs for primary key properties
-      if ($key === $ai) {
+      // Skip adding inputs for primary key properties and timestamps
+      if ($key === $ai || $key === Gateway::TIMESTAMP_CREATED || $key === Gateway::TIMESTAMP_UPDATED) {
         continue;
       }
 
@@ -434,12 +444,12 @@ trait CRUDEndpoint {
 
     if (!$input || !is_array($input)) {
       foreach ($searchable as $field) {
-        $fields[$field] = 'like';
+        $fields[$field] = $this->getDefaultSearchComparator();
       }
     } else {
       foreach ($input as $field => $comparator) {
         if (!$comparator) {
-          $comparator = 'like';
+          $comparator = $this->getDefaultSearchComparator();
         }
 
         if (in_array($field, $searchable)) {
@@ -449,6 +459,10 @@ trait CRUDEndpoint {
     }
 
     return $fields;
+  }
+  
+  protected function getDefaultSearchComparator() {
+    return 'like';
   }
 
   protected function getCriteria() {
@@ -461,6 +475,14 @@ trait CRUDEndpoint {
   public function getListView() {
     // CRUDView automatically calls CRUDListView internally.
     return CRUDListView::class;
+  }
+  
+  /**
+   * Whether to display actions in listview or not
+   * @return boolean
+   */
+  public function listActions() {
+    return true;
   }
 
   /**

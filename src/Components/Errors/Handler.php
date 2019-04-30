@@ -24,10 +24,6 @@ class Handler extends Controller {
   }
 
   public function handle() {
-    $code = (int)$this->throwable->getCode();
-
-    http_response_code($code > 99 && $code < 600 ? $code : 500);
-
     return [
         'throwable' => $this->throwable,
         'code' => $this->throwable->getCode(),

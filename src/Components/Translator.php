@@ -34,9 +34,11 @@ trait Translator {
     if ($data === null) {
       return $this->getTranslatedStrings($path)[$string] ?? ($path . ':' . $string);
     } else {
-      return preg_replace_callback('/{\$(\d+)}/', function($match) use(&$data) {
-        return $data[$match[1]] ?? null;
-      }, $this->getTranslatedStrings($path)[$string] ?? ($path . ':' . $string));
+      $t8d = $this->getTranslatedStrings($path)[$string] ?? null;
+      return preg_replace_callback('/{\$(\d+)}/', function($match) use(&$data, $t8d) {
+        $m = $data[$match[1]] ?? null;
+        return $t8d ? $m : json_encode($m);
+      }, $t8d ?? ($path . ':' . $string . ':[{$' . join('},{$', range(0, count($data) - 1)) . '}]'));
     }
   }
 
@@ -47,17 +49,12 @@ trait Translator {
    * @return mixed null if file doesn't exist or file's return value otherwise.
    */
   protected function getTranslatedStrings($path) {
-    /*
-     * Call to constructAbsoluteLangFilePath() not assigned to variable
-     * because if it is taken outside the if statement it will be called
-     * every time this function gets called, this way it only gets called
-     * if $translatorStrings is empty.
-     */
-    if (!isset(self::$translatorStrings[$path])) {
-      self::$translatorStrings[$path] = is_file($this->constructAbsoluteLangFilePath($path)) ? require $this->constructAbsoluteLangFilePath($path) : [];
+    if (!isset(static::$translatorStrings[$path])) {
+      $file = $this->constructAbsoluteLangFilePath($path);
+      static::$translatorStrings[$path] = is_file($file) ? require $file : [];
     }
 
-    return self::$translatorStrings[$path];
+    return static::$translatorStrings[$path];
   }
 
   /**

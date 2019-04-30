@@ -8,7 +8,12 @@ use Manix\Brat\Components\Program;
 
 define('MANIX', 'MANIX');
 define('SITE_DOMAIN', isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : null);
-define('SITE_URL', SITE_DOMAIN === null ? null : (((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') ? 'https://' : 'http://') . SITE_DOMAIN . substr($_SERVER['PHP_SELF'], 0, -10)));
+
+if ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off')) {
+  define('SITE_URL', SITE_DOMAIN === null ? null : ('https://' . SITE_DOMAIN . ($_SERVER['SERVER_PORT'] !== '443' ? (':' . $_SERVER['SERVER_PORT']) : '') . substr($_SERVER['PHP_SELF'], 0, -10)));
+} else {
+  define('SITE_URL', SITE_DOMAIN === null ? null : ('http://' . SITE_DOMAIN . ($_SERVER['SERVER_PORT'] !== '80' ? (':' . $_SERVER['SERVER_PORT']) : '') . substr($_SERVER['PHP_SELF'], 0, -10)));
+}
 
 define('DEBUG_MODE', $_ENV['env'] === 'debug');
 
