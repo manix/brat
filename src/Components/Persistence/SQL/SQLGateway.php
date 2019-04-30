@@ -182,7 +182,15 @@ abstract class SQLGateway extends Gateway {
             return "`$tblAlias`.`$field`";
           }));
         } else {
-          $rule = $localalias . '.' . $this->getLocalRelationKey($key) . ' = ' . $tblAlias . '.' . $this->getRemoteRelationKey($key, $gate);
+          $localKey = $this->getLocalRelationKey($key);
+          $remoteKey = $this->getRemoteRelationKey($key, $gate);
+          if (is_array($localKey) && is_array($remoteKey)) {
+              $rule = join(' AND ', array_map(function ($localKey, $remoteKey) use ($localalias, $tblAlias) {
+                  return $localalias . '.' . $localKey . ' = ' . $tblAlias . '.' . $remoteKey;
+              }, $localKey, $remoteKey));
+          } else {
+              $rule = $localalias . '.' . $localKey . ' = ' . $tblAlias . '.' . $remoteKey;          
+          }
         }
 
         $gate->addJoins($query->join('LEFT', $gate->table . ' ' . $tblAlias, $rule), $colAlias);
