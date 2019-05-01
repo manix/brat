@@ -89,7 +89,7 @@ trait CRUDViewTrait {
 
         $input->readonly = 'readonly';
         $input->class = 'btn btn-light form-control text-left';
-        $input->{'data-url'} = $rel[$name] . $input->value;
+        $input->{'data-url'} = $this->getRelationURL($rel, $input);
         $input->onclick = 'openForeignSelector(this)';
 //        $view->setCustomRenderer($input->name, [$view, 'renderForeignSelector']);
       }
@@ -100,6 +100,10 @@ trait CRUDViewTrait {
     return $view;
   }
 
+  public function getRelationURL($relations, $input) {
+    return $relations[$input->name] . $input->value;
+  }
+  
   public function form() {
     echo $this->constructFormView($this->data['form']);
   }
