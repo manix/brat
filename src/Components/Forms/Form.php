@@ -79,7 +79,7 @@ class Form implements JsonSerializable {
    * @return FormInput
    */
   public function input($name) {
-    return $this->inputs[$name];
+    return $this->inputs[$name] ?? null;
   }
 
   /**
@@ -169,6 +169,13 @@ class Form implements JsonSerializable {
 
           case 'file': // file inputs cant have a value
           case 'password': // passwords should not be filled
+            break;
+
+          case 'checkbox':
+          case 'radio':
+            if ($value) {
+              $this->inputs[$key]->setAttribute('checked', 'checked');
+            }
             break;
 
           default:

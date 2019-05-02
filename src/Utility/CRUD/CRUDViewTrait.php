@@ -84,12 +84,12 @@ trait CRUDViewTrait {
 
       $view->labels[$name] = $labels[$name] ?? ucfirst(str_replace('_', ' ', $name));
 
-      if (isset($rel[$name])) {
+      if (isset($rel[$this->getRelationKey($name)])) {
 //        $view->labels[$name] = '<i class="fa fa-link"></i> ' . $view->labels[$name];
 
         $input->readonly = 'readonly';
         $input->class = 'btn btn-light form-control text-left';
-        $input->{'data-url'} = $rel[$name] . $input->value;
+        $input->{'data-url'} = $this->getRelationURL($rel, $input);
         $input->onclick = 'openForeignSelector(this)';
 //        $view->setCustomRenderer($input->name, [$view, 'renderForeignSelector']);
       }
@@ -98,6 +98,20 @@ trait CRUDViewTrait {
     $view->setCustomRenderer('manix-wipe', [$this, 'renderDelete']);
 
     return $view;
+  }
+  
+  /**
+   * Define alternate relation names for fields
+   */
+  public function getRelationKey($field) {
+    switch ($field) {
+      default:
+        return $field;
+    }
+  }
+
+  public function getRelationURL($rel, $input) {
+    return $rel[$this->getRelationKey($input->name)] . $input->value;
   }
 
   public function form() {

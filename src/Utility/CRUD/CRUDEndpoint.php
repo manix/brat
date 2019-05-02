@@ -187,9 +187,13 @@ trait CRUDEndpoint {
 
       return [
           'success' => true,
-          'goto' => route(static::class, $pk_route)
+          'goto' => $this->getPutReturnURL($pk_route)
       ];
     });
+  }
+
+  public function getPutReturnURL($pk) {
+    return route(static::class, $pk);
   }
 
   public function post() {
@@ -198,12 +202,13 @@ trait CRUDEndpoint {
     return $this->validate($_REQUEST, function($data) {
       $gate = $this->getGateway();
 
+      // just in case
+      $data[$gate->getAI()] = null;
+
       $class = $gate::MODEL;
       $this->model = new $class();
       $this->populateModel($this->model, $data);
-      
-      // just in case
-      unset($data[$gate->getAI()]);
+
 
       if (!$gate->persist($this->model)) {
         throw new Exception('Unexpected error.', 500);
@@ -222,14 +227,14 @@ trait CRUDEndpoint {
       ];
     });
   }
-  
+
   public function getPostReturnURL($pk) {
     return route(static::class, $pk);
   }
-  
+
   public function getLabels() {
     return [
-      // field => label  
+    // field => label  
     ];
   }
 
@@ -413,7 +418,7 @@ trait CRUDEndpoint {
   public function getColumns() {
     return $this->fetchColumns();
   }
-  
+
   public function fetchColumns() {
     return $this->getGateway()->getFields();
   }
@@ -460,7 +465,7 @@ trait CRUDEndpoint {
 
     return $fields;
   }
-  
+
   protected function getDefaultSearchComparator() {
     return 'like';
   }
@@ -476,7 +481,7 @@ trait CRUDEndpoint {
     // CRUDView automatically calls CRUDListView internally.
     return CRUDListView::class;
   }
-  
+
   /**
    * Whether to display actions in listview or not
    * @return boolean
@@ -510,12 +515,31 @@ trait CRUDEndpoint {
 
       $gate = new $rel[0];
       $pk = $gate->getPK();
-      $relations[$field] = route($class, $alwaysList || count($pk) > 1 ? [
-          'fields' => $data[2] ?? $pk[0],
-          'query' => ''
-      ] : [
-          $pk[0] => ''
-      ]);
+
+      if (is_array($field)) {
+        $values = [];
+        $fields = [];
+        $model = $this->getModel();
+        foreach ($field as $f) {
+          $values[$f] = $model->$f ?? $_REQUEST[$f] ?? null;
+          if ($values[$f]) {
+            $fields[$f] = 'equals';
+          }
+        }
+        $relations[$key] = route($class, $alwaysList || count($pk) > 1 ? [
+            'fields' => is_array($data) ? $data[2] : $fields,
+            'query' => $values
+        ] : [
+            $pk[0] => ''
+        ]);
+      } else {
+        $relations[$field] = route($class, $alwaysList || count($pk) > 1 ? [
+            'fields' => $data[2] ?? $pk[0],
+            'query' => ''
+        ] : [
+            $pk[0] => ''
+        ]);
+      }
     }
 
     return $relations;
@@ -523,7 +547,7 @@ trait CRUDEndpoint {
 
   public function getListData() {
     $definedColumns = $this->fetchColumns();
-    
+
     if (isset($_GET['columns'])) {
       $columns = [];
       foreach (is_array($_GET['columns']) ? $_GET['columns'] : explode(',', $_GET['columns']) as $col) {
@@ -551,7 +575,7 @@ trait CRUDEndpoint {
         $queryCriteria->$comparator($field, $query[$field] ?? $query);
       }
     }
-    
+
     $gate = $this->getGateway();
     $gatedefaultcols = $gate->getFields();
     $gatecols = [];
@@ -561,7 +585,7 @@ trait CRUDEndpoint {
       }
     }
     $gate->setFields($gatecols);
-    
+
     return [
         $query || !$this->requireQuery() ? $gate->sort($this->getSorter())->findBy($criteria) : [],
         $this->getColumns(),

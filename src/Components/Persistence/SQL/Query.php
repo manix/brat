@@ -11,7 +11,8 @@ abstract class Query {
   protected $joins = [];
   protected $columns;
   protected $where = '';
-  protected $whereglue = 'AND';
+  public $whereglue = 'AND';
+  public $whereglueGroup = '';
   public $group = '';
   public $order = '';
   public $limit = '';
@@ -51,12 +52,14 @@ abstract class Query {
 
   public function whereGroupStart() {
     $this->where .= ' ' . $this->whereglue . ' (';
+    $this->whereglueGroup = $this->whereglue;
     $this->whereglue = '';
     return $this;
   }
 
   public function whereGroupEnd() {
     $this->where .= ')';
+    $this->whereglue = $this->whereglueGroup;
     return $this;
   }
 

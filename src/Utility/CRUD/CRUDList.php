@@ -26,6 +26,7 @@ trait CRUDList {
   ];
   public $search = true;
   public $actions = true;
+  public $tableHead = true;
 
   function __construct($data, HTMLGenerator $html) {
     list($data, $this->fields, $this->controllerInstance, $this->pk, $this->sort, $this->order, $this->query, $this->sortable, $this->search, $this->relations) = $data;
@@ -63,43 +64,46 @@ trait CRUDList {
     <?php endif; ?>
     <div class="table-responsive">
       <table class="<?= $this->getTableClass() ?> table-crud m-0">
-        <thead>
-          <?php if (!$noQuery && !$noResults): ?>
-            <tr>
-              <?php foreach ($this->fields as $field): ?>
-                <th class="<?= in_array($field, $this->pk) ? 'pk' : '' ?>">
-                  <?php if (isset($sortable[$field])): $asc = $this->sort === $field && $this->order === 'asc'; ?>
-                    <a href="<?= $this->getSortURL($field, $asc) ?>" class="d-flex justify-content-between align-items-center">
-                      <span><?= $this->renderColumnLabel($field) ?></span>
-                      <?php
-                      if ($this->sort === $field && isset($sortable[$field])):
-                        if ($asc):
-                          ?>
-                          <i class="fa fa-chevron-up"></i>
-                        <?php else: ?>
-                          <i class="fa fa-chevron-down"></i>
+        <?php if ($this->tableHead): ?>
+          <thead>
+            <?php if (!$noQuery && !$noResults): ?>
+              <tr>
+                <?php foreach ($this->fields as $field): ?>
+                  <th>
+                    <?php if (isset($sortable[$field])): $asc = $this->sort === $field && $this->order === 'asc'; ?>
+                      <a href="<?= $this->getSortURL($field, $asc) ?>" class="d-flex justify-content-between align-items-center">
+                        <span><?= $this->renderColumnLabel($field) ?></span>
                         <?php
+                        if ($this->sort === $field && isset($sortable[$field])):
+                          if ($asc):
+                            ?>
+                            <i class="fa fa-chevron-up"></i>
+                          <?php else: ?>
+                            <i class="fa fa-chevron-down"></i>
+                          <?php
+                          endif;
                         endif;
-                      endif;
-                      ?>
-                    </a>
-                  <?php else: ?>
-                    <span><?= $this->renderColumnLabel($field) ?></span>
-                  <?php endif; ?>
-                </th>
-              <?php endforeach; ?>
-              <?php if ($actions): ?>
-                <th>
-                  Actions
-                </th>
-              <?php endif; ?>
-            </tr>
-          <?php endif; ?>
-        </thead>
+                        ?>
+                      </a>
+                    <?php else: ?>
+                      <span><?= $this->renderColumnLabel($field) ?></span>
+                    <?php endif; ?>
+                  </th>
+                <?php endforeach; ?>
+                <?php if ($actions): ?>
+                  <th>
+                    Actions
+                  </th>
+                <?php endif; ?>
+              </tr>
+            <?php endif; ?>
+          </thead>
+        <?php endif; ?>
+
         <?php if (!$noResults): ?>
           <tbody>
             <?php foreach ($this->data as $model): ?>
-              <tr class="<?= $this->getRowClass($model) ?>">
+              <tr class="<?= $this->getRowClass($model) ?>" data-pk="<?= html($this->getRelationKey($model)) ?>">
                 <?php foreach ($this->fields as $field): ?>
                   <td class="<?= $this->getColClass($model, $field) ?>">
                     <?= $this->renderColumnBody($model, $field) ?>
@@ -129,6 +133,10 @@ trait CRUDList {
 
   public function renderPageName() {
     
+  }
+
+  public function getRelationKey($model) {
+    return $model->{$this->pk[0]};
   }
 
   public function getSearchForm() {
