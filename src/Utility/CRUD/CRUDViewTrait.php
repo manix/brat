@@ -113,10 +113,6 @@ trait CRUDViewTrait {
   public function getRelationURL($rel, $input) {
     return $rel[$this->getRelationKey($input->name)] . $input->value;
   }
-
-  public function getRelationURL($relations, $input) {
-    return $relations[$input->name] . $input->value;
-  }
   
   public function form() {
     echo $this->constructFormView($this->data['form']);
