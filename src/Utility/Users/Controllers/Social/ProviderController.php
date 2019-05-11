@@ -10,7 +10,7 @@ use ReflectionClass;
 abstract class ProviderController extends HTTPController {
 
   public static function icon() {
-    return (new ReflectionClass(static::class))->getShortName();
+    return 'fa fa-' . (new ReflectionClass(static::class))->getShortName();
   }
 
   abstract public function provider();

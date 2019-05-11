@@ -53,7 +53,7 @@ class LoginView extends GuestFrame {
       <div class="social-login text-center">
         <?php foreach ($this->data['social']['providers'] as $class => $data): ?>
           <a class="btn btn-light btn-lg" href="<?= route($class) ?>">
-            <i class="fa fa-<?= strtolower($class::icon()) ?>"></i>
+            <i class="<?= strtolower($class::icon()) ?>"></i>
           </a>
         <?php endforeach; ?>
       </div>

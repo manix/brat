@@ -19,8 +19,10 @@ class Model {
    * @param \Iterable $source
    */
   public function fill($source) {
-    foreach ($source as $key => $value) {
-      $this->$key = $value;
+    if (!empty($source)) {
+      foreach ($source as $key => $value) {
+        $this->$key = $value;
+      }
     }
   }
 
