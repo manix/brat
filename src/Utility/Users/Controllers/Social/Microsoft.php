@@ -5,7 +5,7 @@ namespace Manix\Brat\Utility\Users\Controllers\Social;
 class Microsoft extends ProviderController {
 
   public static function icon() {
-    return 'windows';
+    return 'fa fa-windows';
   }
 
   public function provider() {
