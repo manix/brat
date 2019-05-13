@@ -10,7 +10,9 @@ use Manix\Brat\Components\Persistence\Gateway;
 use Manix\Brat\Components\Sorter;
 use Manix\Brat\Components\Validation\Ruleset;
 use Manix\Brat\Helpers\FormEndpoint;
+use Manix\Brat\Helpers\Image;
 use Manix\Brat\Helpers\Redirect;
+use const SITE_URL;
 use function route;
 
 trait CRUDEndpoint {
@@ -181,6 +183,8 @@ trait CRUDEndpoint {
         }
       }
 
+      $this->saveImages($pk_route);
+
       if (isset($wipeOld)) {
         $this->getGateway()->wipe(...$pk);
       }
@@ -219,6 +223,8 @@ trait CRUDEndpoint {
       foreach ($gate->getPK() as $key) {
         $pk[$key] = (string)$this->model->$key;
       }
+
+      $this->saveImages($pk);
 
       return [
           'success' => true,
@@ -315,6 +321,10 @@ trait CRUDEndpoint {
       }
 
       $form->add($key, 'text');
+    }
+
+    if ($this->addImageInputs($form)) {
+      $form->setEnctype();
     }
 
     $form->add('manix-save', 'submit', $this->t8('common', 'create'));
@@ -597,6 +607,67 @@ trait CRUDEndpoint {
         $this->getSortableColumns(),
         $searchable,
         $this->getParsedRelations()
+    ];
+  }
+
+  public function saveImages($pk) {
+    foreach ($this->getImageNamespaces() as $namespace) {
+      $file = $_FILES[$namespace] ?? 0;
+
+      if ($file && $file['error'] === UPLOAD_ERR_OK) {
+        $data = $this->getImageData($namespace);
+        $path = $data['base'] . $data['path'] . '/' . implode('/', $pk);
+
+        $i = Image::fromFile($file['tmp_name']);
+        $i->setType($data['type'] ?? IMAGETYPE_JPEG);
+        $i->setFile($path, true);
+        if ($data['resize']) {
+          $i->resize(...$data['resize']);
+        }
+        $i->save(...($data['options'] ?? []));
+
+        if ($data['thumb']) {
+          $c = clone $i;
+          $c->setFile($path . '/thumbs/', true);
+          $c->resize(128, 128);
+        }
+      }
+    }
+  }
+
+  public function addImageInputs(Form $form) {
+    $pk = [];
+
+    foreach ($this->getGateway()->getPK() as $field) {
+      $pk[] = $_REQUEST[$field] ?? $form->input($field)->getAttribute('value') ?? '';
+    }
+
+    $pk = implode('/', $pk);
+
+    foreach ($this->getImageNamespaces() as $ns) {
+      $data = $this->getImageData($ns);
+      $path = SITE_URL . $data['path'] . '/' . $pk . image_type_to_extension($data['type'] ?? IMAGETYPE_JPEG);
+
+      $form->add($ns)
+      ->setAttribute('type', 'file')
+      ->setAttribute('style', 'background: no-repeat center url(' . $path . '); background-size: cover; min-height: 256px');
+    }
+
+    return isset($ns);
+  }
+
+  public function getImageNamespaces() {
+    return [];
+  }
+
+  public function getImageData($namespace) {
+    return [
+        'base' => PUBLIC_PATH,
+        'path' => '/images/crud/' . $namespace,
+        'type' => IMAGETYPE_JPEG,
+        'thumb' => false,
+        'resize' => [1024, 768],
+        'options' => [90]
     ];
   }
 

@@ -3,6 +3,7 @@
 namespace Manix\Brat\Helpers;
 
 use Exception;
+use Manix\Brat\Components\Filesystem\File;
 
 class Image {
 
@@ -185,6 +186,10 @@ class Image {
 
     if (!$this->info[2]) {
       throw new Exception('Image object has no type', 500);
+    }
+
+    if (!is_file($this->filename)) {
+      new File($this->filename);
     }
 
     switch ($this->info[2]) {
