@@ -639,7 +639,7 @@ trait CRUDEndpoint {
     $pk = [];
 
     foreach ($this->getGateway()->getPK() as $field) {
-      $pk[] = $_REQUEST[$field] ?? $form->input($field)->getAttribute('value') ?? '';
+      $pk[] = $_REQUEST[$field] ?? $form->input($field)->value ?? '';
     }
 
     $pk = implode('/', $pk);

@@ -153,7 +153,11 @@ abstract class SQLGateway extends Gateway {
 
     foreach ($criteria->rules() as $rule) {
       foreach ($rule as $key => $data) {
-        $dummy->$method($data[0], $map[$key], $data[1]);
+        if ($data[1] === null && ($key === 'eq' || $key === 'noteq')) {
+          $dummy->$method($data[0], 'IS ' . ($key === 'noteq' ? 'NOT NULL' : 'NULL'), $data[1]);
+        } else {
+          $dummy->$method($data[0], $map[$key], $data[1]);
+        }
       }
     }
 
@@ -185,11 +189,11 @@ abstract class SQLGateway extends Gateway {
           $localKey = $this->getLocalRelationKey($key);
           $remoteKey = $this->getRemoteRelationKey($key, $gate);
           if (is_array($localKey) && is_array($remoteKey)) {
-              $rule = join(' AND ', array_map(function ($localKey, $remoteKey) use ($localalias, $tblAlias) {
-                  return $localalias . '.' . $localKey . ' = ' . $tblAlias . '.' . $remoteKey;
-              }, $localKey, $remoteKey));
+            $rule = join(' AND ', array_map(function ($localKey, $remoteKey) use ($localalias, $tblAlias) {
+              return $localalias . '.' . $localKey . ' = ' . $tblAlias . '.' . $remoteKey;
+            }, $localKey, $remoteKey));
           } else {
-              $rule = $localalias . '.' . $localKey . ' = ' . $tblAlias . '.' . $remoteKey;          
+            $rule = $localalias . '.' . $localKey . ' = ' . $tblAlias . '.' . $remoteKey;
           }
         }
 
