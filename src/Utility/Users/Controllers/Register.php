@@ -81,7 +81,6 @@ class Register extends FormController {
 
     return $this->validate($_POST, function($data, $v) {
       $egate = $this->getEmailGateway();
-
       $existing = $egate->find($data['email']);
 
       if ($existing->count()) {
@@ -98,9 +97,12 @@ class Register extends FormController {
         }
 
         $email = $egate->instantiate([
-            'user_id' => $user->id,
-            'email' => $data['email']
+            [
+                'user_id' => $user->id,
+                'email' => $data['email']
+            ]
         ], false);
+
         $email->invalidate();
 
         $this->captcha->expire();

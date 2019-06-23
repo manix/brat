@@ -286,7 +286,7 @@ abstract class Gateway {
    */
   public function unpack($row) {
     if ($this->timestamps) {
-      $row[self::TIMESTAMP_CREATED] = new Time($row[self::TIMESTAMP_CREATED]);
+      $row[self::TIMESTAMP_CREATED] = new Time($row[self::TIMESTAMP_CREATED] ?? null);
       $row[self::TIMESTAMP_UPDATED] = new Time($row[self::TIMESTAMP_UPDATED] ?? '0000');
     }
 

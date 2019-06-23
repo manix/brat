@@ -212,8 +212,7 @@ trait CRUDEndpoint {
       $class = $gate::MODEL;
       $this->model = new $class();
       $this->populateModel($this->model, $data);
-
-
+      
       if (!$gate->persist($this->model)) {
         throw new Exception('Unexpected error.', 500);
       }

@@ -19,7 +19,7 @@ class Model {
    * @param \Iterable $source
    */
   public function fill($source) {
-    if (!empty($source)) {
+    if (is_array($source)) {
       foreach ($source as $key => $value) {
         $this->$key = $value;
       }
