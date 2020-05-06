@@ -9,9 +9,10 @@ class FormPageView extends DefaultLayout {
 
   public function body() {
     if (!isset($this->data['status'])) {
-      $view = new DefaultFormView($this->data['form'], $this->html);
+      $class = $this->data['view'] ?? DefaultFormView::class;
+      $view = new $class($this->data['form'], $this->html);
       foreach ($this->data['form']->inputs() as $name => $input) {
-        if ($input->type === 'submit') {
+        if ($input->type === 'submit' || isset($view->labels[$name])) {
           continue;
         }
 

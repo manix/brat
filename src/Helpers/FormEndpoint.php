@@ -13,10 +13,9 @@ trait FormEndpoint {
   protected $rules;
 
   public function get() {
-    $this->page = FormPageView::class;
-
     return [
-        'form' => $this->getForm()
+        'form' => $this->getForm(),
+        'view' => $this->getFormView()
     ];
   }
 
@@ -30,6 +29,14 @@ trait FormEndpoint {
     }
 
     return $this->form;
+  }
+  
+  /**
+   * FQCN of the form view.
+   * @return string
+   */
+  protected function getFormView() {
+    return FormPageView::class;
   }
 
   /**
