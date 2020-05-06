@@ -13,6 +13,8 @@ trait FormEndpoint {
   protected $rules;
 
   public function get() {
+    $this->page = FormPageView::class;
+    
     return [
         'form' => $this->getForm(),
         'view' => $this->getFormView()
@@ -36,7 +38,7 @@ trait FormEndpoint {
    * @return string
    */
   protected function getFormView() {
-    return FormPageView::class;
+    return null;
   }
 
   /**
