@@ -20,7 +20,7 @@ class Exception extends E {
   }
 
   public function getHandler(): Controller {
-    return $this->handler;
+    return $this->handler ?? new Handler($this);
   }
 
 }
