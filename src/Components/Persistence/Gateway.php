@@ -18,6 +18,7 @@ abstract class Gateway {
    * The model interface.
    */
   const MODEL = Model::class;
+  const COLLECTION = Collection::class;
   const TIMESTAMP_CREATED = 'created';
   const TIMESTAMP_UPDATED = 'updated';
 
@@ -197,9 +198,10 @@ abstract class Gateway {
 
   public function instantiate(array $set, $asList = true) {
     $interface = static::MODEL;
-
+    
     if ($asList) {
-      $collection = new Collection($interface);
+      $icollection = static::COLLECTION;
+      $collection = new $icollection($interface);
 
       foreach ($set as $row) {
         $collection->push(new $interface($this->unpack($row)));

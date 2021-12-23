@@ -35,7 +35,7 @@ class View extends BootstrapLayout {
               <td class="p-4">
                 <?=
                 html($this->formatClassName($record['class'] ?? null) . ($record['type'] ?? null) . $record['function']),
-                '(', implode(', ', $this->parseArgs($record['args'])), ')'
+                '(', implode(', ', $this->parseArgs($record['args'] ?? [])), ')'
                 ?>
               </td>
             </tr>

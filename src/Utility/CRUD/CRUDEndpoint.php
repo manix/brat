@@ -205,7 +205,7 @@ trait CRUDEndpoint {
 
     return $this->validate($_REQUEST, function($data) {
       $gate = $this->getGateway();
-
+      
       // just in case
       $data[$gate->getAI()] = null;
 
