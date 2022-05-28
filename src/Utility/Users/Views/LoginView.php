@@ -46,7 +46,7 @@ class LoginView extends GuestFrame {
   public function frame() {
     echo $this->getFormView($this->data['form']);
 
-    if ($this->data['social'] && is_array($this->data['social']['providers'])):
+    if (isset($this->data['social']['providers']) && is_array($this->data['social']['providers'])):
       ?>
       <hr/>
 
