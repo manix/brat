@@ -111,7 +111,10 @@ abstract class Program {
       $mail->Port = $settings['port'];                                    // TCP port to connect to
       //Recipients
       $mail->setFrom($settings['user'], config('project')['name'] ?? null);
-      $mail->addAddress(...(is_array($to) ? $to : [$to]));     // Add a recipient
+      
+      foreach (is_array($to) ? $to : [$to] as $addr) {
+        $mail->addAddress($addr);     // Add a recipient
+      }
       //Content
       $mail->isHTML(true);                                  // Set email format to HTML
       $mail->Subject = $subject;
