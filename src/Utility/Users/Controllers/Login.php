@@ -74,7 +74,7 @@ class Login extends FormController {
   }
 
   protected function constructForm(Form $form): Form {
-    $form->setAction(route(Login::class, $this->backto ? [
+    $form->setAction(route(static::class, $this->backto ? [
         'b' => $this->backto
     ] : []));
     $form->add('email', 'email');

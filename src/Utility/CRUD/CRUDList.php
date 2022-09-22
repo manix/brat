@@ -92,7 +92,7 @@ trait CRUDList {
                 <?php endforeach; ?>
                 <?php if ($actions): ?>
                   <th>
-                    Actions
+                    <?= html($this->getActionsLabel()) ?>
                   </th>
                 <?php endif; ?>
               </tr>
@@ -194,6 +194,10 @@ trait CRUDList {
     return $this->relations[$relation] . $query;
   }
 
+  public function getActionsLabel() {
+      return 'Actions';
+  }
+  
   /**
    * Render the contents of the actions columns.
    * @param \Manix\Brat\Utility\CRUD\Model $model

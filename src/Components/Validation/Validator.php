@@ -39,7 +39,7 @@ class Validator {
 
       foreach ($rules as $rule => $parameters) {
         $error = $this->{$rule}($value, $parameters, $key);
-
+        
         if ($error === null) {
           continue;
         } else {
@@ -203,10 +203,12 @@ class Validator {
         if ($v < $min || $v > $max) {
           return true;
         }
+        break;
       default:
         if (strtotime($v) < strtotime($min) || strtotime($v) > strtotime($max)) {
           return true;
         }
+        break;
     }
   }
 
@@ -219,10 +221,12 @@ class Validator {
         if ($v <= $min || $v >= $max) {
           return true;
         }
+        break;
       default:
         if (strtotime($v) <= strtotime($min) || strtotime($v) >= strtotime($max)) {
           return true;
         }
+        break;
     }
   }
 
