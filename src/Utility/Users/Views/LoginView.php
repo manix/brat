@@ -49,7 +49,7 @@ class LoginView extends GuestFrame {
     if (isset($this->data['social']['providers']) && is_array($this->data['social']['providers'])):
       ?>
       <hr/>
-
+      
       <div class="social-login text-center">
         <?php foreach ($this->data['social']['providers'] as $class => $data): ?>
           <a class="btn btn-light btn-lg" href="<?= route($class) ?>">

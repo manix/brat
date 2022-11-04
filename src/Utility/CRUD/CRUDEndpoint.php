@@ -202,7 +202,7 @@ trait CRUDEndpoint {
 
   public function post() {
     $this->cleanInput($_REQUEST);
-
+    
     return $this->validate($_REQUEST, function($data) {
       $gate = $this->getGateway();
       
@@ -224,7 +224,7 @@ trait CRUDEndpoint {
       }
 
       $this->saveImages($pk);
-
+      
       return [
           'success' => true,
           'model' => $this->model,
@@ -581,7 +581,17 @@ trait CRUDEndpoint {
       $queryCriteria = $criteria->group($_GET['glue'] ?? 'OR');
 
       foreach ($this->getQueryFields($searchable) as $field => $comparator) {
-        $queryCriteria->$comparator($field, $query[$field] ?? $query);
+      	if (is_array($query)) {
+      	  if (isset($query[$field])) {
+            $queryCriteria->$comparator($field, ...(is_array($query[$field]) ? $query[$field] : [$query[$field]]));
+          }
+      	} else {
+          $queryCriteria->$comparator($field, $query);
+      	}
+      }
+      
+      if (!count($queryCriteria->rules())) {
+        throw new Exception('Query present but no rules were added to criteria. Most likely you tried to query on a key that is not listed as searchable.', 400);
       }
     }
 
@@ -605,7 +615,9 @@ trait CRUDEndpoint {
         $query,
         $this->getSortableColumns(),
         $searchable,
-        $this->getParsedRelations()
+        $this->getParsedRelations(),
+        $this->getEditableFields(),
+        CSRF_TOKEN
     ];
   }
 
