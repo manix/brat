@@ -455,12 +455,12 @@ trait CRUDEndpoint {
   protected function getQueryFields($searchable) {
     $input = $_GET['fields'] ?? null;
     $fields = [];
+    
+    foreach ($searchable as $field) {
+      $fields[$field] = $this->getDefaultSearchComparator();
+    }
 
-    if (!$input || !is_array($input)) {
-      foreach ($searchable as $field) {
-        $fields[$field] = $this->getDefaultSearchComparator();
-      }
-    } else {
+    if ($input && is_array($input)) {
       foreach ($input as $field => $comparator) {
         if (!$comparator) {
           $comparator = $this->getDefaultSearchComparator();
