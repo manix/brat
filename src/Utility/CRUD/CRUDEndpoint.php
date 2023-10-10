@@ -659,7 +659,7 @@ trait CRUDEndpoint {
           ];
 
           // this will overwrite old images in random order
-          $this->saveImage($f, $data, $path . '_' . $index);
+          $this->saveImage($f, $data, $path . '/' . $index);
         }
 
         return;
