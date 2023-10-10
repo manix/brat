@@ -621,28 +621,51 @@ trait CRUDEndpoint {
     ];
   }
 
+  public function saveImage($file, $data, $path) {
+    if ($file && $file['error'] === UPLOAD_ERR_OK) {
+      $path = $data['base'] . $data['path'] . $path;
+
+      $i = Image::fromFile($file['tmp_name']);
+      $i->setType($data['type'] ?? IMAGETYPE_JPEG);
+      $i->setFile($path, true);
+      if ($data['resize']) {
+        $i->resize(...$data['resize']);
+      }
+      $i->save(...($data['options'] ?? []));
+
+      if ($data['thumb']) {
+        $c = clone $i;
+        $c->setFile($path . '/thumbs/', true);
+        $c->resize(128, 128);
+      }
+    }
+  }
+
   public function saveImages($pk) {
     foreach ($this->getImageNamespaces() as $namespace) {
+      $namespace = trim($namespace, '[]');
+
+      $data = $this->getImageData($namespace);
       $file = $_FILES[$namespace] ?? 0;
+      $path = '/' . implode('/', $pk);
+      
+      if (is_array($file['name'])) {
+        foreach ($file['name'] as $index => $name) {
+          $f = [
+            'error' => $file['error'][$index],
+            'tmp_name' => $file['tmp_name'][$index],
+            'name' => $file['name'][$index],
+            'size' => $file['size'][$index]
+          ];
 
-      if ($file && $file['error'] === UPLOAD_ERR_OK) {
-        $data = $this->getImageData($namespace);
-        $path = $data['base'] . $data['path'] . '/' . implode('/', $pk);
-
-        $i = Image::fromFile($file['tmp_name']);
-        $i->setType($data['type'] ?? IMAGETYPE_JPEG);
-        $i->setFile($path, true);
-        if ($data['resize']) {
-          $i->resize(...$data['resize']);
+          // this will overwrite old images in random order
+          $this->saveImage($f, $data, $path . '_' . $index);
         }
-        $i->save(...($data['options'] ?? []));
 
-        if ($data['thumb']) {
-          $c = clone $i;
-          $c->setFile($path . '/thumbs/', true);
-          $c->resize(128, 128);
-        }
+        return;
       }
+      
+      return $this->saveImage($file, $data, $path);
     }
   }
 
@@ -661,7 +684,12 @@ trait CRUDEndpoint {
 
       $form->add($ns)
       ->setAttribute('type', 'file')
+      ->setAttribute('accept', $data['accept'])
       ->setAttribute('style', 'background: no-repeat center url(' . $path . '); background-size: cover; min-height: 256px');
+
+      if ($data['multiple']) {
+        $form->input($ns)->setAttribute('multiple', 'multiple');
+      }
     }
 
     return isset($ns);
@@ -678,7 +706,9 @@ trait CRUDEndpoint {
         'type' => IMAGETYPE_JPEG,
         'thumb' => false,
         'resize' => [1024, 768],
-        'options' => [90]
+        'options' => [90],
+        'accept' => 'image/*',
+        'multiple' => false
     ];
   }
 
