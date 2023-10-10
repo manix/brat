@@ -10,7 +10,7 @@ use RecursiveIteratorIterator;
 
 class Directory extends Inode {
 
-  public function __construct($path, $recursive = true) {
+  public function __construct($path, $recursive = true, $create = true) {
     parent::__construct($path);
 
     if (!is_dir($path)) {
