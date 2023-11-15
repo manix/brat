@@ -90,7 +90,7 @@ trait CRUDViewTrait {
         if ($this->readonlyRels()) {
           $input->readonly = 'readonly';
         }
-        $input->class = 'btn btn-light form-control text-left';
+        $input->class = 'btn-light border form-control text-left';
         $input->{'data-url'} = $this->getRelationURL($rel, $input);
         $input->onclick = 'openForeignSelector(this)';
 //        $view->setCustomRenderer($input->name, [$view, 'renderForeignSelector']);
