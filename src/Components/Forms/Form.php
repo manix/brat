@@ -159,12 +159,18 @@ class Form implements JsonSerializable {
    * @param mixed $data Must be traversable where the key is the name of the input element.
    * @return $this
    */
-  public function fill($data) {
+  public function fill($data, $prefix = '', $suffix = '') {
     foreach ($data as $key => $value) {
-      if ($this->inputs[$key] ?? null) {
-        switch ($this->inputs[$key]->getAttribute('type')) {
+      $name = $prefix . $key . $suffix;
+      if (is_array($value)) {
+        $this->fill($value, $name . '[', ']');
+        continue;
+      }
+
+      if ($this->inputs[$name] ?? null) {
+        switch ($this->inputs[$name]->getAttribute('type')) {
           case 'select':
-            $this->inputs[$key]->setAttribute('selected', $value);
+            $this->inputs[$name]->setAttribute('selected', $value);
             break;
 
           case 'file': // file inputs cant have a value
@@ -174,12 +180,12 @@ class Form implements JsonSerializable {
           case 'checkbox':
           case 'radio':
             if ($value) {
-              $this->inputs[$key]->setAttribute('checked', 'checked');
+              $this->inputs[$name]->setAttribute('checked', 'checked');
             }
             break;
 
           default:
-            $this->inputs[$key]->setAttribute('value', $value);
+            $this->inputs[$name]->setAttribute('value', $value);
         }
       }
     }
