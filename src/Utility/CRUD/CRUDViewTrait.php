@@ -87,7 +87,9 @@ trait CRUDViewTrait {
       if (isset($rel[$this->getRelationKey($name)])) {
 //        $view->labels[$name] = '<i class="fa fa-link"></i> ' . $view->labels[$name];
 
-        $input->readonly = 'readonly';
+        if ($this->readonlyRels()) {
+          $input->readonly = 'readonly';
+        }
         $input->class = 'btn btn-light form-control text-left';
         $input->{'data-url'} = $this->getRelationURL($rel, $input);
         $input->onclick = 'openForeignSelector(this)';
@@ -98,6 +100,10 @@ trait CRUDViewTrait {
     $view->setCustomRenderer('manix-wipe', [$this, 'renderDelete']);
 
     return $view;
+  }
+
+  public function readonlyRels() {
+    return true;
   }
   
   /**
