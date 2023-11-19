@@ -160,6 +160,20 @@ function registry($key, $value = null) {
 }
 
 /**
+ * Get or set the global language.
+ * Replaces the LANG constant
+ * @param string $lang
+ * @return string The current global language
+ */
+function lang($lang = null) {
+  if ($lang && array_key_exists($lang, config('lang')['languages'])) {
+    registry('LANG', $lang);
+    return $lang;
+  }
+  return registry('LANG') ?? config('lang')['default'];
+}
+
+/**
  * Get the currently executing program
  * @return Program
  */

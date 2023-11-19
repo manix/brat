@@ -64,7 +64,7 @@ trait Translator {
    * @return string Absolute path.
    */
   protected function constructAbsoluteLangFilePath($path) {
-    return PROJECT_PATH . '/lang/' . (defined('LANG') ? LANG : config('lang')['default']) . '/' . $path . '.php';
+    return PROJECT_PATH . '/lang/' . lang() . '/' . $path . '.php';
   }
 
 }
