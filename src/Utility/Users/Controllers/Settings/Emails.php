@@ -48,10 +48,12 @@ class Emails extends SettingsController {
       if ($email) {
         $validator->setError('email', $this->t8('manix/util/users/common', 'emailTaken'));
       } else {
-        $email = new UserEmail([
+        $email = $egate->instantiate([
+          [
             'user_id' => Auth::id(),
             'email' => $data['email']
-        ]);
+          ]
+        ], false);
         $email->invalidate();
 
         if ($egate->persist($email)) {

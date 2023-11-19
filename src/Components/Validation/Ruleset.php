@@ -47,6 +47,12 @@ class Ruleset {
     return $this->set;
   }
 
+  public function clear() {
+    $this->set = [];
+
+    return $this;
+  }
+
 }
 
 class RulesetRecord {
@@ -246,6 +252,21 @@ class RulesetRecord {
   public function version($message = null) {
     $this->rules['version'] = true;
     $this->messages['version'] = $message;
+
+    return $this;
+  }
+
+  public function or($rulesetorcb, $message = null) {
+    if ($rulesetorcb instanceof Ruleset) {
+      $ruleset = $rulesetorcb;
+    } else {
+      $ruleset = $rulesetorcb(new Ruleset);
+    }
+
+    $this->rules['or'] = $ruleset;
+    $this->messages['or'] = $message;
+
+    return $this;
   }
 
 }

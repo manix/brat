@@ -52,7 +52,7 @@ class Validator {
           break;
         }
 
-        if ($rule === 'callback') {
+        if ($rule === 'callback' || $rule === 'or') {
           $this->errors[$key] = $error;
           break;
         }
@@ -87,13 +87,13 @@ class Validator {
     $this->errors[$key] = $message;
   }
 
-  protected function required($v) {
+  public function required($v) {
     if (empty($v) && strlen(trim($v)) === 0) {
       return true;
     }
   }
 
-  protected function email($v, $d) {
+  public function email($v, $d) {
     if (filter_var($v, FILTER_VALIDATE_EMAIL)) {
       if (!$d || getmxrr(substr($v, strpos($v, '@') + 1), $bullshit)) {
         return;
@@ -102,7 +102,7 @@ class Validator {
     return true;
   }
 
-  protected function length($v, $d) {
+  public function length($v, $d) {
     list($min, $max) = $d;
     $length = mb_strlen(trim($v), 'UTF-8');
 
@@ -111,26 +111,26 @@ class Validator {
     }
   }
 
-  protected function in($v, array $d) {
+  public function in($v, array $d) {
     if (!in_array($v, $d)) {
       return true;
     }
   }
 
-  protected function inX($v, array $d) {
+  public function inX($v, array $d) {
     if (in_array($v, $d)) {
       return true;
     }
   }
 
-  protected function date($v) {
+  public function date($v) {
     $date = explode('-', $v);
     if (count($date) !== 3 || !checkdate($date[1], $date[2], $date[0])) {
       return true;
     }
   }
 
-  protected function datetime($v) {
+  public function datetime($v) {
     try {
       $date = new DateTime($v);
     } catch (Exception $ex) {
@@ -138,37 +138,37 @@ class Validator {
     }
   }
 
-  protected function alphanumeric($v) {
+  public function alphanumeric($v) {
     if (!preg_match('/^[\pL\d]+$/u', $v)) {
       return true;
     }
   }
 
-  protected function alphanumericX($v, $d) {
+  public function alphanumericX($v, $d) {
     if (!preg_match('/^[\pL\d' . str_replace('/', '\/', $d) . ']+$/u', $v)) {
       return true;
     }
   }
 
-  protected function alphabetic($v) {
+  public function alphabetic($v) {
     if (!preg_match('/^\pL+$/u', $v)) {
       return true;
     }
   }
 
-  protected function alphabeticX($v, $d) {
+  public function alphabeticX($v, $d) {
     if (!preg_match('/^[\pL' . str_replace('/', '\/', $d) . ']+$/u', $v)) {
       return true;
     }
   }
 
-  protected function numeric($v) {
+  public function numeric($v) {
     if (!is_numeric($v)) {
       return true;
     }
   }
 
-  protected function regex($v, $d) {
+  public function regex($v, $d) {
     list($regex, $modifiers) = $d;
 
     if (!preg_match('/' . $regex . '/' . $modifiers, $v)) {
@@ -176,25 +176,25 @@ class Validator {
     }
   }
 
-  protected function url($v) {
+  public function url($v) {
     if (!filter_var($v, FILTER_VALIDATE_URL)) {
       return true;
     }
   }
 
-  protected function equals($v, $d) {
+  public function equals($v, $d) {
     if ($v !== $d) {
       return true;
     }
   }
 
-  protected function differs($v, $d) {
+  public function differs($v, $d) {
     if ($v === $d) {
       return true;
     }
   }
 
-  protected function between($v, $d) {
+  public function between($v, $d) {
     list($min, $max) = $d;
     
     switch (gettype($v)) {
@@ -212,7 +212,7 @@ class Validator {
     }
   }
 
-  protected function betweenX($v, $d) {
+  public function betweenX($v, $d) {
     list($min, $max) = $d;
 
     switch (gettype($v)) {
@@ -230,11 +230,11 @@ class Validator {
     }
   }
 
-  protected function callback($v, callable $d) {
-    return $d($v);
+  public function callback($v, callable $d) {
+    return $d($v, $this);
   }
 
-  protected function file($v, $d = null) {
+  public function file($v, $d = null) {
     // TODO: fix
     // problem: file is always required because $v is array and not empty
 
@@ -252,7 +252,7 @@ class Validator {
     }
   }
 
-  protected function subset($v, $ruleset, $k) {
+  public function subset($v, $ruleset, $k) {
     if (!is_array($v)) {
       return false;
     }
@@ -270,7 +270,7 @@ class Validator {
     }
   }
 
-  protected function collection($v, $rulerecord, $k) {
+  public function collection($v, $rulerecord, $k) {
     if (!is_array($v)) {
       return false;
     }
@@ -298,7 +298,7 @@ class Validator {
     }
   }
 
-  protected function version($v) {
+  public function version($v) {
     try {
       new Version($v);
     } catch (Exception $ex) {
@@ -306,4 +306,22 @@ class Validator {
     }
   }
 
+  public function or($v, $ruleset, $k) {
+    $validator = new self;
+
+    $records = $ruleset->getAll();
+    $data = [];
+
+    foreach ($records as $key => $value) {
+      $data[$key] = &$v;
+    }
+
+    $validator->validate($data, $ruleset);
+
+    if (count($validator->errors) < count($records)) {
+      return;
+    }
+    
+    return $validator->errors[0] ?? null;
+  }
 }

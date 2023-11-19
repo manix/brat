@@ -32,7 +32,7 @@ class VerifyView extends GuestFrame {
     $form = new Form();
     $form->setAttribute('id', 'autosubmit');
     $form->setMethod('PUT');
-    $form->setAction(route(Verify::class));
+    // $form->setAction(route(Verify::class));
     $form->add('email', 'email', $this->data['address'] ?? '');
     $form->add('code', 'text', $this->data['code'] ?? '');
 
