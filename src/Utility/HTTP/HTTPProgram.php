@@ -42,7 +42,7 @@ class HTTPProgram extends Program {
        * Determine the requested response type.
        */
       $type = null;
-      $qparam = null;
+      $qparam = '';
 
       $split = preg_split('/\s*;\s*/', $mediaRange);
       if (isset($split[0])) {
