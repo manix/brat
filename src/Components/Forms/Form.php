@@ -229,6 +229,7 @@ class Form implements JsonSerializable {
     return $this;
   }
 
+  #[\ReturnTypeWillChange]
   public function jsonSerialize() {
     return [
         'inputs' => $this->inputs,

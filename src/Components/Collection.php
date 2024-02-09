@@ -97,6 +97,7 @@ class Collection implements JsonSerializable, Iterator {
     return count($this->list);
   }
 
+  #[\ReturnTypeWillChange]
   public function jsonSerialize() {
     return $this->list;
   }
@@ -106,22 +107,27 @@ class Collection implements JsonSerializable, Iterator {
     return $this;
   }
 
+  #[\ReturnTypeWillChange]
   public function rewind() {
     reset($this->list);
   }
 
+  #[\ReturnTypeWillChange]
   public function current() {
     return current($this->list);
   }
 
+  #[\ReturnTypeWillChange]
   public function key() {
     return key($this->list);
   }
 
+  #[\ReturnTypeWillChange]
   public function next() {
     return next($this->list);
   }
 
+  #[\ReturnTypeWillChange]
   public function valid() {
     $key = key($this->list);
     return ($key !== null && $key !== false);

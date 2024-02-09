@@ -54,6 +54,7 @@ class FormInput implements JsonSerializable {
     }
   }
 
+  #[\ReturnTypeWillChange]
   public function jsonSerialize() {
     return $this->attributes;
   }
