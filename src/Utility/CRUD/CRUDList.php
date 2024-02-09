@@ -35,7 +35,7 @@ trait CRUDList {
     if (empty($this->pk)) {
       $this->pk = $this->fields;
     }
-    $this->order = strtolower($this->order);
+    $this->order = strtolower($this->order ?? '');
     $this->search = !empty($this->search);
     $this->labels = $this->controllerInstance->getLabels();
 

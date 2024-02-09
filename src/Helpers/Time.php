@@ -12,13 +12,14 @@ class Time extends DateTime implements JsonSerializable {
   public $toJSONFormat = 'c';
 
   public function __construct($time = null, $object = null) {
-    parent::__construct($time, $object ?? new DateTimeZone('UTC'));
+    parent::__construct($time ?? 'now', $object ?? new DateTimeZone('UTC'));
   }
 
   public function __toString() {
     return $this->format($this->toStringFormat);
   }
 
+  #[\ReturnTypeWillChange]
   public function jsonSerialize() {
     return $this->format($this->toJSONFormat);
   }

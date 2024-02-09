@@ -2,7 +2,9 @@
 
 namespace Manix\Brat\Components;
 
-class Model {
+use stdClass;
+
+class Model extends stdClass {
 
   use Translator;
 

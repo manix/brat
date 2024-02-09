@@ -5,9 +5,10 @@ namespace Manix\Brat\Components;
 use Exception;
 use Manix\Brat\Components\Events\EventEmitter;
 use Manix\Brat\Components\Events\EventEmitterInterface;
+use stdClass;
 use function registry;
 
-abstract class Controller implements EventEmitterInterface {
+abstract class Controller extends stdClass implements EventEmitterInterface {
 
   use Translator,
       EventEmitter;

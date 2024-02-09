@@ -70,7 +70,7 @@ function route($to, array $query = []) {
 }
 
 function html($string, $flag = ENT_QUOTES, $encoding = 'UTF-8') {
-  return htmlspecialchars($string, $flag, $encoding);
+  return htmlspecialchars($string ?? '', $flag, $encoding);
 }
 
 $cache = null;

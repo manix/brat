@@ -3,8 +3,9 @@
 namespace Manix\Brat\Components\Views;
 
 use Manix\Brat\Components\Translator;
+use stdClass;
 
-abstract class View {
+abstract class View extends stdClass {
 
     use Translator;
 

@@ -8,11 +8,12 @@ use Manix\Brat\Components\Criteria;
 use Manix\Brat\Components\Model;
 use Manix\Brat\Components\Sorter;
 use Manix\Brat\Helpers\Time;
+use stdClass;
 
 /**
  * The base gateway interface.
  */
-abstract class Gateway {
+abstract class Gateway extends stdClass {
 
   /**
    * The model interface.
