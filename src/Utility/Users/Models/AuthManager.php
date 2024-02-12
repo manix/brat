@@ -142,7 +142,7 @@ class AuthManager {
     unset($_SESSION[MANIX]['auth']);
     $this->user = null;
 
-    $this->destroyPersistentLoginToken($_COOKIE[$this->rememberMeCookieParams(null)[0]] ?? null);
+    $this->destroyPersistentLoginToken($_COOKIE[$this->rememberMeCookieParams('')[0]] ?? null);
   }
 
   /**
@@ -200,7 +200,7 @@ class AuthManager {
   }
 
   protected function expireRememberCookie() {
-    setcookie($this->rememberMeCookieParams(null)[0], null, 1);
+    setcookie($this->rememberMeCookieParams('')[0], '', 1);
   }
 
 }
