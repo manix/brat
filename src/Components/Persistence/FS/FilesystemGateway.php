@@ -37,7 +37,7 @@ abstract class FilesystemGateway extends Gateway {
     $path = $this->dir . '/' . join(self::PK_CONCAT, $pk);
 
     if (count($pk) < count($this->pk)) {
-      foreach (glob($path . self::PK_CONCAT . '*') as $path) {
+      foreach (glob($path . self::PK_CONCAT . '**/*') as $path) {
         $set[] = $this->performJoins($this->read($path));
       }
     } else {

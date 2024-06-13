@@ -25,6 +25,10 @@ class FilesystemGatewayCriteriaInterpreter extends CriteriaInterpreter {
                 }
             }
         }
+        
+        if (empty($conditions)) {
+            $conditions[] = 1;
+        }
 
         switch ($criteria->glue()) {
             case 'OR':
