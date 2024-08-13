@@ -184,6 +184,7 @@ trait CRUDEndpoint {
       }
 
       $this->saveImages($pk_route);
+      $this->saveFiles($pk_route);
 
       if (isset($wipeOld)) {
         $this->getGateway()->wipe(...$pk);
@@ -224,6 +225,7 @@ trait CRUDEndpoint {
       }
 
       $this->saveImages($pk);
+      $this->saveFiles($pk);
       
       return [
           'success' => true,
@@ -322,7 +324,7 @@ trait CRUDEndpoint {
       $form->add($key, 'text');
     }
 
-    if ($this->addImageInputs($form)) {
+    if ($this->addImageInputs($form) || $this->addFileInputs($form)) {
       $form->setEnctype();
     }
 
@@ -669,6 +671,44 @@ trait CRUDEndpoint {
     }
   }
 
+  public function getFileNamespaces() {
+    return [];
+  }
+
+  public function saveFiles($pk) {
+    foreach ($this->getFileNamespaces() as $namespace) {
+      $namespace = trim($namespace, '[]');
+
+      $data = $this->getFileData($namespace);
+      $file = $_FILES[$namespace] ?? 0;
+      $path = '/' . implode('/', $pk);
+      
+      // if (is_array($file['name'])) {
+      //   foreach ($file['name'] as $index => $name) {
+      //     $f = [
+      //       'error' => $file['error'][$index],
+      //       'tmp_name' => $file['tmp_name'][$index],
+      //       'name' => $file['name'][$index],
+      //       'size' => $file['size'][$index]
+      //     ];
+
+      //     // this will overwrite old images in random order
+      //     $this->saveImage($f, $data, $path . '/' . $index);
+      //   }
+
+      //   return;
+      // }
+      
+      // return $this->saveImage($file, $data, $path);
+
+      if ($file && $file['error'] === UPLOAD_ERR_OK) {
+        $path = $data['base'] . $data['path'] . $path;
+        
+        move_uploaded_file($file['tmp_name'], $path);
+      }
+    }
+  }
+
   public function addImageInputs(Form $form) {
     $pk = [];
 
@@ -695,8 +735,48 @@ trait CRUDEndpoint {
     return isset($ns);
   }
 
+  public function addFileInputs(Form $form) {
+    $pk = [];
+
+    foreach ($this->getGateway()->getPK() as $field) {
+      $pk[] = $_REQUEST[$field] ?? $form->input($field)->value ?? '';
+    }
+
+    $pk = implode('/', $pk);
+
+    foreach ($this->getFileNamespaces() as $ns) {
+      $data = $this->getFileData($ns);
+      $path = $data['path'] . '/' . $pk;
+      // $path = SITE_URL . $data['path'] . '/' . $pk;
+
+      $form->add($ns)
+      ->setAttribute('type', 'file')
+      ->setAttribute('accept', $data['accept'])
+      // ->setAttribute('style', 'background: no-repeat center url(' . $path . '); background-size: cover; min-height: 256px');
+      ;
+
+      if (is_file(PUBLIC_PATH . $path)) {
+        $form->input($ns)->setAttribute('data-url', SITE_URL . $path);
+      }
+
+      // if ($data['multiple']) {
+      //   $form->input($ns)->setAttribute('multiple', 'multiple');
+      // }
+    }
+
+    return isset($ns);
+  }
+
   public function getImageNamespaces() {
     return [];
+  }
+
+  public function getFileData($namespace) {
+    return [
+      'base' => PUBLIC_PATH,
+      'path' => '/files/crud/' . $namespace,
+      'accept' => '*/*'
+    ];
   }
 
   public function getImageData($namespace) {

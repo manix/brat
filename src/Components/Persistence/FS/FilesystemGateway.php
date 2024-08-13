@@ -36,10 +36,10 @@ abstract class FilesystemGateway extends Gateway {
     $set = [];
     $path = $this->dir . '/' . join(self::PK_CONCAT, $pk);
     $count = count($pk);
-    $wildcard = $count === 0 ? '**/*' : '*';
+    $wildcard = $count === 0 && (count($this->pk) > 1) ? '**/*' : '*';
 
     if ($count < count($this->pk)) {
-      foreach (glob($path . self::PK_CONCAT . $wildcard) as $path) {
+      foreach (glob(rtrim($path, '/') . self::PK_CONCAT . $wildcard) as $path) {
         $set[] = $this->performJoins($this->read($path));
       }
     } else {
@@ -48,13 +48,15 @@ abstract class FilesystemGateway extends Gateway {
       }
     }
 
+    $this->performSort($set);
+
     return $this->instantiate($set);
   }
 
-  public function sort(Sorter $sorter) {
-    // TODO implement sorter in findBy(
-    throw new Exception('Sorter has not yet been implemented in FilesystemGateway', 500);
-  }
+  // public function sort(Sorter $sorter) {
+  //   // TODO implement sorter in findBy(
+  //   throw new Exception('Sorter has not yet been implemented in FilesystemGateway', 500);
+  // }
 
   public function findBy(Criteria $criteria): Collection {
     $set = [];
@@ -68,9 +70,24 @@ abstract class FilesystemGateway extends Gateway {
       }
     }
 
-    // TOOD implement sorter
+    $this->performSort($set);
 
     return $this->instantiate($set);
+  }
+
+  public function performSort(&$set) {
+    if (!$this->sorter || empty($this->sorter->definitions())) {
+      return;
+    }
+
+    $d = $this->sorter->definitions();
+
+    // TODO 
+    // currently only one field sort is supported,
+    // implement multi-field sort
+    uasort($set, function($a, $b) use ($d) { 
+      return strcasecmp($a[$d[0][0]], $b[$d[0][0]]) * ($d[0][1] ? -1 : 1);
+    });
   }
 
   public function persist(Model $model, array $fields = null): bool {

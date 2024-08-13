@@ -34,6 +34,10 @@ class DefaultFormView extends FormView {
         $input->setAttribute('class', $input->getAttribute('class') ?? 'btn btn-light btn-block border text-muted');
         break;
 
+      case 'file':
+        if ($input->getAttribute('data-url'))
+          echo '<iframe src="', $input->getAttribute('data-url'), '" style="width: 100%; height: 40vh;"></iframe>';
+
 
       case 'password':
         $input->setAttribute('value', '');
