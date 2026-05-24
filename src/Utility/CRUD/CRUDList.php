@@ -128,6 +128,10 @@ trait CRUDList {
 
     <?php
     // TODO possibly relocate script
+    $this->renderSelectorForOpener();
+  }
+
+  public function renderSelectorForOpener() {
     echo new SelectValueForOpener(NULL, $this->html);
   }
 

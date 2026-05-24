@@ -156,7 +156,7 @@ abstract class Query {
   }
 
   public static function getPlaceholder() {
-    return ':' . self::$placeholder++;
+    return ':_' . self::$placeholder++;
   }
 
   public static function getPlaceholderExpression($column, $placeholder) {
@@ -164,7 +164,7 @@ abstract class Query {
   }
 
   public static function getAlias() {
-    return self::$aliasIndex++;
+    return '_' . self::$aliasIndex++;
   }
 
   protected function getJoinClause() {
