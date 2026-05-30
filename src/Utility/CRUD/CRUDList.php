@@ -38,6 +38,7 @@ trait CRUDList {
     $this->order = strtolower($this->order ?? '');
     $this->search = !empty($this->search);
     $this->labels = $this->controllerInstance->getLabels();
+    $this->actions = $this->actions && !$this->controllerInstance->isFSelector();
 
     parent::__construct($data, $html);
   }
@@ -145,7 +146,7 @@ trait CRUDList {
 
   public function getSearchForm() {
     $form = new Form();
-    $form->setMethod('GET')->setAction(route($this->controller));
+    $form->setMethod('GET')->setAction(route($this->controller, $_GET));
     if ($this->sort) {
       $form->add('sort', 'hidden', $this->sort);
     }
@@ -169,11 +170,11 @@ trait CRUDList {
   }
 
   public function getSortURL($field, $asc) {
-    return route($this->controller, [
+    return route($this->controller, array_merge($_GET, [
         'query' => $this->query,
         'sort' => $field,
         'order' => $asc ? 'desc' : 'asc'
-    ]);
+    ]));
   }
 
   /**
@@ -301,6 +302,10 @@ trait CRUDList {
   }
 
   public function renderCreateButton() {
+    if ($this->controllerInstance->isFSelector()) {
+      return;
+    }
+
     ?>
     <a href="<?= $this->getCreateButtonURL() ?>" class="btn btn-success rounded-0">
       <i class="fa fa-plus"></i>

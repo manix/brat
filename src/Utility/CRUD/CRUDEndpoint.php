@@ -537,15 +537,16 @@ trait CRUDEndpoint {
             $fields[$f] = 'equals';
           }
         }
-        $relations[$key] = route($class, $alwaysList || count($pk) > 1 ? [
+        $relations[$key] = route($class, $alwaysList || (count($pk) > 1) ? [
             'fields' => is_array($data) ? $data[2] : $fields,
             'query' => $values
         ] : [
             $pk[0] => ''
         ]);
       } else {
-        $relations[$field] = route($class, $alwaysList || count($pk) > 1 ? [
-            'fields' => $data[2] ?? $pk[0],
+        
+        $relations[$field] = route($class, $alwaysList || (count($pk) > 1) ? [
+            'fields' => is_array($data) ? ($data[2] ?? $pk[0]) : $pk[0],
             'query' => ''
         ] : [
             $pk[0] => ''
@@ -790,6 +791,14 @@ trait CRUDEndpoint {
         'accept' => 'image/*',
         'multiple' => false
     ];
+  }
+
+  /**
+   * Determine whether the controller is opened as a
+   * foreign key selector
+   */
+  public function isFSelector() {
+    return isset($_GET['fsel']);
   }
 
 }
