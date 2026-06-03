@@ -18,6 +18,10 @@ trait FormElement {
     public function getAttributes() {
         return $this->attributes;
     }
+
+    public function appendAttribute($attribute, $value) {
+        return $this->setAttribute($attribute, $this->getAttribute($attribute) . $value);
+    }
     
     public function removeAttribute($attribute) {
         unset($this->attributes[$attribute]);

@@ -12,6 +12,7 @@ use Manix\Brat\Components\Validation\Ruleset;
 use Manix\Brat\Helpers\FormEndpoint;
 use Manix\Brat\Helpers\Image;
 use Manix\Brat\Helpers\Redirect;
+use Manix\Brat\Helpers\FormViews\DefaultFormView;
 use const SITE_URL;
 use function route;
 
@@ -43,6 +44,20 @@ trait CRUDEndpoint {
    */
   public function requireQuery() {
     return false;
+  }
+
+  /**
+   * Filters disabled by default, filtering requires careful planning and proper indexing
+   */
+  public function enableFilters() {
+    return false;
+  }
+
+  /**
+   * Determine if the current request has any filters applied
+   */
+  public function isFiltered($query = null) {
+    return is_array($query ?? $_GET['query'] ?? '');
   }
 
   /**
@@ -392,6 +407,51 @@ trait CRUDEndpoint {
     return $rules;
   }
 
+  public function getSearchFormView() {
+    return DefaultFormView::class;
+  }
+
+  public function constructSearchForm($form) {
+    $form->setMethod('GET')->setAction(route(static::class, $_GET));
+    // dont think this is needed anymore with the $_GET above
+    // if ($this->sort) {
+    //   $form->add('sort', 'hidden', $this->sort);
+    // }
+    // if ($this->order) {
+    //   $form->add('order', 'hidden', $this->order);
+    // }
+    $query = $this->getQuery();
+    $filtered = $this->isFiltered($query);
+    
+    if ($this->enableFilters() && $filtered) {
+      $filterable = $this->getFilterableColumns();
+      $fields = $this->getQueryFields($filterable);
+      $rel = $this->getParsedRelations(true);
+
+      foreach ($filterable as $column) {
+
+        $input = $form->add('query[' . $column . ']', 'text', $query[$column] ?? '');
+        // TODO make comparator selectable
+        // $form->add('fields[' . $column . ']', 'hidden', $fields[$column] ?? 'equals');
+        $form->add('fields[' . $column . ']', 'hidden', 'equals');
+        
+        if (isset($rel[$column])) {
+          $input->readonly = 'readonly';
+          $input->class = 'form-control text-left';
+          $input->{'data-url'} = $rel[$column] . ($query[$column] ?? '');
+          $input->onclick = 'openForeignSelector(this)';
+        }
+      }
+
+      $form->add('submit', 'submit', 'Търси');
+
+    } else {
+      $form->add('query', 'text', $filtered ? '' : $query);
+      // submit button rendered manually inside CRUDList view trait
+    }
+    return $form;
+  }
+
   /**
    * Get the URL at which the user should be redirected after successful delete.
    */
@@ -442,6 +502,13 @@ trait CRUDEndpoint {
     return $this->getColumns();
   }
 
+  /**
+   * in order for a column to be filterable it MUST BE searchable
+   */
+  public function getFilterableColumns() {
+    return $this->getSearchableColumns();
+  }
+
   protected function getSort() {
     return $_GET['sort'] ?? null;
   }
@@ -451,7 +518,15 @@ trait CRUDEndpoint {
   }
 
   protected function getQuery() {
-    return $_GET['query'] ?? null;
+    $query = $_GET['query'] ?? null;
+    if ($this->isFiltered($query)) {
+      return array_filter($query);
+    }
+    return $query;
+  }
+
+  protected function getGlue() {
+    return $_GET['glue'] ?? (is_array($this->getQuery()) ? 'AND' : 'OR');
   }
 
   protected function getQueryFields($searchable) {
@@ -581,11 +656,12 @@ trait CRUDEndpoint {
     $criteria = $this->getCriteria();
 
     if ($query) {
-      $queryCriteria = $criteria->group($_GET['glue'] ?? 'OR');
+      $filtered = $this->isFiltered($query);
+      $queryCriteria = $criteria->group($this->getGlue());
 
       foreach ($this->getQueryFields($searchable) as $field => $comparator) {
-      	if (is_array($query)) {
-      	  if (isset($query[$field])) {
+      	if ($filtered) {
+      	  if (isset($query[$field]) && $query[$field] !== '') {
             $queryCriteria->$comparator($field, ...(is_array($query[$field]) ? $query[$field] : [$query[$field]]));
           }
       	} else {
@@ -593,11 +669,12 @@ trait CRUDEndpoint {
       	}
       }
       
-      if (!count($queryCriteria->rules())) {
-        throw new Exception('Query present but no rules were added to criteria. Most likely you tried to query on a key that is not listed as searchable.', 400);
-      }
+      // this could also mean all filters are just empty
+      // if (!count($queryCriteria->rules())) {
+      //   throw new Exception('Query present but no rules were added to criteria. Most likely you tried to query on a key that is not listed as searchable.', 400);
+      // }
     }
-
+    
     $gate = $this->getGateway();
     $gatedefaultcols = $gate->getFields();
     $gatecols = [];
@@ -609,7 +686,7 @@ trait CRUDEndpoint {
     $gate->setFields($gatecols);
 
     return [
-        $query || !$this->requireQuery() ? $gate->sort($this->getSorter())->findBy($criteria) : [],
+        !empty($query) || !$this->requireQuery() ? $gate->sort($this->getSorter())->findBy($criteria) : [],
         $this->getColumns(),
         $this,
         $gate->getPK(),

@@ -21,7 +21,7 @@ class SQLGatewayCriteriaInterpreter extends CriteriaInterpreter {
     }
 
     foreach ($criteria->rules() as $rule) {
-      if ($rule instanceof Criteria) {
+      if ($rule instanceof Criteria && count($rule->rules())) {
         $query->whereGroupStart();
         $this->patch($query, $rule);
         $query->whereGroupEnd();

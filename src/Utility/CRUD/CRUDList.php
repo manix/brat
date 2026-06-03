@@ -6,22 +6,22 @@ use Manix\Brat\Components\Collection;
 use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Forms\FormInput;
 use Manix\Brat\Components\Model;
-use Manix\Brat\Helpers\FormViews\FormView;
+use Manix\Brat\Helpers\FormViews\DefaultFormView;
 use Manix\Brat\Helpers\HTMLGenerator;
 use Manix\Brat\Utility\CRUD\JavaScript\SelectValueForOpener;
 use function route;
 
 trait CRUDList {
 
-  protected $fields;
-  protected $controller;
-  protected $controllerInstance;
-  protected $pk;
-  protected $sort;
-  protected $order;
-  protected $query;
-  protected $sortable;
-  protected $relations = [
+  public $fields;
+  public $controller;
+  public $controllerInstance;
+  public $pk;
+  public $sort;
+  public $order;
+  public $query;
+  public $sortable;
+  public $relations = [
   // 'field' => 'url?id='
   ];
   public $search = true;
@@ -46,11 +46,11 @@ trait CRUDList {
   public function body() {
     $actions = $this->actions && $this->controller !== null && $this->controllerInstance->listActions();
     $sortable = $this->controller === null ? [] : array_flip($this->getSortableFields());
-    $noQuery = !$this->query && $this->controllerInstance->requireQuery();
+    $noQuery = empty($this->query) && $this->controllerInstance->requireQuery();
     $noResults = !$noQuery && !($this->data instanceof Collection ? $this->data->count() : count($this->data));
 
     if ($this->controller !== null && $this->search !== false) {
-      $form = $this->getSearchForm();
+      $form = $this->controllerInstance->constructSearchForm(new Form, $this->relations);
     }
     ?>
     <div class="d-flex align-items-center justify-content-between bg-white">
@@ -142,19 +142,6 @@ trait CRUDList {
 
   public function getRelationKey($model) {
     return $model->{$this->pk[0]};
-  }
-
-  public function getSearchForm() {
-    $form = new Form();
-    $form->setMethod('GET')->setAction(route($this->controller, $_GET));
-    if ($this->sort) {
-      $form->add('sort', 'hidden', $this->sort);
-    }
-    if ($this->order) {
-      $form->add('order', 'hidden', $this->order);
-    }
-    $form->add('query', 'text', $this->query);
-    return $form;
   }
 
   public function getRowClass(Model $model) {
@@ -275,13 +262,23 @@ trait CRUDList {
 
   public function renderSearchForm(Form $form) {
     $form->setAttribute('style', 'flex: 1');
+    $form->setAttribute('class', 'd-flex flex-row justify-content-between flex-wrap');
 
-    echo new class($form, $this->html) extends FormView {
-
+    class_alias($this->controllerInstance->getSearchFormView(), 'SearchFormView');
+    
+    $view = new class($form, $this->html) extends \SearchFormView {
+      public $labels = [];
       public function renderInput(FormInput $input) {
         if ($input->name === 'query') {
           ?>
           <div class="input-group">
+            <?php if ($this->listview->controllerInstance->enableFilters()): ?>
+              <div class="input-group-btn">
+                <a href="?query[]" class="open-filters btn btn-light rounded-0 border-0">
+                  <i class="fa fa-filter"></i>
+                </a>
+              </div>
+            <?php endif ?>
             <?= $input->setAttribute('class', 'form-control rounded-0 border-0')->toHTML($this->html) ?>
             <div class="input-group-btn">
               <button type="submit" class="btn btn-light rounded-0 border-0">
@@ -290,11 +287,43 @@ trait CRUDList {
             </div>
           </div>
           <?php
+        } elseif ($input->type === 'hidden') {
+          // hidden (fields/comparator) are rendered below as select
+        } elseif ($input->type !== 'submit') {
+          $column = html(substr($input->name, 6, -1));
+          ?>
+          <div class="bg-light form-group d-flex flex-column mr-1 mb-0 align-items-center">
+            <div class="d-flex w-100">
+              <select name="<?= 'fields[', $column, ']' ?>" class="btn" style="appearance: none">
+                <option value="equals" <?= ($_GET['fields'][$column] ?? '') === 'equals' ? 'selected' : '' ?>>=</option>
+                <option value="notequals" <?= ($_GET['fields'][$column] ?? '') === 'notequals' ? 'selected' : '' ?>>!=</option>
+                <option value="greater" <?= ($_GET['fields'][$column] ?? '') === 'greater' ? 'selected' : '' ?>>></option>
+                <option value="less" <?= ($_GET['fields'][$column] ?? '') === 'less' ? 'selected' : '' ?>><</option>
+                <option value="like" <?= ($_GET['fields'][$column] ?? '') === 'like' ? 'selected' : '' ?>>🔍</option>
+              </select>
+              <label class="form-control-label p-2 mb-0 text-nowrap flex-1 text-center"><?= $this->listview->renderColumnLabel($column) ?></label>
+              <button class="btn btn-light" type="button" onclick="$(this).parent().next().find('.form-control').val('').trigger('change')">
+                x
+              </button>
+            </div>
+
+            <?= parent::renderInputGroup($input->appendAttribute('class', ' form-control')) ?>
+          </div>
+          <?php
+        } elseif ($input->name === 'submit') {
+          ?>
+          <div class="d-flex flex-column" style="flex: 1">
+            <a class="cancel-filters btn btn-light border text-muted" href="?">Отказ</a>
+            <?= parent::renderInputGroup($input->setAttribute('class', 'btn btn-light border text-muted')) ?>
+          </div>
+          <?php
         } else {
-          echo $input->toHTML($this->html);
+          echo parent::renderInputGroup($input);
         }
       }
     };
+    $view->listview = $this;
+    echo $view;
   }
 
   public function getCreateButtonURL() {
@@ -302,7 +331,7 @@ trait CRUDList {
   }
 
   public function renderCreateButton() {
-    if ($this->controllerInstance->isFSelector()) {
+    if ($this->controllerInstance->isFSelector() || $this->filtersVisible()) {
       return;
     }
 
@@ -313,4 +342,7 @@ trait CRUDList {
     <?php
   }
 
+  public function filtersVisible() {
+    return is_array($_GET['query'] ?? '');
+  }
 }

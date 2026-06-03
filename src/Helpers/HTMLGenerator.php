@@ -143,14 +143,17 @@ class HTMLGenerator {
    * @param array $_optAttr Attributes for each option tag.
    * @return string The generated tag.
    */
-  public function select(array $options, array $attributes = array(), string $selected = null, array $optionAttributes = []): string {
+  public function select(array $options, array $attributes = array(), $selected = null, array $optionAttributes = []): string {
     $html = '';
+
+    $strict = $attributes['strict'] ?? false;
+    unset($attributes['strict']);
 
     foreach ($options as $key => $value) {
       $_optAttr = $optionAttributes;
       $_optAttr['value'] = html($key);
       
-      if ($key == $selected) {
+      if ($strict ? $key === $selected : $key == $selected) {
         $_optAttr['selected'] = 'selected';
       }
 
