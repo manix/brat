@@ -50,7 +50,7 @@ trait CRUDList {
     $noResults = !$noQuery && !($this->data instanceof Collection ? $this->data->count() : count($this->data));
 
     if ($this->controller !== null && $this->search !== false) {
-      $form = $this->controllerInstance->constructSearchForm(new Form, $this->relations);
+      $form = $this->controllerInstance->constructSearchForm(new Form, $this);
     }
     ?>
     <div class="d-flex align-items-center justify-content-between bg-white">
