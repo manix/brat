@@ -269,7 +269,9 @@ trait CRUDList {
     $view = new class($form, $this->html) extends \SearchFormView {
       public $labels = [];
       public function renderInput(FormInput $input) {
-        if ($input->name === 'query') {
+        $name = $input->name;
+
+        if ($name === 'query') {
           ?>
           <div class="input-group">
             <?php if ($this->listview->controllerInstance->enableFilters()): ?>
@@ -288,9 +290,12 @@ trait CRUDList {
           </div>
           <?php
         } elseif ($input->type === 'hidden') {
+          if ($name === "sort" || $name === "order") {
+            echo parent::renderInputGroup($input);
+          }
           // hidden (fields/comparator) are rendered below as select
         } elseif ($input->type !== 'submit') {
-          $column = html(substr($input->name, 6, -1));
+          $column = html(substr($name, 6, -1));
           ?>
           <div class="bg-light form-group d-flex flex-column mr-1 mb-0 align-items-center">
             <div class="d-flex w-100">
@@ -310,7 +315,7 @@ trait CRUDList {
             <?= parent::renderInputGroup($input->appendAttribute('class', ' form-control')) ?>
           </div>
           <?php
-        } elseif ($input->name === 'submit') {
+        } elseif ($name === 'submit') {
           ?>
           <div class="d-flex flex-column" style="flex: 1">
             <a class="cancel-filters btn btn-light border text-muted" href="?">Отказ</a>
