@@ -764,8 +764,8 @@ trait CRUDEndpoint {
       $data = $this->getImageData($namespace);
       $file = $_FILES[$namespace] ?? 0;
       $path = '/' . implode('/', $pk);
-      
-      if (is_array($file['name'])) {
+            
+      if ($file && is_array($file['name'])) {
         foreach ($file['name'] as $index => $name) {
           $f = [
             'error' => $file['error'][$index],
