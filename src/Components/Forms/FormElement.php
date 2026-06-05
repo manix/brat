@@ -19,6 +19,11 @@ trait FormElement {
         return $this->attributes;
     }
 
+    public function setAttributes($attributes) {
+        $this->attributes = $attributes;
+        return $this;
+    }
+
     public function appendAttribute($attribute, $value) {
         return $this->setAttribute($attribute, $this->getAttribute($attribute) . $value);
     }

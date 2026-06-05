@@ -56,7 +56,7 @@ trait CRUDList {
     <div class="d-flex align-items-center justify-content-between bg-white">
       <?php $this->renderPageName() ?>
       <?php isset($form) ? $this->renderSearchForm($form) : '' ?>
-      <?php $this->renderCreateButton() ?>
+      <?php if ($this->shouldRenderCreateButton()) $this->renderCreateButton() ?>
     </div>
     <?php if ($noResults): ?>
       <div class="text-center py-3 border-top">
@@ -330,11 +330,11 @@ trait CRUDList {
     return route($this->controller, [$this->controllerInstance->createKey => 'yes']);
   }
 
-  public function renderCreateButton() {
-    if ($this->controllerInstance->isFSelector() || $this->filtersVisible()) {
-      return;
-    }
+  public function shouldRenderCreateButton() {
+    return !($this->controllerInstance->isFSelector() || $this->filtersVisible());
+  }
 
+  public function renderCreateButton() {
     ?>
     <a href="<?= $this->getCreateButtonURL() ?>" class="btn btn-success rounded-0">
       <i class="fa fa-plus"></i>

@@ -411,6 +411,15 @@ trait CRUDEndpoint {
     return DefaultFormView::class;
   }
 
+  /**
+   * Must return an empty string or the name of the function which's
+   * return value form will be used to copy inputs from for the search filters
+   * @return string
+   */
+  public function cloneSearchFormInputsFrom() {
+    return 'constructCreateForm';
+  }
+
   public function constructSearchForm($form) {
     $form->setMethod('GET')->setAction(route(static::class, $_GET));
     // dont think this is needed anymore with the $_GET above
@@ -426,19 +435,45 @@ trait CRUDEndpoint {
     if ($this->enableFilters() && $filtered) {
       $filterable = $this->getFilterableColumns();
       $fields = $this->getQueryFields($filterable);
-      $rel = $this->getParsedRelations(true);
+      $relations = $this->getParsedRelations(true);
+
+      $donorFormFunction = $this->cloneSearchFormInputsFrom();
+      $donorForm = new Form;
+      if ($donorFormFunction) {
+        $donorForm = $this->$donorFormFunction($donorForm);
+      }
 
       foreach ($filterable as $column) {
+        $donorInput = $donorForm->input($column);
+        $attrs = $donorInput ? $donorInput->getAttributes() : [];
+        
+        if ($column === 'created' || $column === 'updated') {
+          $attrs['type'] = 'datetime-local';
+        }
+        
+        $type = $attrs['type'] ?? '';
+        $attrs['name'] = 'query[' . $column . ']';
+        if ($type === 'select') {
+          $attrs['selected'] = $query[$column] ?? '';
+        } else {
+          $attrs['value'] = $query[$column] ?? '';
+        }
 
-        $input = $form->add('query[' . $column . ']', 'text', $query[$column] ?? '');
-        // TODO make comparator selectable
-        // $form->add('fields[' . $column . ']', 'hidden', $fields[$column] ?? 'equals');
+        if (!$type) {
+          $attrs['type'] = 'text';
+        }
+
+        $input = $form->add($attrs['name']);
+        $input->setAttributes($attrs);
+        
+        // $input = $form->add('query[' . $column . ']', 'text', $query[$column] ?? '');
+        
         $form->add('fields[' . $column . ']', 'hidden', 'equals');
         
-        if (isset($rel[$column])) {
+        if (isset($relations[$column])) {
           $input->readonly = 'readonly';
           $input->class = 'form-control text-left';
-          $input->{'data-url'} = $rel[$column] . ($query[$column] ?? '');
+          $input->{'data-url'} = $relations[$column] . ($query[$column] ?? '');
           $input->onclick = 'openForeignSelector(this)';
         }
       }
