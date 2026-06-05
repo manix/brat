@@ -422,13 +422,14 @@ trait CRUDEndpoint {
 
   public function constructSearchForm($form) {
     $form->setMethod('GET')->setAction(route(static::class, $_GET));
-    // dont think this is needed anymore with the $_GET above
-    // if ($this->sort) {
-    //   $form->add('sort', 'hidden', $this->sort);
-    // }
-    // if ($this->order) {
-    //   $form->add('order', 'hidden', $this->order);
-    // }
+    // old: dont think this is needed anymore with the $_GET above
+    // later on: it is in fact very much needed
+    if ($this->sort) {
+      $form->add('sort', 'hidden', $this->sort);
+    }
+    if ($this->order) {
+      $form->add('order', 'hidden', $this->order);
+    }
     $query = $this->getQuery();
     $filtered = $this->isFiltered($query);
     
