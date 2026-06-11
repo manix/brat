@@ -82,7 +82,12 @@ trait CRUDEndpoint {
     }
 
     if (!empty($data['success']) && isset($data['goto'])) {
-      new Redirect($data['goto']);
+
+      // new Redirect will die instantly and prevent AfterExecute event from firing
+      // new Redirect($data['goto']);
+
+      // instead set the page to CRUDView which will instead redirect after the event
+      $this->page = $this->getCRUDView();
     }
 
     return parent::after($data);
@@ -535,6 +540,18 @@ trait CRUDEndpoint {
   }
 
   public function getSearchableColumns() {
+    if ($this->isFiltered()) {
+      return $this->getSearchableColumnsFiltered();
+    }
+
+    return $this->getSearchableColumnsUnfiltered();
+  }
+
+  public function getSearchableColumnsFiltered() {
+    return $this->getSearchableColumnsUnfiltered();
+  }
+
+  public function getSearchableColumnsUnfiltered() {
     return $this->getColumns();
   }
 
