@@ -500,10 +500,10 @@ trait CRUDEndpoint {
         $form->add('fields[' . $column . ']', 'hidden', 'equals');
         
         if (isset($relations[$column])) {
-          $input->readonly = 'readonly';
+          // $input->readonly = 'readonly';
           $input->class = 'form-control text-left';
           $input->{'data-url'} = $relations[$column] . ($query[$column] ?? '');
-          $input->onclick = 'openForeignSelector(this)';
+          $input->oncontextmenu = 'return openForeignSelector(this)';
         }
       }
 

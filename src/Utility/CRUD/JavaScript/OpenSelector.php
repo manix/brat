@@ -21,6 +21,8 @@ class OpenSelector extends HTMLElement {
         
         window.selectForeignValue.url = url.toString()
         window.foreignSelector = window.open(window.selectForeignValue.url, "fS", "width=800,height=600,top=150,left=200");
+
+        return false;
       }
     </script>
     <?php
