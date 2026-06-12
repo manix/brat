@@ -157,6 +157,9 @@ trait CRUDEndpoint {
           break;
         case 'd': $this->page = $this->getDeleteView();
           break;
+        // TODO implement r case, currently there is no way to open r action
+        case 'r': $this->page = $this->getReadView();
+          break;
         case 'l':
           $this->page = $this->getListView();
           return $this->getListData();
@@ -172,7 +175,7 @@ trait CRUDEndpoint {
   }
 
   public function populateModel(Model $model, $data) {
-    foreach ($this->getEditableFields() as $field) {
+    foreach ($this->getEditableColumns() as $field) {
       if (isset($data[$field])) {
         $model->$field = $data[$field];
       }
@@ -298,15 +301,23 @@ trait CRUDEndpoint {
    * @return string FQCN
    */
   public function getUpdateView() {
-    return $this->getCRUDView();
+    return $this->guessView('Update') ?: $this->getCRUDView();
   }
 
   /**
    * Get the view that must render the create GET response.
    * @return string FQCN
    */
+  public function getReadView() {
+    return $this->guessView('Read') ?:  $this->getCRUDView();
+  }
+
+  /**
+   * Get the view that must render the read GET response.
+   * @return string FQCN
+   */
   public function getCreateView() {
-    return $this->getCRUDView();
+    return $this->guessView('Create') ?:  $this->getCRUDView();
   }
 
   /**
@@ -314,15 +325,22 @@ trait CRUDEndpoint {
    * @return string FQCN
    */
   public function getDeleteView() {
-    return $this->getCRUDView();
+    return $this->guessView('Delete') ?:  $this->getCRUDView();
+  }
+
+  /**
+   * @deprecated use getEditableColumns() instead
+   */
+  public function getEditableFields() {
+    return $this->getGateway()->getFields();
   }
 
   /**
    * Get the array of fields that should be presented for editing on create and update.
    * @return array List of model property names (fields).
    */
-  public function getEditableFields() {
-    return $this->getGateway()->getFields();
+  public function getEditableColumns() {
+    return $this->getEditableFields();
   }
 
   /**
@@ -335,7 +353,7 @@ trait CRUDEndpoint {
 
     $ai = $this->getGateway()->getAI();
 
-    foreach ($this->getEditableFields() as $key) {
+    foreach ($this->getEditableColumns() as $key) {
       // Skip adding inputs for primary key properties and timestamps
       if ($key === $ai || $key === Gateway::TIMESTAMP_CREATED || $key === Gateway::TIMESTAMP_UPDATED) {
         continue;
@@ -458,8 +476,13 @@ trait CRUDEndpoint {
         }
         
         $type = $attrs['type'] ?? '';
+        
         $attrs['name'] = 'query[' . $column . ']';
         if ($type === 'select') {
+          // make sure filter can be omitted
+          if (empty($attrs['value'][''])) {
+            $attrs['value'] = array_merge(['' => ''], $attrs['value']);
+          }
           $attrs['selected'] = $query[$column] ?? '';
         } else {
           $attrs['value'] = $query[$column] ?? '';
@@ -613,12 +636,22 @@ trait CRUDEndpoint {
     return new Criteria;
   }
 
+  public function guessView($action) {
+    $classname = 'Project\\Views\\Pages' . str_replace('Project\\Controllers', '', get_class($this)) . $action . 'View';
+    
+    return loader()->loadClass($classname) ? $classname : false;
+  }
+
+  public function getDefaultListView() {
+    return CRUDListView::class;
+  }
+  
   /**
    * The view that will be used to render the list page.
    */
   public function getListView() {
     // CRUDView automatically calls CRUDListView internally.
-    return CRUDListView::class;
+    return $this->guessView('List') ?: $this->getDefaultListView();
   }
 
   /**
@@ -651,7 +684,7 @@ trait CRUDEndpoint {
         $field = $rel[1] ?? $key;
         $class = $data;
       }
-
+      
       $gate = new $rel[0];
       $pk = $gate->getPK();
 
@@ -749,7 +782,7 @@ trait CRUDEndpoint {
         $this->getSortableColumns(),
         $searchable,
         $this->getParsedRelations(),
-        $this->getEditableFields(),
+        $this->getEditableColumns(),
         CSRF_TOKEN
     ];
   }

@@ -285,7 +285,11 @@ trait CRUDList {
             <div class="input-group-btn">
               <button type="submit" class="btn btn-light rounded-0 border-0">
                 <i class="fa fa-search"></i>
+              </button><?php
+              if ($input->value): ?><button type="submit" class="btn btn-light rounded-0 border-0" onclick="this.form.query.value = ''">
+                <i class="fa fa-times"></i>
               </button>
+              <?php endif ?>
             </div>
           </div>
           <?php
