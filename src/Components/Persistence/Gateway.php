@@ -137,6 +137,13 @@ abstract class Gateway extends stdClass {
   }
 
   /**
+   * @return bool If true the gateway will return false when the search result set is empty
+   */
+  public function skipInstantiationForEmptyLists() {
+    return false;
+  }
+
+  /**
    * Persist an object.
    *
    * @param Model $model The model.
@@ -199,6 +206,10 @@ abstract class Gateway extends stdClass {
 
   public function instantiate(array $set, $asList = true) {
     $interface = static::MODEL;
+
+    if ($this->skipInstantiationForEmptyLists() && empty($set)) {
+      return false;
+    }
     
     if ($asList) {
       $icollection = static::COLLECTION;

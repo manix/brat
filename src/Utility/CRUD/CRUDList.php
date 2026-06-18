@@ -261,9 +261,6 @@ trait CRUDList {
   }
 
   public function renderSearchForm(Form $form) {
-    $form->setAttribute('style', 'flex: 1');
-    $form->setAttribute('class', 'd-flex flex-row justify-content-between flex-wrap');
-
     class_alias($this->controllerInstance->getSearchFormView(), 'SearchFormView');
     
     $view = new class($form, $this->html) extends \SearchFormView {

@@ -444,6 +444,9 @@ trait CRUDEndpoint {
   }
 
   public function constructSearchForm($form, $view) {
+    $form->setAttribute('style', 'flex: 1');
+    $form->setAttribute('class', 'd-flex flex-row justify-content-between flex-wrap');
+    
     $form->setMethod('GET')->setAction(route(static::class, $_GET));
     // old: dont think this is needed anymore with the $_GET above
     // later on: it is in fact very much needed
@@ -473,6 +476,7 @@ trait CRUDEndpoint {
         
         if ($column === 'created' || $column === 'updated') {
           $attrs['type'] = 'datetime-local';
+          $attrs['step'] = '1';
         }
         
         $type = $attrs['type'] ?? '';
