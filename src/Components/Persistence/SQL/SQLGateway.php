@@ -62,7 +62,7 @@ abstract class SQLGateway extends Gateway {
       }, $this->sorter->definitions()));
     }
 
-    $query->limit($this->cutoff, $this->limit);
+    $query->limit($this->offset, $this->limit);
 
 //    echo "<pre>" . print_r($query->build(), true) . "</pre>";
 //    echo "<pre>" . print_r($query->data(), true) . "</pre>";

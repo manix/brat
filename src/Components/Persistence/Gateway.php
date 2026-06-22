@@ -61,11 +61,18 @@ abstract class Gateway extends stdClass {
   /**
    * Number of records to skip from result set.
    * @var int
+   * @deprecated use offset
    */
   public $cutoff = 0;
 
   /**
-   * Number of records to retrieve after cutoff.
+   * Number of records to skip from result set.
+   * @var int
+   */
+  public $offset = 0;
+
+  /**
+   * Number of records to retrieve after offset.
    * @var int
    */
   public $limit = 1000;

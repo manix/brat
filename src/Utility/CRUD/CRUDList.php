@@ -260,17 +260,35 @@ trait CRUDList {
     return $this->sortable === null ? $this->fields : $this->sortable;
   }
 
+  public function getLimits() {
+    return [50, 100, 250, 500, 1000];
+  }
+
   public function renderSearchForm(Form $form) {
     class_alias($this->controllerInstance->getSearchFormView(), 'SearchFormView');
+
+    if ($this->controllerInstance->isFiltered()) {
+      $form->prepend('limit', 'select', $this->getLimits())
+        ->setAttribute('selected', $this->controllerInstance->getLimit());
+    }
     
     $view = new class($form, $this->html) extends \SearchFormView {
       public $labels = [];
       public function renderInput(FormInput $input) {
         $name = $input->name;
-
+        
         if ($name === 'query') {
+          $limit = $this->listview->controllerInstance->getLimit();
+
           ?>
           <div class="input-group">
+            <div class="input-group-btn">
+              <select class="form-control" name="limit" >
+                <?php foreach ($this->listview->getLimits() as $l): ?>
+                  <option <?= $limit == $l ? 'selected' : '' ?>><?= $l ?></option>
+                <?php endforeach ?>
+              </select>
+            </div>
             <?php if ($this->listview->controllerInstance->enableFilters()): ?>
               <div class="input-group-btn">
                 <a href="?query[]" class="open-filters btn btn-light rounded-0 border-0">
@@ -296,21 +314,31 @@ trait CRUDList {
           }
           // hidden (fields/comparator) are rendered below as select
         } elseif ($input->type !== 'submit') {
-          $column = html(substr($name, 6, -1));
+          if ($name === 'limit') {
+            $column = 'limit';
+            $filterControls = false;
+          } else {
+            $column = html(substr($name, 6, -1));
+            $filterControls = true;
+          }
           ?>
           <div class="bg-light form-group d-flex flex-column mr-1 mb-0 align-items-center">
             <div class="d-flex w-100">
-              <select name="<?= 'fields[', $column, ']' ?>" class="btn" style="appearance: none">
-                <option value="equals" <?= ($_GET['fields'][$column] ?? '') === 'equals' ? 'selected' : '' ?>>=</option>
-                <option value="notequals" <?= ($_GET['fields'][$column] ?? '') === 'notequals' ? 'selected' : '' ?>>!=</option>
-                <option value="greater" <?= ($_GET['fields'][$column] ?? '') === 'greater' ? 'selected' : '' ?>>></option>
-                <option value="less" <?= ($_GET['fields'][$column] ?? '') === 'less' ? 'selected' : '' ?>><</option>
-                <option value="like" <?= ($_GET['fields'][$column] ?? '') === 'like' ? 'selected' : '' ?>>🔍</option>
-              </select>
+              <?php if ($filterControls): ?>
+                <select name="<?= 'fields[', $column, ']' ?>" class="btn" style="appearance: none">
+                  <option value="equals" <?= ($_GET['fields'][$column] ?? '') === 'equals' ? 'selected' : '' ?>>=</option>
+                  <option value="notequals" <?= ($_GET['fields'][$column] ?? '') === 'notequals' ? 'selected' : '' ?>>!=</option>
+                  <option value="greater" <?= ($_GET['fields'][$column] ?? '') === 'greater' ? 'selected' : '' ?>>></option>
+                  <option value="less" <?= ($_GET['fields'][$column] ?? '') === 'less' ? 'selected' : '' ?>><</option>
+                  <option value="like" <?= ($_GET['fields'][$column] ?? '') === 'like' ? 'selected' : '' ?>>🔍</option>
+                </select>
+              <?php endif ?>
               <label class="form-control-label p-2 mb-0 text-nowrap flex-1 text-center"><?= $this->listview->renderColumnLabel($column) ?></label>
-              <button class="btn btn-light" type="button" onclick="$(this).parent().next().find('.form-control').val('').trigger('change')">
-                x
-              </button>
+              <?php if ($filterControls): ?>
+                <button class="btn btn-light" type="button" onclick="$(this).parent().next().find('.form-control').val('').trigger('change')">
+                  x
+                </button>
+              <?php endif ?>
             </div>
 
             <?= parent::renderInputGroup($input->appendAttribute('class', ' form-control')) ?>

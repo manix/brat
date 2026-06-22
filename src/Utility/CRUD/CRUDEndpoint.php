@@ -57,6 +57,7 @@ trait CRUDEndpoint {
    * Determine if the current request has any filters applied
    */
   public function isFiltered($query = null) {
+    // can not use $this->getQuery here it causes stack overflow
     return is_array($query ?? $_GET['query'] ?? '');
   }
 
@@ -589,6 +590,18 @@ trait CRUDEndpoint {
     return $this->getSearchableColumns();
   }
 
+  public function getLimitMax() {
+    return 1000;
+  }
+
+  public function getLimit() {
+    return min($this->getLimitMax(), $_GET['limit'] ?? 9999999);
+  }
+
+  public function getOffset() {
+    return $_GET['offset'] ?? 0;
+  }
+
   protected function getSort() {
     return $_GET['sort'] ?? null;
   }
@@ -774,6 +787,9 @@ trait CRUDEndpoint {
       }
     }
     $gate->setFields($gatecols);
+
+    $gate->limit = $this->getLimit();
+    $gate->offset = $this->getOffset();
 
     return [
         !empty($query) || !$this->requireQuery() ? $gate->sort($this->getSorter())->findBy($criteria) : [],

@@ -38,6 +38,20 @@ class Form implements JsonSerializable {
     return $input;
   }
 
+  /**
+   * Add an input element to the beginning of the form
+   * @param string $name The name attribute of the input element
+   * @param string $type The type attribute of the input element
+   * @param string $value The value of the input element
+   * @return FormInput
+   */
+  public function prepend($name, $type = null, $value = null) {
+    $input = $this->add($name, $type, $value);
+    $last = array_pop($this->inputs);
+    array_unshift($this->inputs, $last);
+    return $input;
+  }
+
   public function addCollection($key, callable $callable) {
     $form = $callable(new self);
 
