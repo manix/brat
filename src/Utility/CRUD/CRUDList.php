@@ -261,7 +261,7 @@ trait CRUDList {
   }
 
   public function getLimits() {
-    return [50, 100, 250, 500, 1000];
+    return ['50' => 50, '100' => 100, '250' => 250, '500' => 500, '1000' => 1000];
   }
 
   public function renderSearchForm(Form $form) {
