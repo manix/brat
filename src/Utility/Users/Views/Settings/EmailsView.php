@@ -16,7 +16,7 @@ class EmailsView extends DefaultSettingsLayout {
     $this->data['delete']->setAttribute('class', 'list-group');
     ?>
     <div class="card-header">
-      Add address
+      <?= $this->t8('add_address') ?>
     </div>
 
     <div class="card-body">
@@ -24,7 +24,7 @@ class EmailsView extends DefaultSettingsLayout {
     </div>
 
     <div class="card-header">
-      Your addresses
+      <?= $this->t8('your_addresses') ?>
     </div>
     <div class="card-body">
       <?= $this->data['delete']->open($this->html) ?>

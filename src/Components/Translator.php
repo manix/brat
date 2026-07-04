@@ -2,9 +2,11 @@
 
 namespace Manix\Brat\Components;
 
+$translatorStrings = [];
+
 trait Translator {
 
-  protected static $translatorStrings = [];
+  // protected static $translatorStrings = [];
 
   /**
    * Caches a path so it does not have to be provided to t8 every time.
@@ -13,6 +15,12 @@ trait Translator {
    */
   public function cacheT8($path) {
     $this->__t8path = $path;
+  }
+
+  public function clearTranslationStrings() {
+    global $translatorStrings;
+
+    $translatorStrings = [];
   }
 
   /**
@@ -32,14 +40,21 @@ trait Translator {
     }
 
     if ($data === null) {
-      return $this->getTranslatedStrings($path)[$string] ?? ($path . ':' . $string);
+      return $this->normalizeString($path, $string, $data, $this->getTranslatedStrings($path)[$string] ?? ($path . ':' . $string));
     } else {
-      $t8d = $this->getTranslatedStrings($path)[$string] ?? null;
+      $t8d = $this->normalizeString($path, $string, $data, $this->getTranslatedStrings($path)[$string] ?? null);
       return preg_replace_callback('/{\$(\d+)}/', function($match) use(&$data, $t8d) {
         $m = $data[$match[1]] ?? null;
         return $t8d ? $m : json_encode($m);
       }, $t8d ?? ($path . ':' . $string . ':[{$' . join('},{$', range(0, count($data) - 1)) . '}]'));
     }
+  }
+
+  protected function normalizeString($path, $string, $data, $translated) {
+    if (is_callable($translated)) {
+      return $translated($data);
+    }
+    return $translated;
   }
 
   /**
@@ -49,12 +64,14 @@ trait Translator {
    * @return mixed null if file doesn't exist or file's return value otherwise.
    */
   protected function getTranslatedStrings($path) {
-    if (!isset(static::$translatorStrings[$path])) {
+    global $translatorStrings;
+
+    if (!isset($translatorStrings[$path])) {
       $file = $this->constructAbsoluteLangFilePath($path);
-      static::$translatorStrings[$path] = is_file($file) ? require $file : [];
+      $translatorStrings[$path] = is_file($file) ? require $file : [];
     }
 
-    return static::$translatorStrings[$path];
+    return $translatorStrings[$path];
   }
 
   /**
@@ -67,4 +84,8 @@ trait Translator {
     return PROJECT_PATH . '/lang/' . lang() . '/' . $path . '.php';
   }
 
+}
+
+class TranslatorClass {
+  use Translator;
 }

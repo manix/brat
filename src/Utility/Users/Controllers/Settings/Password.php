@@ -15,13 +15,14 @@ class Password extends SettingsController {
 
   public function before($method) {
     $this->requireCurrentPassword();
-    $this->addSaveButton();
 
     return parent::before($method);
   }
 
   public function get() {
 
+    $this->addSaveButton();
+    
     return [
         'form' => $this->getForm()
     ];

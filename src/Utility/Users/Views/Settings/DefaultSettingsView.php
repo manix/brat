@@ -16,7 +16,7 @@ class DefaultSettingsView extends DefaultSettingsLayout {
           'new' => $this->t8('newPass'),
           'new_rpt' => $this->t8('newPassRpt'),
           'currentPassword' => $this->t8('currPass')
-      ])
+      ] + ($this->data['labels'] ?? []))
       ?>
     </div>
     <?php

@@ -19,6 +19,6 @@ class UserGateway extends DefaultGateway {
         'logins' => [UserLoginGateway::class, 'id', 'user_id'],
         'tokens' => [UserTokenGateway::class, 'id', 'user_id'],
     ];
-    protected $timestamps = true;
+    public $timestamps = true;
     
 }

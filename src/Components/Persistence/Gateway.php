@@ -88,6 +88,14 @@ abstract class Gateway extends stdClass {
   }
 
   /**
+   * Get the table name
+   * @return string
+   */
+  public function getTable() {
+    return $this->table;
+  }
+
+  /**
    * Get the key names that form the model's primary key.
    * @return array
    */
@@ -261,6 +269,10 @@ abstract class Gateway extends stdClass {
     } else {
       throw new Exception('Trying to join an undefined relation.', 500);
     }
+  }
+
+  public function getJoins() {
+    return $this->joins;
   }
 
   /**

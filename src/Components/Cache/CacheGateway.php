@@ -65,7 +65,7 @@ abstract class CacheGateway {
         $value = $this->retrieve($key);
 
         if ($value === null) {
-            $value = $callback();
+            $value = $callback($key, $ttl);
             $this->persist($key, $value, $ttl);
         }
 

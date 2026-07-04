@@ -7,31 +7,17 @@ use Manix\Brat\Components\Filesystem\Directory;
 use Manix\Brat\Components\Filesystem\File;
 use const DEBUG_MODE;
 
-class FilesystemCache extends CacheGateway {
+class MemoryCache extends CacheGateway {
 
-    protected $dir;
-
-    public function __construct(Directory $dir) {
-        $this->dir = $dir;
-        
-        parent::__construct();
-    }
-
-    public function key($key) {
-        if ($this->dir->validatePath($key)) {
-            return parent::key($key);
-        }
-
-        throw new Exception('Invalid path in cache entry key.', 500);
-    }
+    protected $data = [];
 
     public function persist($key, $value, $ttl) {
-        return (bool)file_put_contents(new File($this->dir . '/' . $this->key($key)), time() + $ttl . serialize($value));
+        return $this->data[$this->key($key)] = time() + $ttl . serialize($value);
     }
 
     public function retrieve($key) {
         try {
-            $contents = file_get_contents(new File($this->dir . '/' . $this->key($key)));
+            $contents = $this->data[$this->key($key)] ?? '0';
             $due = substr($contents, 0, 10);
 
             if ($due < time()) {
@@ -51,7 +37,8 @@ class FilesystemCache extends CacheGateway {
 
     public function wipe($key) {
         try {
-            return unlink(new File($this->dir . '/' . $this->key($key)));
+            unset($this->data[$this->key($key)]);
+            return true;
         } catch (Exception $ex) {
             if (DEBUG_MODE) {
                 throw $ex;
@@ -61,17 +48,15 @@ class FilesystemCache extends CacheGateway {
 
     public function clear($hard = false) {
         if ($hard) {
-            $this->dir->delete(true);
+            $this->data = [];
         } else {
             $now = time();
             
-            foreach ($this->dir->files() as $file) {
-                $f = fopen($file, 'r');
-                $due = fread($f, 10);
-                fclose($f);
+            foreach ($this->data as $key => $value) {
+                $due = substr($value, 0, 10);
 
                 if ($due < $now) {
-                    unlink($file);
+                    unset($this->data[$key]);
                 }
             }
         }

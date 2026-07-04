@@ -17,10 +17,11 @@ class Photo extends SettingsController {
 
   public $page = PhotoView::class;
 
-  public function before($method) {
+  public function get() {
+
     $this->addSaveButton();
 
-    return parent::before($method);
+    return parent::get();
   }
 
   public function post() {

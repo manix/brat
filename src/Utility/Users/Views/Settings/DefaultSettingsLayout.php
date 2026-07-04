@@ -35,17 +35,21 @@ abstract class DefaultSettingsLayout extends DefaultLayout {
    * ]
    */
   protected function getMenuItems() {
-    return [
-        $this->t8('profileInfo') => [
-            Name::class => $this->t8('name'),
-            Photo::class => $this->t8('photo')
-        ],
-        $this->t8('loginInfo') => [
-            Emails::class => $this->t8('emails'),
-            Password::class => $this->t8('password'),
-            Logins::class => $this->t8('logins')
-        ]
-    ];
+    try {
+      return config('settings')['menu-items'];
+    } catch (Exception $e) {
+      return [
+          $this->t8('profileInfo') => [
+              Name::class => $this->t8('name'),
+              Photo::class => $this->t8('photo')
+          ],
+          $this->t8('loginInfo') => [
+              Emails::class => $this->t8('emails'),
+              Password::class => $this->t8('password'),
+              Logins::class => $this->t8('logins')
+          ]
+      ];
+    }
   }
 
   public function body() {
