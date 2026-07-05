@@ -4,13 +4,10 @@ namespace Manix\Brat\Components;
 
 $translatorStrings = [];
 
-#[\AllowDynamicProperties]
 trait Translator {
 
   // protected static $translatorStrings = [];
 
-  // this will add a NULL property to a large amount of instances
-  // use #[\AllowDynamicProperties] instead
   // private $__t8path;
 
   /**
