@@ -70,7 +70,7 @@ trait CRUDList {
             <?php if (!$noQuery && !$noResults): ?>
               <tr>
                 <?php foreach ($this->fields as $field): ?>
-                  <th>
+                  <th data-key="<?= html($field) ?>">
                     <?php if (isset($sortable[$field])): $asc = $this->sort === $field && $this->order === 'asc'; ?>
                       <a href="<?= $this->getSortURL($field, $asc) ?>" class="d-flex justify-content-between align-items-center">
                         <span><?= $this->renderColumnLabel($field) ?></span>
