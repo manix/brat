@@ -78,7 +78,7 @@ trait FormEndpoint {
    * @param \callable $onFail
    * @return mixed The return value of $onPass or $onFail.
    */
-  protected function validate($dataset, callable $onPass, callable $onFail = null, ...$data) {
+  protected function validate($dataset, callable $onPass, ?callable $onFail = null, ...$data) {
     $validator = new Validator();
     $rules = $this->getRules();
 
