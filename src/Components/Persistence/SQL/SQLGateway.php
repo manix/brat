@@ -73,7 +73,7 @@ abstract class SQLGateway extends Gateway {
     return $this->parseJoins($stmt->fetchAll(), new Arrays());
   }
 
-  public function persist(Model $model, array $fields = null): bool {
+  public function persist(Model $model, ?array $fields = null): bool {
     $query = $this->constructInsertQuery();
     $data = [];
 

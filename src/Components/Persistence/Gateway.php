@@ -165,7 +165,7 @@ abstract class Gateway extends stdClass {
    * @param array $fields The fields to persist from the model. If null, then persist all.
    * @return bool Whether the model was persisted successfully or not.
    */
-  abstract public function persist(Model $model, array $fields = null): bool;
+  abstract public function persist(Model $model, ?array $fields = null): bool;
 
   /**
    * Persist a collection of objects.
@@ -173,7 +173,7 @@ abstract class Gateway extends stdClass {
    * @param array $fields
    * @return int The number of successfully persisted objects.
    */
-  public function persistCollecion(Collection $collection, array $fields = null): int {
+  public function persistCollecion(Collection $collection, ?array $fields = null): int {
     $count = 0;
 
     foreach ($collection as $object) {
@@ -246,7 +246,7 @@ abstract class Gateway extends stdClass {
    * @param mixed $gate A gateway instance or array of fields to select.
    * @return $gate
    */
-  public function join($rel, $gate = null, callable $joiner = null): Gateway {
+  public function join($rel, $gate = null, ?callable $joiner = null): Gateway {
     if (isset($this->rel[$rel])) {
       $class = $this->rel[$rel][0];
 
