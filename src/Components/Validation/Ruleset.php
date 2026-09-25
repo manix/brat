@@ -12,7 +12,7 @@ class Ruleset {
   /**
    * @return RulesetRecord
    */
-  public function add($name, RulesetRecord $record = null) {
+  public function add($name, ?RulesetRecord $record = null) {
 
     if ($record === null) {
       $record = new RulesetRecord();
@@ -227,7 +227,7 @@ class RulesetRecord {
     return $this;
   }
 
-  public function subset(Ruleset $subset = null) {
+  public function subset(?Ruleset $subset = null) {
     if ($subset === null) {
       $subset = new Ruleset();
     }
@@ -238,7 +238,7 @@ class RulesetRecord {
     return $subset;
   }
 
-  public function collection(RulesetRecord $record = null) {
+  public function collection(?RulesetRecord $record = null) {
     if ($record === null) {
       $record = new RulesetRecord();
     }

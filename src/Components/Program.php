@@ -83,7 +83,7 @@ abstract class Program {
    * before sending, so any custom modifications can be made there.
    * @return bool Whether message has been sent successfully or not.
    */
-  public function sendMail($to, $subject, $message, callable $callable = null) {
+  public function sendMail($to, $subject, $message, ?callable $callable = null) {
     $mail = new PHPMailer(true);
     $settings = $_ENV['mail'];
 
