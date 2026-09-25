@@ -179,7 +179,7 @@ class HTTPProgram extends Program {
    * @return string The route.
    */
   public function determineRoute(): string {
-    return trim($_GET['route'] ?? null);
+    return trim($_GET['route'] ?? "");
   }
 
   /**
