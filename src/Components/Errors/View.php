@@ -60,7 +60,7 @@ class View extends BootstrapLayout {
   }
 
   protected function formatClassName($name) {
-    return strpos($name, 'class@anonymous') === 0 ? 'class@anonymous' : $name;
+    return strpos($name ?? '', 'class@anonymous') === 0 ? 'class@anonymous' : $name;
   }
 
   protected function parseArgs(array $args) {

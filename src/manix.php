@@ -214,6 +214,6 @@ $manix = new class {
 
     $controller = $program->createController($program->determineRoute());
     $data = $program->executeController($controller);
-    exit($program->respond($data));
+    exit($program->respond($data) ?? '');
   }
 };
