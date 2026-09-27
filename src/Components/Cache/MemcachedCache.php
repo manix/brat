@@ -17,7 +17,9 @@ class MemcachedCache extends CacheGateway {
     }
 
     public function persist($key, $value, $ttl) {
-        $this->conn->set($this->key($key), $value, $_SERVER['REQUEST_TIME'] + $ttl);
+        // don't use unix timestamp for ttl, apparently memcached's internal clock can lose sync
+        // and cause keys to not be persisted 
+        $this->conn->set($this->key($key), $value, $ttl);
     }
 
     public function retrieve($key) {
