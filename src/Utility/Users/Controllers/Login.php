@@ -10,6 +10,7 @@ use Manix\Brat\Components\Validation\Validator;
 use Manix\Brat\Helpers\FormController;
 use Manix\Brat\Helpers\Redirect;
 use Manix\Brat\Utility\Users\Models\Auth;
+use Manix\Brat\Utility\Users\Models\MFAMethods;
 use Manix\Brat\Utility\Users\Models\User;
 use Project\Traits\Users\UserGatewayFactory;
 use Manix\Brat\Utility\Users\Views\LoginSuccessView;
@@ -73,6 +74,78 @@ class Login extends FormController {
     ]));
   }
 
+  /**
+   * Logs $user in after the right password. A user with MFA set up is asked for a code
+   * first: the session keeps the user for MFA::PENDING_TTL seconds, and the MFA controller
+   * calls this again with $skipMFA once the code is right.
+   * @param User $user
+   * @param bool $remember Issue a remember-me token.
+   * @param bool $skipMFA Log in without the code, for logins the project trusts otherwise.
+   * @return mixed The response: loggedIn()'s, or the MFA controller's form.
+   */
+  public function completeLogin(User $user, bool $remember, bool $skipMFA = false) {
+    if (!$skipMFA) {
+      $records = $this->getMFAGateway()->find($user->id);
+
+      if ($records->count()) {
+        $methods = [];
+        foreach ($records as $record) {
+          $methods[] = $record->method;
+        }
+
+        $mfa = $this->getMFAController();
+        $_SESSION[MANIX]['mfa'] = [
+            'user' => $user,
+            'remember' => $remember,
+            'methods' => $methods,
+            'backto' => $_GET['b'] ?? null,
+            'until' => time() + $mfa::PENDING_TTL
+        ];
+
+        // a method that sends the code (email, SMS) sends it now
+        $method = MFAMethods::get($methods[0]);
+        if ($method) {
+          $method->challenge($records->first());
+        }
+
+        $this->page = $mfa->page;
+
+        return $mfa->get();
+      }
+    }
+
+    Auth::register($user);
+
+    if ($remember) {
+      Auth::issueRememberToken();
+    }
+
+    $this->onLoginAttemptResolved($user, new Validator());
+
+    return $this->loggedIn($user);
+  }
+
+  /**
+   * The response once $user is logged in.
+   * @param User $user
+   */
+  protected function loggedIn(User $user) {
+    $this->page = $this->getSuccessView();
+
+    return [
+        'success' => true,
+        'backto' => $_GET['b'] ?? null
+    ];
+  }
+
+  /**
+   * The controller that asks for the MFA code, the project's subclass if it has one.
+   * @return MFA
+   */
+  protected function getMFAController() {
+    return new MFA();
+  }
+
   protected function constructForm(Form $form): Form {
     $form->setAction(route(static::class, $this->backto ? [
         'b' => $this->backto
@@ -126,22 +199,9 @@ class Login extends FormController {
           $v->setError('email', $this->t8('emailNotVerified'));
         } else {
           if ($user && password_verify($data['password'], $user->password)) {
-            Auth::register($user);
-
-            $this->page = $this->getSuccessView();
-
             cache()->wipe($key);
 
-            if (!empty($_POST['remember'])) {
-              Auth::issueRememberToken();
-            }
-
-            $this->onLoginAttemptResolved($user, $v);
-
-            return [
-                'success' => true,
-                'backto' => $_GET['b'] ?? null
-            ];
+            return $this->completeLogin($user, !empty($_POST['remember']));
           } else {
             cache($key, $attempts + 1, $this->blockFor());
 

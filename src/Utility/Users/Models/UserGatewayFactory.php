@@ -3,6 +3,7 @@
 namespace Manix\Brat\Utility\Users\Models;
 
 use Manix\Brat\Components\Persistence\Gateway;
+use Manix\Brat\Utility\Users\Models\MFAGateway;
 use Manix\Brat\Utility\Users\Models\UserEmailGateway;
 use Manix\Brat\Utility\Users\Models\UserGateway;
 use Manix\Brat\Utility\Users\Models\UserLoginGateway;
@@ -52,6 +53,17 @@ trait UserGatewayFactory {
 
   protected function getLoginGatewayClass() {
     return UserLoginGateway::class;
+  }
+
+  /**
+   * @return MFAGateway
+   */
+  protected function getMFAGateway($fields = null) {
+    return $this->constructUserGateway($this->getMFAGatewayClass(), $fields);
+  }
+
+  protected function getMFAGatewayClass() {
+    return MFAGateway::class;
   }
 
   protected function setGatewayFields(Gateway $gate, $fields) {

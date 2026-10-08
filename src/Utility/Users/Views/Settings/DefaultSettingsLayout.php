@@ -5,6 +5,7 @@ namespace Manix\Brat\Utility\Users\Views\Settings;
 use Manix\Brat\Helpers\HTMLGenerator;
 use Manix\Brat\Utility\Users\Controllers\Settings\Emails;
 use Manix\Brat\Utility\Users\Controllers\Settings\Logins;
+use Manix\Brat\Utility\Users\Controllers\Settings\MFA;
 use Manix\Brat\Utility\Users\Controllers\Settings\Name;
 use Manix\Brat\Utility\Users\Controllers\Settings\Password;
 use Manix\Brat\Utility\Users\Controllers\Settings\Photo;
@@ -46,6 +47,7 @@ abstract class DefaultSettingsLayout extends DefaultLayout {
           $this->t8('loginInfo') => [
               Emails::class => $this->t8('emails'),
               Password::class => $this->t8('password'),
+              MFA::class => $this->t8('mfa'),
               Logins::class => $this->t8('logins')
           ]
       ];

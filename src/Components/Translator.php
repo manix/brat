@@ -2,6 +2,8 @@
 
 namespace Manix\Brat\Components;
 
+use stdClass;
+
 $translatorStrings = [];
 
 trait Translator {
@@ -88,6 +90,6 @@ trait Translator {
 
 }
 
-class TranslatorClass {
+class TranslatorClass extends stdClass {
   use Translator;
 }
