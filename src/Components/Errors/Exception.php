@@ -7,7 +7,8 @@ use Manix\Brat\Components\Controller;
 
 class Exception extends E {
 
-  const DISPLAY_CODE = 666;
+  // its message is shown to the user, the answer to the ultimate question (under 100, so the response is a 500)
+  const DISPLAY_CODE = 42;
 
   protected $handler;
 

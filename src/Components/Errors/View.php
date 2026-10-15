@@ -21,9 +21,11 @@ class View extends BootstrapLayout {
         <i class="fa fa-lg fa-exclamation-triangle mr-3"></i>
         <?= DEBUG_MODE ? html($t->getMessage()) : $this->getHTTPMsg($t) ?>
       </div>
-      <div>
-        <?= $t->getCode() ?>
-      </div>
+      <?php if ($t->getCode() !== Exception::DISPLAY_CODE): ?>
+        <div>
+          <?= $t->getCode() ?>
+        </div>
+      <?php endif; ?>
     </div>
     <?php if (DEBUG_MODE): ?>
       <div class="table-responsive">
