@@ -36,7 +36,8 @@ class Password extends SettingsController {
 
       $user->setPassword($data['new']);
 
-      if (!$gate->persist($user)) {
+      // only the password: the cached user's other fields may be stale (the timestamps go along for pack())
+      if (!$gate->persist($user, ['id', 'password', 'created', 'updated'])) {
         throw new Exception('Persistence error.', 500);
       }
 

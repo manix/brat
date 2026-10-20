@@ -24,6 +24,7 @@ class Linkedin extends ProviderController {
     return [
         'name' => $user->getFirstName() . ' ' . $user->getLastName(),
         'email' => $user->getEmail(),
+        'verified' => true, // trusted: LinkedIn's primary email is a confirmed one
         'img' => $user->getImageurl()
     ];
   }

@@ -28,6 +28,7 @@ class Microsoft extends ProviderController {
     return [
         'name' => $user->getName(),
         'email' => $user->getEmail(),
+        'verified' => false, // Microsoft doesn't say whether it verified the email
         'img' => null // Microsoft seems to not provide image information
     ];
   }

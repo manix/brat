@@ -38,4 +38,21 @@ class MemcachedCache extends CacheGateway {
         }
     }
 
+    // memcached's increment() doesn't create the key: a missing one is added with the count, and counted on if
+    // another request added it in between
+    public function increment($key, $ttl, $by = 1) {
+        $key = $this->key($key);
+        $count = $this->conn->increment($key, $by);
+
+        if ($count === false) {
+            $count = $this->conn->add($key, $by, $ttl) ? $by : $this->conn->increment($key, $by);
+        }
+
+        return (int)$count;
+    }
+
+    public function add($key, $value, $ttl) {
+        return $this->conn->add($this->key($key), $value, $ttl);
+    }
+
 }

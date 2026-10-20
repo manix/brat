@@ -87,8 +87,9 @@ class Validator {
     $this->errors[$key] = $message;
   }
 
+  // a string of only spaces is missing too, "0" and 0 are not
   public function required($v) {
-    if (empty($v) && strlen(trim($v)) === 0) {
+    if (is_string($v) ? trim($v) === '' : !is_numeric($v) && empty($v)) {
       return true;
     }
   }
@@ -123,9 +124,9 @@ class Validator {
     }
   }
 
+  // checked as digits first: checkdate() throws on anything else
   public function date($v) {
-    $date = explode('-', $v);
-    if (count($date) !== 3 || !checkdate($date[1], $date[2], $date[0])) {
+    if (!is_string($v) || !preg_match('/^(\d+)-(\d{1,2})-(\d{1,2})$/', $v, $date) || !checkdate($date[2], $date[3], $date[1])) {
       return true;
     }
   }
@@ -194,39 +195,37 @@ class Validator {
     }
   }
 
+  // numeric bounds compare as numbers, request values (strings) included, else both are dates: strtotime() reads
+  // most numbers as false, and false passed every comparison
   public function between($v, $d) {
     list($min, $max) = $d;
-    
-    switch (gettype($v)) {
-      case 'integer':
-      case 'double':
-        if ($v < $min || $v > $max) {
-          return true;
-        }
-        break;
-      default:
-        if (strtotime($v) < strtotime($min) || strtotime($v) > strtotime($max)) {
-          return true;
-        }
-        break;
+
+    if (is_numeric($min) && is_numeric($max)) {
+      if (!is_numeric($v) || $v < $min || $v > $max) {
+        return true;
+      }
+    } else {
+      $time = is_string($v) ? strtotime($v) : false;
+
+      if ($time === false || $time < strtotime($min) || $time > strtotime($max)) {
+        return true;
+      }
     }
   }
 
   public function betweenX($v, $d) {
     list($min, $max) = $d;
 
-    switch (gettype($v)) {
-      case 'integer':
-      case 'double':
-        if ($v <= $min || $v >= $max) {
-          return true;
-        }
-        break;
-      default:
-        if (strtotime($v) <= strtotime($min) || strtotime($v) >= strtotime($max)) {
-          return true;
-        }
-        break;
+    if (is_numeric($min) && is_numeric($max)) {
+      if (!is_numeric($v) || $v <= $min || $v >= $max) {
+        return true;
+      }
+    } else {
+      $time = is_string($v) ? strtotime($v) : false;
+
+      if ($time === false || $time <= strtotime($min) || $time >= strtotime($max)) {
+        return true;
+      }
     }
   }
 
@@ -244,7 +243,8 @@ class Validator {
     isset($v['tmp_name']) &&
     isset($v['error']) &&
     isset($v['size']) &&
-    is_file($v['tmp_name'])
+    // a file PHP received in this request: validating anything but $_FILES, tmp_name could name any file
+    is_string($v['tmp_name']) && is_uploaded_file($v['tmp_name'])
     )) {
       return 'fileUpload';
     } elseif (isset($d) && $d < ($v['size'] / 1048576)) {
@@ -322,6 +322,7 @@ class Validator {
       return;
     }
     
-    return $validator->errors[0] ?? null;
+    // the first alternative's message, whatever its key: null would count as passed
+    return reset($validator->errors) ?: true;
   }
 }

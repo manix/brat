@@ -3,7 +3,6 @@
 namespace Manix\Brat\Components\Errors;
 
 use Manix\Brat\Utility\BootstrapLayout;
-use Throwable;
 use const DEBUG_MODE;
 use function html;
 
@@ -14,16 +13,17 @@ class View extends BootstrapLayout {
   public function body() {
 
     $t = $this->data['throwable'];
+    $code = $this->data['code'];
     ?>
 
     <div class="heading bg-danger text-white h2 mb-0 d-flex align-items-center justify-content-between" style="min-height: 20vh; padding: 0 5%;">
       <div>
         <i class="fa fa-lg fa-exclamation-triangle mr-3"></i>
-        <?= DEBUG_MODE ? html($t->getMessage()) : $this->getHTTPMsg($t) ?>
+        <?= html(DEBUG_MODE ? $this->data['message'] : $this->getHTTPMsg($code, $this->data['message'])) ?>
       </div>
-      <?php if ($t->getCode() !== Exception::DISPLAY_CODE): ?>
+      <?php if ($code !== Exception::DISPLAY_CODE): ?>
         <div>
-          <?= $t->getCode() ?>
+          <?= html($code) ?>
         </div>
       <?php endif; ?>
     </div>
@@ -94,8 +94,8 @@ class View extends BootstrapLayout {
     return $parsed;
   }
 
-  public function getHTTPMsg(Throwable $throwable) {
-    switch ($throwable->getCode()) {
+  public function getHTTPMsg($code, $message) {
+    switch ($code) {
       case 100: return 'Continue';
       case 101: return 'Switching Protocols';
       case 102: return 'Processing';
@@ -151,7 +151,7 @@ class View extends BootstrapLayout {
       case 507: return 'Insufficient Storage';
       case 509: return 'Bandwidth Limit Exceeded';
       case 510: return 'Not Extended';
-      case Exception::DISPLAY_CODE: return $throwable->getMessage();
+      case Exception::DISPLAY_CODE: return $message;
       default: return 'Internal Server Error';
     }
   }

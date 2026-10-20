@@ -2,8 +2,10 @@
 
 namespace Manix\Brat\Utility\Users\Views;
 
+use Manix\Brat\Helpers\URL;
 use Project\Views\Users\GuestFrame;
 use const SITE_URL;
+use function html;
 
 class LoginSuccessView extends GuestFrame {
 
@@ -12,7 +14,8 @@ class LoginSuccessView extends GuestFrame {
     <div class="alert alert-success text-center">
       <?= $this->t8('loginSuccess') ?>
       <hr/>
-      <a href="<?= $this->data['backto'] ?? SITE_URL ?>" class="btn btn-success">
+      <?php $backto = $this->data['backto'] ?? '' ?>
+      <a href="<?= html((new URL($backto))->isLocal() ? $backto : SITE_URL) ?>" class="btn btn-success">
         <?= $this->t8('continue') ?>
       </a>
     </div>

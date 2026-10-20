@@ -15,7 +15,8 @@ class ScriptProgram extends Program {
     $scripts = config('scripts');
 
     if (!isset($scripts[$route])) {
-      exit('Unknown command');
+      echo 'Unknown command', PHP_EOL;
+      exit(1);
     }
 
     $args = $argv;
@@ -36,7 +37,8 @@ class ScriptProgram extends Program {
     $script = $argv[1] ?? null;
 
     if (!$script) {
-      exit('Not enough arguments, see help for available commands.');
+      echo 'Not enough arguments, see help for available commands.', PHP_EOL;
+      exit(1);
     }
 
     return $script;
@@ -48,6 +50,9 @@ class ScriptProgram extends Program {
 
   public function error(Throwable $t) {
     echo $t;
+
+    // a failed run, for cron and shells
+    exit(1);
   }
 
 }

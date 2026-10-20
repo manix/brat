@@ -15,6 +15,8 @@ class Image {
   const WATERMARK_TOPRIGHT = 32;
   const WATERMARK_BOTLEFT = 64;
   const WATERMARK_BOTRIGHT = 128;
+  // the most pixels an image may have: decoding takes about 4 bytes per pixel, and a small file can claim any size
+  const MAX_PIXELS = 25000000;
 
   protected $filename;
   protected $info = [];
@@ -32,7 +34,12 @@ class Image {
   public static function fromString($str) {
     $image = new self;
 
-    $image->resource = imagecreatefromstring($str);
+    // the size from the header, before decoding
+    $info = getimagesizefromstring($str);
+    if ($info === false || $info[0] * $info[1] > self::MAX_PIXELS || !($image->resource = imagecreatefromstring($str))) {
+      throw new Exception('Failed to load image.', 500);
+    }
+
     $image->updateDimensions();
 
     return $image;
@@ -72,6 +79,11 @@ class Image {
       throw new Exception('Failed to load image.', 500);
     }
 
+    // getimagesize() reads the size from the header, before decoding
+    if ($image->info[0] * $image->info[1] > self::MAX_PIXELS) {
+      throw new Exception('Image too large.', 413);
+    }
+
     switch ($image->info[2]) {
       case IMAGETYPE_GIF:
         $image->resource = imagecreatefromgif($image->filename);
@@ -90,6 +102,9 @@ class Image {
         break;
 
       case IMAGETYPE_BMP:
+        $image->resource = imagecreatefrombmp($image->filename);
+        break;
+
       case IMAGETYPE_WBMP:
         $image->resource = imagecreatefromwbmp($image->filename);
         break;
@@ -109,6 +124,11 @@ class Image {
       default:
         $image->resource = null;
         break;
+    }
+
+    // an unsupported type, or a file that didn't decode: every method would fail on it later
+    if (!$image->resource) {
+      throw new Exception('Failed to load image.', 500);
     }
 
     return $image;
@@ -211,6 +231,9 @@ class Image {
         break;
 
       case IMAGETYPE_BMP:
+        imagebmp($this->resource, $this->filename);
+        break;
+
       case IMAGETYPE_WBMP:
         imagewbmp($this->resource, $this->filename);
         break;
@@ -326,10 +349,11 @@ class Image {
 
     $scale_ratio = $w_orig / $h_orig;
 
+    // whole pixels: GD takes ints, a float with a fraction is deprecated
     if (($w / $h) > $scale_ratio) {
-      $w = $h * $scale_ratio;
+      $w = (int)round($h * $scale_ratio);
     } else {
-      $h = $w / $scale_ratio;
+      $h = (int)round($w / $scale_ratio);
     }
 
     $tci = imagecreatetruecolor($w, $h);

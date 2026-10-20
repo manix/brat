@@ -6,6 +6,8 @@ use Exception;
 use Manix\Brat\Components\Forms\Form;
 use Manix\Brat\Components\Validation\Ruleset;
 use Manix\Brat\Helpers\FormController;
+use Manix\Brat\Helpers\Redirect;
+use Manix\Brat\Helpers\URL;
 use Manix\Brat\Utility\Captcha\CaptchaManager;
 use Manix\Brat\Utility\Users\Models\User;
 use Manix\Brat\Utility\Users\Models\UserEmail;
@@ -13,6 +15,7 @@ use Project\Traits\Users\UserGatewayFactory;
 use Manix\Brat\Utility\Users\Views\RegisterSuccessView;
 use Manix\Brat\Utility\Users\Views\RegisterView;
 use Manix\Brat\Utility\Users\Models\Auth;
+use PDOException;
 
 class Register extends FormController {
 
@@ -68,7 +71,7 @@ class Register extends FormController {
     if (Auth::user()) {
       $url = $_SESSION['backto'] ?? $_GET['b'] ?? SITE_URL;
       unset($_SESSION['backto']);
-      new Redirect($url);
+      new Redirect((new URL($url))->isLocal() ? $url : SITE_URL);
     }
 
     return [
@@ -88,11 +91,16 @@ class Register extends FormController {
       } else {
 
         $ugate = $this->getUserGateway();
+        $pdo = $ugate->getPDO();
 
         $user = $ugate->instantiate([$data], false);
         $user->setPassword($data['password']);
 
+        $pdo->beginTransaction();
+
         if (!$ugate->persist($user)) {
+          $pdo->rollBack();
+
           throw new Exception('Unexpected', 500);
         }
 
@@ -105,9 +113,26 @@ class Register extends FormController {
 
         $email->invalidate();
 
+        // a plain insert: an email registered since the check above fails here instead of moving to the new user
+        try {
+          $egate->insert($email);
+        } catch (PDOException $e) {
+          $pdo->rollBack();
+
+          if (($e->errorInfo[1] ?? null) !== 1062) {
+            throw $e;
+          }
+
+          $v->setError('email', $this->t8('manix/util/users/common', 'emailTaken'));
+
+          return $this->defaultFailAction($data, $v);
+        }
+
+        $pdo->commit();
+
         $this->captcha->expire();
 
-        if ($egate->persist($email) && $this->sendActivationMail($email)) {
+        if ($this->sendActivationMail($email)) {
           $this->page = $this->getSuccessView();
 
           $this->onUserRegistered($user, $email);

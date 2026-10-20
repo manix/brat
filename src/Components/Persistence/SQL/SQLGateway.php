@@ -74,6 +74,18 @@ abstract class SQLGateway extends Gateway {
   }
 
   public function persist(Model $model, ?array $fields = null): bool {
+    return $this->insertRow($model, $fields, true);
+  }
+
+  /**
+   * Inserts $model with a plain INSERT: unlike persist(), a taken primary or unique key fails (PDOException with
+   * errorInfo[1] 1062) instead of updating the row that has it.
+   */
+  public function insert(Model $model): bool {
+    return $this->insertRow($model, null, false);
+  }
+
+  protected function insertRow(Model $model, ?array $fields, bool $upsert): bool {
     $query = $this->constructInsertQuery();
     $data = [];
 
@@ -92,7 +104,13 @@ abstract class SQLGateway extends Gateway {
 //    echo "<pre>" . print_r($query->data(), true) . "</pre>";
 //    exit;
 
-    $stmt = $this->pdo->prepare($query->insert($data)->onDuplicateKey(true)->build());
+    $query->insert($data);
+
+    if ($upsert) {
+      $query->onDuplicateKey(true);
+    }
+
+    $stmt = $this->pdo->prepare($query->build());
     $stmt->execute($query->data());
 
     $status = (bool)$stmt->rowCount();
@@ -162,11 +180,14 @@ abstract class SQLGateway extends Gateway {
     }
 
     $rule = str_replace($dummy->getSelectClause() . '  WHERE ', '', $dummy->build());
+
+    // in one pass (strtr), so a value can't hold a placeholder that is replaced after it, and :_a doesn't match in :_ab
+    $values = [];
     foreach ($dummy->data() as $placeholder => $value) {
-      $rule = str_replace($placeholder, $value[0] === '`' ? $value : $this->pdo->quote($value), $rule);
+      $values[$placeholder] = $value instanceof Column ? (string)$value : $this->pdo->quote($value);
     }
 
-    return $rule;
+    return strtr($rule, $values);
   }
 
   protected function addJoins(SelectQuery $query, $base = null): SelectQuery {
@@ -181,9 +202,9 @@ abstract class SQLGateway extends Gateway {
         if (isset($gate->customJoiner)) {
           $joiner = $gate->customJoiner;
           $rule = $this->produceJoinRule($joiner(function ($field) use ($localalias) {
-            return "`$localalias`.`$field`";
+            return new Column($localalias, $field);
           }, function ($field) use ($tblAlias) {
-            return "`$tblAlias`.`$field`";
+            return new Column($tblAlias, $field);
           }));
         } else {
           $localKey = $this->getLocalRelationKey($key);

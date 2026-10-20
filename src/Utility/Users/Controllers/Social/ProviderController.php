@@ -4,6 +4,7 @@ namespace Manix\Brat\Utility\Users\Controllers\Social;
 
 use Manix\Brat\Utility\HTTP\HTTPController;
 use Manix\Brat\Helpers\Redirect;
+use Manix\Brat\Utility\Users\Models\Auth;
 use Exception;
 use ReflectionClass;
 
@@ -58,7 +59,14 @@ abstract class ProviderController extends HTTPController {
 
     $registrar = new $config['registrar'];
 
-    $registrar->register($registrarData);
+    $user = $registrar->register($registrarData);
+
+    // the login form's way in, so a user with MFA is asked for the code
+    $login = Auth::getManager()->getLoginController();
+    $response = $login->completeLogin($user, false);
+    $this->page = $login->page;
+
+    return $response;
   }
 
 }

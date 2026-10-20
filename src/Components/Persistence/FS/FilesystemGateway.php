@@ -90,7 +90,7 @@ abstract class FilesystemGateway extends Gateway {
     });
   }
 
-  public function persist(Model $model, array $fields = null): bool {
+  public function persist(Model $model, ?array $fields = null): bool {
     $data = [];
 
     if ($fields === null) {

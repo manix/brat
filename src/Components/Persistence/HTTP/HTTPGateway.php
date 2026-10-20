@@ -68,7 +68,7 @@ abstract class HTTPGateway extends Gateway {
     return $this->instantiate(json_decode($resp, true)[0]);
   }
 
-  public function persist(Model $model, array $fields = null): bool {
+  public function persist(Model $model, ?array $fields = null): bool {
     throw new Exception('HTTPGateway persist not yet implemented.', 500);
   }
 

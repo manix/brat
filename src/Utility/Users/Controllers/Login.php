@@ -9,6 +9,7 @@ use Manix\Brat\Components\Validation\Ruleset;
 use Manix\Brat\Components\Validation\Validator;
 use Manix\Brat\Helpers\FormController;
 use Manix\Brat\Helpers\Redirect;
+use Manix\Brat\Helpers\URL;
 use Manix\Brat\Utility\Users\Models\Auth;
 use Manix\Brat\Utility\Users\Models\MFAMethods;
 use Manix\Brat\Utility\Users\Models\User;
@@ -162,7 +163,7 @@ class Login extends FormController {
     if (Auth::user()) {
       $url = $_SESSION['backto'] ?? $_GET['b'] ?? SITE_URL;
       unset($_SESSION['backto']);
-      new Redirect($url);
+      new Redirect((new URL($url))->isLocal() ? $url : SITE_URL);
     }
 
     try {
@@ -191,9 +192,10 @@ class Login extends FormController {
         $user = $ugate->find($email->user_id)->first();
 
         $key = 'users/loginblock/' . md5($email->email . $_SERVER['REMOTE_ADDR']);
-        $attempts = cache($key);
+        // counted before the password is checked, atomically: guesses sent at the same time each count
+        $attempts = cache()->increment($key, $this->blockFor());
 
-        if ($attempts >= $this->allowedAttempts()) {
+        if ($attempts > $this->allowedAttempts()) {
           $v->setError('email', $this->t8('loginBlocked'));
         } else if (!$email->isVerified()) {
           $v->setError('email', $this->t8('emailNotVerified'));
@@ -203,8 +205,6 @@ class Login extends FormController {
 
             return $this->completeLogin($user, !empty($_POST['remember']));
           } else {
-            cache($key, $attempts + 1, $this->blockFor());
-
             $v->setError('password', $this->t8('wrongPass'));
           }
         }

@@ -3,6 +3,7 @@
 namespace Manix\Brat\Utility\Users\Controllers;
 
 use Manix\Brat\Components\Forms\Form;
+use Manix\Brat\Helpers\URL;
 use Manix\Brat\Utility\HTTP\HTTPController;
 use Manix\Brat\Utility\Users\Models\Auth;
 use Manix\Brat\Utility\Users\Views\LogoutView;
@@ -22,7 +23,8 @@ class Logout extends HTTPController {
   public function delete() {
     Auth::destroy();
 
-    header('Location: ' . ($_GET['b'] ? $_GET['b'] : SITE_URL));
+    $url = $_GET['b'] ?? '';
+    header('Location: ' . ((new URL($url))->isLocal() ? $url : SITE_URL));
   }
 
 }

@@ -22,6 +22,7 @@ class Facebook extends ProviderController {
     return [
         'name' => $user->getName(),
         'email' => $user->getEmail(),
+        'verified' => true, // trusted: Facebook returns a confirmed email
         'img' => $user->getPictureUrl()
     ];
   }

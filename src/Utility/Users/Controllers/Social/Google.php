@@ -24,6 +24,7 @@ class Google extends ProviderController {
     return [
         'name' => $user->getName(),
         'email' => $user->getEmail(),
+        'verified' => !empty($user->toArray()['email_verified']),
         'img' => $user->getAvatar()
     ];
   }

@@ -11,6 +11,7 @@ use Manix\Brat\Utility\Users\Controllers\Mailer;
 use Manix\Brat\Utility\Users\Models\Auth;
 use Manix\Brat\Utility\Users\Models\UserEmail;
 use Manix\Brat\Utility\Users\Views\Settings\EmailsView;
+use PDOException;
 
 class Emails extends SettingsController {
 
@@ -56,7 +57,19 @@ class Emails extends SettingsController {
         ], false);
         $email->invalidate();
 
-        if ($egate->persist($email)) {
+        // a plain insert: an email added since the check above fails here instead of moving to this user
+        try {
+          $inserted = $egate->insert($email);
+        } catch (PDOException $e) {
+          if (($e->errorInfo[1] ?? null) !== 1062) {
+            throw $e;
+          }
+
+          $inserted = false;
+          $validator->setError('email', $this->t8('manix/util/users/common', 'emailTaken'));
+        }
+
+        if ($inserted) {
           $this->sendActivationMail($email);
 
           return ['success' => $this->t8('emailAdded')];

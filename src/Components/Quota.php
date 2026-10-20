@@ -23,9 +23,10 @@ class Quota {
   ];
 
   public static function enforce(self $quota, $amount = 1) {
-    if ($quota->test($amount)) {
+    // one atomic count: requests at the same time can't all read the same value and pass together
+    if ($quota->count($amount) > $quota->threshold) {
       throw new Exception('Quota threshold reached.', 503);
-    } $quota->persist($quota->getTested());
+    }
   }
 
   protected $threshold;
@@ -55,6 +56,13 @@ class Quota {
 
   public function retrieve() {
     return cache($this->key);
+  }
+
+  /**
+   * Adds $amount to the quota and returns the new total.
+   */
+  public function count($amount = 1) {
+    return cache()->increment($this->key, self::CONVERSION_TABLE[$this->timeframe], $amount);
   }
 
   public function persist($amount) {

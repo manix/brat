@@ -24,6 +24,7 @@ class Github extends ProviderController {
     return [
         'name' => $user->getName(),
         'email' => $user->getEmail(),
+        'verified' => true, // trusted: GitHub's public email is a verified one
         'img' => $user->toArray()['avatar_url']
     ];
   }

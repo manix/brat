@@ -7,12 +7,21 @@ use Manix\Brat\Components\Program;
 //}, microtime(true));
 
 define('MANIX', 'MANIX');
-define('SITE_DOMAIN', isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : null);
 
-if ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off')) {
-  define('SITE_URL', SITE_DOMAIN === null ? null : ('https://' . SITE_DOMAIN . ($_SERVER['SERVER_PORT'] !== '443' ? (':' . $_SERVER['SERVER_PORT']) : '') . substr($_SERVER['PHP_SELF'], 0, -10)));
+// the site's address with its path, from the environment (SITE_URL, e.g. https://api.example.com/v1), else from
+// the request: its SERVER_NAME is the Host header the client sent unless the server pins it (Apache's
+// UseCanonicalName On). SCRIPT_NAME and not PHP_SELF, which has the path info the client added after index.php
+if (!empty($_ENV['SITE_URL'])) {
+  define('SITE_URL', rtrim($_ENV['SITE_URL'], '/'));
+  define('SITE_DOMAIN', parse_url(SITE_URL, PHP_URL_HOST));
 } else {
-  define('SITE_URL', SITE_DOMAIN === null ? null : ('http://' . SITE_DOMAIN . ($_SERVER['SERVER_PORT'] !== '80' ? (':' . $_SERVER['SERVER_PORT']) : '') . substr($_SERVER['PHP_SELF'], 0, -10)));
+  define('SITE_DOMAIN', isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : null);
+
+  if ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off')) {
+    define('SITE_URL', SITE_DOMAIN === null ? null : ('https://' . SITE_DOMAIN . ($_SERVER['SERVER_PORT'] !== '443' ? (':' . $_SERVER['SERVER_PORT']) : '') . substr($_SERVER['SCRIPT_NAME'], 0, -10)));
+  } else {
+    define('SITE_URL', SITE_DOMAIN === null ? null : ('http://' . SITE_DOMAIN . ($_SERVER['SERVER_PORT'] !== '80' ? (':' . $_SERVER['SERVER_PORT']) : '') . substr($_SERVER['SCRIPT_NAME'], 0, -10)));
+  }
 }
 
 define('DEBUG_MODE', $_ENV['env'] === 'debug');
@@ -84,7 +93,7 @@ $cache = null;
  *
  * @return mixed If no parameters are provided then the CacheGateway is returned. If only $key is provided or $key and $value are provided but $valeu is callable, then the item corresponding to $key will be returned and if there is nothing found $value will be invoked and its return value will be stored under $key and will be returned. If $key and $value are provided and $value is not callable then $value will be stored under $key for $ttl seconds.
  */
-function cache(string $key = null, $value = null, int $ttl = 600) {
+function cache(?string $key = null, $value = null, int $ttl = 600) {
   global $cache;
 
   if ($cache === null) {
@@ -135,7 +144,7 @@ function config($file) {
  * before sending, so any custom modifications can be made there.
  * @return bool Whether message has been sent successfully or not.
  */
-function email($to, $subject, $message, callable $callable = null) {
+function email($to, $subject, $message, ?callable $callable = null) {
   global $manix;
 
   return $manix->program()->sendMail($to, $subject, $message, $callable);

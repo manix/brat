@@ -81,10 +81,11 @@ class MFA extends FormController {
       $user = $pending['user'];
       // per user, not per address: whoever is here already has the password
       $key = 'users/mfablock/' . $user->id;
-      $attempts = cache($key);
+      // counted before the code is checked, atomically: codes sent at the same time each count
+      $attempts = cache()->increment($key, $this->blockFor());
       $name = $data['method'] ?? $pending['methods'][0];
 
-      if ($attempts >= $this->allowedAttempts()) {
+      if ($attempts > $this->allowedAttempts()) {
         $v->setError('code', $this->t8('manix/util/users/common', 'loginBlocked'));
       } else if (!in_array($name, $pending['methods'], true)) {
         throw new Exception('Bad request', 400);
@@ -105,7 +106,6 @@ class MFA extends FormController {
           return $response;
         }
 
-        cache($key, $attempts + 1, $this->blockFor());
         $v->setError('code', $this->t8('manix/util/users/common', 'mfaWrongCode'));
       }
 

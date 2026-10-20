@@ -2,7 +2,6 @@
 
 namespace Manix\Brat\Utility\HTTP;
 
-use Error;
 use Exception;
 use Manix\Brat\Components\Controller;
 use Manix\Brat\Components\Program;
@@ -15,6 +14,7 @@ use SessionHandlerInterface;
 use const SITE_DOMAIN;
 use const SITE_URL;
 use function config;
+use function protocol;
 use function registry;
 
 /**
@@ -23,6 +23,9 @@ use function registry;
 class HTTPProgram extends Program {
 
   use Translator;
+
+  // the HTTP methods a request can run, as controller methods
+  const VERBS = ['get' => 1, 'post' => 1, 'put' => 1, 'delete' => 1];
 
   /**
    * @var array The sorted list of preferred response types.
@@ -79,7 +82,14 @@ class HTTPProgram extends Program {
   public function startSession() {
     if (!session_id()) {
       session_name('manix-sess');
-      session_set_cookie_params(0, '/', SITE_DOMAIN, false, true);
+      session_set_cookie_params([
+          'lifetime' => 0,
+          'path' => '/',
+          'domain' => SITE_DOMAIN,
+          'secure' => protocol() === 'https://',
+          'httponly' => true,
+          'samesite' => 'Lax'
+      ]);
       session_set_save_handler($this->createSessionHandler(), true);
       session_start();
     }
@@ -162,16 +172,19 @@ class HTTPProgram extends Program {
 
         break;
       }
-    }
 
-    try {
-      return new $class;
-    } catch (Error $err) {
-      if ($err->getMessage() === "Class '$class' not found") {
+      // the root was the last to try: substr() returns '' again for it, which would loop forever
+      if ($derived === '') {
         throw new Exception($this->t8('common', 'ctrlnotfound'), 404);
       }
-      throw $err;
     }
+
+    // class_exists() autoloads it
+    if (!class_exists($class)) {
+      throw new Exception($this->t8('common', 'ctrlnotfound'), 404);
+    }
+
+    return new $class;
   }
 
   /**
@@ -188,7 +201,12 @@ class HTTPProgram extends Program {
    * @return string
    */
   public function determineMethod(): string {
-    return strtolower($_POST['manix-method'] ?? $_SERVER['REQUEST_METHOD'] ?? 'get');
+    $method = strtolower((string)($_POST['manix-method'] ?? $_SERVER['REQUEST_METHOD'] ?? 'get'));
+
+    // only the verbs: the method is called on the controller, so any other name would call that public method
+    // (csrf, session...). Others get a name no method can have, which Controller::__call answers with 405.
+    // Not thrown here: the error handler determines the method again
+    return isset(self::VERBS[$method]) ? $method : '-' . $method;
   }
 
   /**

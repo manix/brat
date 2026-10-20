@@ -30,6 +30,18 @@ abstract class CacheGateway {
      */
     abstract public function clear($hard = false);
 
+    /**
+     * Adds $by to the counter under $key and returns the new count. A missing counter starts at 0 and lasts $ttl
+     * seconds, counting doesn't extend it. Atomic: requests counting at the same time each get their own count.
+     */
+    abstract public function increment($key, $ttl, $by = 1);
+
+    /**
+     * Persists $value under $key for $ttl seconds only if $key is missing, and returns whether it did. Atomic: of
+     * requests adding the same key at the same time, one does.
+     */
+    abstract public function add($key, $value, $ttl);
+
     public function __construct() {
         $gc = config('cache')['gc'];
         

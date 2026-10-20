@@ -62,4 +62,25 @@ class MemoryCache extends CacheGateway {
         }
     }
 
+    public function increment($key, $ttl, $by = 1) {
+        // retrieve() drops an expired counter, which then starts over
+        $count = (int)$this->retrieve($key) + $by;
+        $k = $this->key($key);
+        $due = isset($this->data[$k]) ? substr($this->data[$k], 0, 10) : time() + $ttl;
+
+        $this->data[$k] = $due . serialize($count);
+
+        return $count;
+    }
+
+    public function add($key, $value, $ttl) {
+        if ($this->has($key)) {
+            return false;
+        }
+
+        $this->persist($key, $value, $ttl);
+
+        return true;
+    }
+
 }

@@ -14,7 +14,8 @@ class Directory extends Inode {
     parent::__construct($path);
 
     if ($create && !is_dir($path)) {
-      if (!mkdir($path, 0711, (bool)$recursive)) {
+      // another request may have made it since is_dir(): @ for mkdir's warning then
+      if (!@mkdir($path, 0711, (bool)$recursive) && !is_dir($path)) {
         throw new Exception('Can not create directory');
       }
     }

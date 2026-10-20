@@ -77,4 +77,44 @@ class FilesystemCache extends CacheGateway {
         }
     }
 
+    // under an exclusive lock on the file: requests counting at the same time wait for each other
+    public function increment($key, $ttl, $by = 1) {
+        $f = fopen(new File($this->dir . '/' . $this->key($key)), 'c+');
+        flock($f, LOCK_EX);
+        $contents = stream_get_contents($f);
+        $due = (int)substr($contents, 0, 10);
+
+        // missing (an empty file) or expired
+        if ($due < time()) {
+            $due = time() + $ttl;
+            $count = $by;
+        } else {
+            $count = (int)unserialize(substr($contents, 10)) + $by;
+        }
+
+        ftruncate($f, 0);
+        rewind($f);
+        fwrite($f, $due . serialize($count));
+        fclose($f);
+
+        return $count;
+    }
+
+    // under the file's lock, like increment()
+    public function add($key, $value, $ttl) {
+        $f = fopen(new File($this->dir . '/' . $this->key($key)), 'c+');
+        flock($f, LOCK_EX);
+        $added = (int)fread($f, 10) < time();
+
+        if ($added) {
+            ftruncate($f, 0);
+            rewind($f);
+            fwrite($f, (time() + $ttl) . serialize($value));
+        }
+
+        fclose($f);
+
+        return $added;
+    }
+
 }

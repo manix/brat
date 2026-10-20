@@ -43,7 +43,8 @@ class Photo extends SettingsController {
       $user->photo_rev++;
 
       $gate = $this->getUserGateway();
-      $gate->persist($user);
+      // only photo_rev: the cached user's other fields may be stale (the timestamps go along for pack())
+      $gate->persist($user, ['id', 'photo_rev', 'created', 'updated']);
       Auth::updateCache($user);
 
       return ['success' => true];

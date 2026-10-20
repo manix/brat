@@ -9,8 +9,13 @@ use const PROJECT_PATH;
 class ReadController extends Controller {
 
   public function get() {
-    if (isset($_GET['path'])) {
-      $path = PROJECT_PATH . '/lang/' . (($_GET['lang'] ?? null) ? $_GET['lang'] : lang()) . '/' . str_replace('..', '', $_GET['path']) . '.php';
+    // the file is required: only a configured language and a lang file's name ("manix/util/users/common")
+    $lang = $_GET['lang'] ?? null;
+    $lang = is_string($lang) && isset(config('lang')['languages'][$lang]) ? $lang : lang();
+    $name = $_GET['path'] ?? null;
+
+    if (is_string($name) && preg_match('~^[\w-]+(/[\w-]+)*$~', $name)) {
+      $path = PROJECT_PATH . '/lang/' . $lang . '/' . $name . '.php';
 
       if (is_file($path)) {
         return require($path);

@@ -9,6 +9,7 @@ use Project\Traits\Users\UserGatewayFactory;
 use const MANIX;
 use const SITE_DOMAIN;
 use function cache;
+use function protocol;
 
 class AuthManager {
 
@@ -32,7 +33,8 @@ class AuthManager {
           $this->register($this->fetchUserFromPersistence($id));
         }
       } else {
-        $token = $this->fetchPersistentLoginTokenFromString($_COOKIE[$this->rememberMeCookieParams(null)[0]] ?? null);
+        $cookie = $_COOKIE[$this->rememberMeCookieParams(null)[0]] ?? null;
+        $token = $this->fetchPersistentLoginTokenFromString($cookie);
         $this->user = $token ? ($token->user->first() ?? false) : false;
 
         if ($token && $this->user) {
@@ -44,7 +46,8 @@ class AuthManager {
               'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
               'detail' => ['t' => $token->id]
           ]));
-        } else {
+        } else if ($cookie) {
+          // only a cookie the request brought needs expiring
           $this->expireRememberCookie();
         }
       }
@@ -114,6 +117,12 @@ class AuthManager {
   public function register($user) {
 
     if ($user) {
+      // a new id for the session that logs in, so an id someone else gave the browser doesn't get the login. The old
+      // id keeps the data from before (not deleted: requests still on it would lose their session)
+      if (($_SESSION[MANIX]['auth'] ?? null) != $user->id && session_status() === PHP_SESSION_ACTIVE) {
+        session_regenerate_id();
+      }
+
       $_SESSION[MANIX]['auth'] = $user->id;
       $this->updateCache($user);
       $this->user = $user;
@@ -181,8 +190,9 @@ class AuthManager {
     return $value;
   }
 
+  // hex: bcrypt (UserToken::setHash) refuses a NUL byte, which 28 random bytes have one time in ten
   protected function generateTokenCode() {
-    return random_bytes(28);
+    return bin2hex(random_bytes(28));
   }
 
   protected function computeCookieValue(UserToken $token, $code) {
@@ -196,11 +206,22 @@ class AuthManager {
    * @return array
    */
   protected function rememberMeCookieParams($value) {
-    return ['p', $value, $_SERVER['REQUEST_TIME'] + 80704000, '/', SITE_DOMAIN, false, true];
+    return ['p', $value, [
+        'expires' => $_SERVER['REQUEST_TIME'] + 80704000,
+        'path' => '/',
+        'domain' => SITE_DOMAIN,
+        'secure' => protocol() === 'https://',
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]];
   }
 
+  // with the cookie's own path and domain: the browser takes a cookie without them for another one and keeps this
   protected function expireRememberCookie() {
-    setcookie($this->rememberMeCookieParams('')[0], '', 1);
+    $params = $this->rememberMeCookieParams('');
+    $params[2]['expires'] = 1;
+
+    setcookie(...$params);
   }
 
 }

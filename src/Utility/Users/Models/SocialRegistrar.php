@@ -4,55 +4,75 @@ namespace Manix\Brat\Utility\Users\Models;
 
 use Exception;
 use Manix\Brat\Helpers\Image;
-use Manix\Brat\Helpers\Redirect;
+use PDOException;
 use Project\Traits\Users\UserGatewayFactory;
-use function route;
 
 class SocialRegistrar {
 
   use UserGatewayFactory;
 
+  /**
+   * The user to log in with the provider's $data: the one with its email, or a new one. The existing one only
+   * when the provider verified the email ($data['verified']), else an account there under someone's email
+   * would log in as them.
+   * @return User
+   */
   public function register($data) {
     if (empty($data['email']) || empty($data['name'])) {
       throw new Exception('Can not register, email or name missing', 500);
     }
 
-    $email = $data['email'];
-
     $egate = $this->getEmailGateway();
     $ugate = $this->getUserGateway();
-    $record = $egate->find($email)->first();
+    $record = $egate->find($data['email'])->first();
 
-    if (!$record) {
-      $user = $this->constructUser($data);
-
-      if (!$ugate->persist($user)) {
-        throw new Exception('Unexpected', 500);
+    if ($record) {
+      if (empty($data['verified'])) {
+        throw new Exception('The email is registered, log in with the password', 403);
       }
 
-      $email = $this->constructEmail($user, $data);
-
-      if (!$egate->persist($email)) {
-        throw new Exception('Unexpected', 500);
-      }
-
-      if ($data['img']) {
-        $this->updatePhoto($ugate, $user, $data['img']);
-      }
-    } else {
-      $user = $ugate->find($record->user_id)->first();
+      return $ugate->find($record->user_id)->first();
     }
 
-    Auth::register($user);
+    $pdo = $ugate->getPDO();
+    $user = $this->constructUser($data);
 
-    return new Redirect(route(get_class(Auth::getManager()->getLoginController())));
+    $pdo->beginTransaction();
+
+    if (!$ugate->persist($user)) {
+      $pdo->rollBack();
+
+      throw new Exception('Unexpected', 500);
+    }
+
+    // a plain insert: an email registered since the check above fails here instead of moving to the new user
+    try {
+      $egate->insert($this->constructEmail($user, $data));
+    } catch (PDOException $e) {
+      $pdo->rollBack();
+
+      if (($e->errorInfo[1] ?? null) !== 1062) {
+        throw $e;
+      }
+
+      throw new Exception('The email is registered, log in with the password', 403);
+    }
+
+    $pdo->commit();
+
+    if ($data['img']) {
+      $this->updatePhoto($ugate, $user, $data['img']);
+    }
+
+    return $user;
   }
 
   protected function constructUser($data) {
     $user = new User([
         'name' => $data['name']
     ]);
-    $user->setPassword(random_bytes(16));
+    // hex: bcrypt stops at the first zero byte, which random bytes can have early
+    $user->setPassword(bin2hex(random_bytes(16)));
     return $user;
   }
 

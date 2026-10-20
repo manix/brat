@@ -27,7 +27,8 @@ class FormInput implements JsonSerializable {
         $value = $attributes['value'];
         unset($attributes['value']);
         unset($attributes['type']);
-        return $html->textarea($value, $attributes);
+        // the value is text: escaped, or a value with </textarea> would end the element
+        return $html->textarea($value, $attributes, true);
 
       case 'bool':
       case 'boolean':

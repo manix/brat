@@ -594,12 +594,17 @@ trait CRUDEndpoint {
     return 1000;
   }
 
+  // never negative: LIMIT takes no negative numbers
   public function getLimit() {
-    return min($this->getLimitMax(), $_GET['limit'] ?? 9999999);
+    $limit = $_GET['limit'] ?? null;
+
+    return is_numeric($limit) ? max(0, min($this->getLimitMax(), (int)$limit)) : $this->getLimitMax();
   }
 
   public function getOffset() {
-    return $_GET['offset'] ?? 0;
+    $offset = $_GET['offset'] ?? null;
+
+    return is_numeric($offset) ? max(0, (int)$offset) : 0;
   }
 
   protected function getSort() {
@@ -631,12 +636,15 @@ trait CRUDEndpoint {
     }
 
     if ($input && is_array($input)) {
+      // the comparator names the Criteria method called with the query: only the comparing ones
+      $comparators = $this->getSearchComparators();
+
       foreach ($input as $field => $comparator) {
         if (!$comparator) {
           $comparator = $this->getDefaultSearchComparator();
         }
 
-        if (in_array($field, $searchable)) {
+        if (in_array($field, $searchable) && in_array($comparator, $comparators, true)) {
           $fields[$field] = $comparator;
         }
       }
@@ -647,6 +655,14 @@ trait CRUDEndpoint {
 
   protected function getDefaultSearchComparator() {
     return 'like';
+  }
+
+  /**
+   * The comparators a request may pick per field (fields[field]=comparator), Criteria methods taking the field and
+   * the query's value (between: query[field][]=start&query[field][]=end).
+   */
+  protected function getSearchComparators() {
+    return ['equals', 'notequals', 'greater', 'less', 'like', 'notlike', 'between', 'notbetween'];
   }
 
   protected function getCriteria() {
@@ -847,11 +863,9 @@ trait CRUDEndpoint {
           // this will overwrite old images in random order
           $this->saveImage($f, $data, $path . '/' . $index);
         }
-
-        return;
+      } else {
+        $this->saveImage($file, $data, $path);
       }
-      
-      return $this->saveImage($file, $data, $path);
     }
   }
 

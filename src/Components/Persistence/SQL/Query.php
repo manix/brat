@@ -109,6 +109,11 @@ abstract class Query {
 
       case 'NOT IN':
       case 'IN':
+        // an empty list: no value is in it, every value is not. "IN ()" is a syntax error
+        if (is_array($data) && !$data) {
+          return $operand === 'IN' ? '0 = 1' : '1 = 1';
+        }
+
         $sql .= ' ' . $operand . ' (';
         if ($data instanceof self) {
           $sql .= $data->build();
@@ -163,8 +168,17 @@ abstract class Query {
     return $placeholder;
   }
 
+  // the character sets whose names are only letters: MySQL and MariaDB read _gbk, _ascii… as a charset introducer,
+  // not as an alias, so the aliases skip them
+  const CHARSETS = ['ascii' => 1, 'binary' => 1, 'eucjpms' => 1, 'euckr' => 1, 'gbk' => 1, 'greek' => 1,
+      'hebrew' => 1, 'macce' => 1, 'macroman' => 1, 'sjis' => 1, 'ujis' => 1];
+
   public static function getAlias() {
-    return '_' . self::$aliasIndex++;
+    do {
+      $alias = self::$aliasIndex++;
+    } while (isset(self::CHARSETS[$alias]));
+
+    return '_' . $alias;
   }
 
   protected function getJoinClause() {

@@ -24,7 +24,8 @@ class Name extends SettingsController {
 
       $user->name = $data['name'];
 
-      $this->getUserGateway()->persist($user);
+      // only the name: the cached user's other fields may be stale (the timestamps go along for pack())
+      $this->getUserGateway()->persist($user, ['id', 'name', 'created', 'updated']);
       Auth::register($user);
 
       return ['success' => true];

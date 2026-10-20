@@ -15,7 +15,7 @@ trait CRUDViewTrait {
     parent::__construct($data, $html);
 
     if ($data['success'] ?? null) {
-      header('Location: ' . $data['goto'] ?? null);
+      header('Location: ' . ($data['goto'] ?? ''));
       exit;
     }
   }
