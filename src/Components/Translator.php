@@ -70,12 +70,15 @@ trait Translator {
   protected function getTranslatedStrings($path) {
     global $translatorStrings;
 
-    if (!isset($translatorStrings[$path])) {
+    // keyed by language too, a file loaded before the language is known must not stick
+    $lang = lang();
+
+    if (!isset($translatorStrings[$lang][$path])) {
       $file = $this->constructAbsoluteLangFilePath($path);
-      $translatorStrings[$path] = is_file($file) ? require $file : [];
+      $translatorStrings[$lang][$path] = is_file($file) ? require $file : [];
     }
 
-    return $translatorStrings[$path];
+    return $translatorStrings[$lang][$path];
   }
 
   /**
